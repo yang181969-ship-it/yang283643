@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yang181969</title>
+
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="../css/style-global.css">
+  <link rel="stylesheet" href="../css/style-theme.css">
+  <link rel="stylesheet" href="../css/style-animes.css">
+  <!-- Page-specific CSS -->
+  <!-- None needed for index.html -->
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <a href="index.html" class="logo">
+        <img src="../assets/images/logo.png" alt="logo">
+        <span>Yang181969</span>
+      </a>
+
+      <div class="theme-control">
+        <button id="theme-toggle" aria-label="Open theme palette">🎨</button>
+        <div class="theme-panel" id="theme-panel">
+          <label for="hue-slider">Theme Color</label>
+          <div class="theme-preview"></div>
+          <input type="range" id="hue-slider" min="0" max="360" value="330">
+        </div>
+      </div>
+    </header>
+
+    <nav>
+      <a href="index.html" class="nav-link">主页</a>
+      <a href="gallery.html" class="nav-link">画廊</a>
+      <a href="anime.html" class="nav-link">动漫</a>
+      <a href="notes.html" class="nav-link">笔记</a>
+      <a href="diary.html" class="nav-link">日记</a>
+      <a href="comment.html" class="nav-link">留言</a>
+      <a href="about.html" class="nav-link">关于</a>
+    </nav>
+
+    <main id="main-content">
+      <!-- Page-specific content here -->
+      <section>
+        <h2>关于这个网页</h2>
+        <p>这是我个人的网站，我需要一个线上展示自己的生活、作品、笔记的平台。</p>
+      </section>
+
+      <section>
+        <h2>你可以在这里看到什么？</h2>
+        <ul>
+          <li>我的生活记录</li>
+          <li>好看的动漫推荐</li>
+          <li>数学物理笔记</li>
+          <li>大家的留言</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>如果你对本网站有任何建议或意见</h2>
+        <p>可以在留言一栏留下你的宝贵建议</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>2026 Yang's website</p>
+    </footer>
+  </div>
+
+  <!-- JS -->
+  <script src="../js/theme.js"></script>
+  <script src="../js/main.js"></script>
+  <!-- Page-specific JS -->
+  <!-- <script src="../js/gallery.js"></script> for gallery.html -->
+</body>
+</html>

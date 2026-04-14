@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动漫详情</title>
+
+  <link rel="stylesheet" href="../css/style-global.css">
+  <link rel="stylesheet" href="../css/style-theme.css">
+  <link rel="stylesheet" href="../css/style-animes.css">
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <a href="index.html" class="logo">
+        <img src="../assets/images/logo.png" alt="logo">
+        <span>Yang181969</span>
+      </a>
+
+      <div class="theme-control">
+        <button id="theme-toggle" aria-label="Open theme palette">🎨</button>
+        <div class="theme-panel" id="theme-panel">
+          <label for="hue-slider">Theme Color</label>
+          <div class="theme-preview"></div>
+          <input type="range" id="hue-slider" min="0" max="360" value="330">
+        </div>
+      </div>
+    </header>
+
+    <nav>
+      <a href="index.html">主页</a>
+      <a href="index.html?page=gallery">画廊</a>
+      <a href="index.html?page=anime" class="active">动漫</a>
+      <a href="index.html?page=notes">笔记</a>
+      <a href="index.html?page=diary">日记</a>
+      <a href="index.html?page=comment">留言</a>
+      <a href="index.html?page=about">关于</a>
+    </nav>
+
+    <main id="main-content">
+      <section class="anime-detail">
+        <h2 id="anime-title">加载中...</h2>
+
+        <div class="anime-detail-cover">
+          <img id="anime-image" src="" alt="">
+        </div>
+
+        <p id="anime-description"></p>
+
+        <ul id="anime-info"></ul>
+      </section>
+
+      <section>
+        <h2>图片展示</h2>
+        <div id="anime-gallery" class="anime-extra-gallery"></div>
+      </section>
+
+      <section>
+        <h2>相关链接</h2>
+        <ul id="anime-links"></ul>
+      </section>
+
+      <section>
+        <a href="index.html?page=anime" class="back-link">← 返回动漫列表</a>
+      </section>
+    </main>
+
+    <div class="image-lightbox" id="image-lightbox">
+      <span class="lightbox-close" id="lightbox-close">&times;</span>
+      <img class="lightbox-image" id="lightbox-image" src="" alt="">
+    </div>
+    
+    <footer>
+      <p>2026 Yang's website</p>
+    </footer>
+  </div>
+
+  <script src="../js/theme.js"></script>
+  <script src="../js/anime-detail.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+:root {
+  --primary-hue: 330;
+
+  --primary: hsl(var(--primary-hue), 80%, 68%);
+  --primary-dark: hsl(var(--primary-hue), 55%, 40%);
+  --primary-soft: hsl(var(--primary-hue), 85%, 92%);
+  --glow: hsla(var(--primary-hue), 80%, 68%, 0.35);
+
+  --bg-main: #f6f8fc;
+  --bg-panel: #eef2f8;
+  --bg-card: #ffffff;
+
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+
+  --border-soft: #d9e2ef;
+  --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.theme-control {
+  position: relative;
+}
+
+#theme-toggle {
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--bg-card);
+  cursor: pointer;
+  font-size: 22px;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#theme-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.theme-panel {
+  position: absolute;
+  top: 58px;
+  right: 0;
+  width: 240px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
+  display: none;
+  z-index: 1000;
+}
+
+.theme-panel.show {
+  display: block;
+}
+
+.theme-panel label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.theme-preview {
+  height: 14px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  background: linear-gradient(
+    90deg,
+    hsl(0, 80%, 68%),
+    hsl(60, 80%, 68%),
+    hsl(120, 80%, 68%),
+    hsl(180, 80%, 68%),
+    hsl(240, 80%, 68%),
+    hsl(300, 80%, 68%),
+    hsl(360, 80%, 68%)
+  );
+}
+
+#hue-slider {
+  width: 100%;
+  cursor: pointer;
+}
