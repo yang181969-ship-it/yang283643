@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const href = link.getAttribute("href");
       const page = getPageFromHref(href);
 
-      if (page) {
+      if (page && href.startsWith("index.html")) {
         e.preventDefault();
         loadPage(page, true);
       }
