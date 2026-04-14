@@ -56,6 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function runPageInit(page) {
+    if (page === "comment" && typeof initCommentPage === "function") {
+      initCommentPage();
+    }
+  }
+
   function loadPage(page, push = true) {
     if (!pageMap.hasOwnProperty(page)) return;
 
@@ -86,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
         main.innerHTML = newMain.innerHTML;
         updateHighlight(page);
         setUrl(page, push);
+        runPageInit(page);
       })
       .catch((err) => {
         console.error("页面切换失败：", err);

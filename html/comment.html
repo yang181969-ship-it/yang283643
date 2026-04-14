@@ -1,7 +1,66 @@
 <main id="main-content">
-    <section>
-        <h2>
-            目前什么也没有
-        </h2>
+  <section class="comment-page">
+    <h2>留言板</h2>
+    <p class="comment-intro">欢迎留下你的建议、评分和图片。</p>
+
+    <!-- 留言展示区 -->
+    <section class="comment-display-section">
+      <h3>最新留言</h3>
+      <div id="comment-list" class="comment-list"></div>
     </section>
+
+    <!-- 留言输入区 -->
+    <section class="comment-form-section">
+      <h3>发表留言</h3>
+
+      <form id="comment-form" class="comment-form">
+        <div class="form-group">
+          <label for="comment-username">用户名</label>
+          <input
+            type="text"
+            id="comment-username"
+            name="comment-username"
+            maxlength="20"
+            placeholder="请输入用户名（可随便填写）"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+            <label>评分</label>
+            <div class="rating-area">
+                <div id="star-rating" class="star-rating" aria-label="星级评分"></div>
+                <div id="rating-text" class="rating-text">当前评分:0 星</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+          <label for="comment-content">留言内容</label>
+          <textarea
+            id="comment-content"
+            name="comment-content"
+            rows="5"
+            maxlength="500"
+            placeholder="请输入你的建议或想说的话..."
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="comment-image">上传图片</label>
+          <input
+            type="file"
+            id="comment-image"
+            name="comment-image"
+            accept="image/*"
+          >
+          <div id="comment-image-preview" class="comment-image-preview"></div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="comment-submit-btn">发布留言</button>
+        </div>
+      </form>
+    </section>
+  </section>
 </main>
