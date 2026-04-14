@@ -34,45 +34,54 @@
       <a href="../index.html?page=notes">笔记</a>
       <a href="../index.html?page=diary">日记</a>
       <a href="../index.html?page=comment">留言</a>
+      <a href="../index.html?page=update">更新</a>
       <a href="../index.html?page=about">关于</a>
     </nav>
 
-    <main id="main-content">
-      <section class="anime-detail">
-        <h2 id="anime-title">加载中...</h2>
+    <!-- ✅ 关键：加这一层 -->
+    <div class="content-scroll">
 
-        <div class="anime-detail-cover">
-          <img id="anime-image" src="" alt="">
-        </div>
+      <main id="main-content">
+        <section class="anime-detail">
+          <h2 id="anime-title">加载中...</h2>
 
-        <p id="anime-description"></p>
+          <div class="anime-detail-cover">
+            <img id="anime-image" src="" alt="">
+          </div>
 
-        <ul id="anime-info"></ul>
-      </section>
+          <p id="anime-description"></p>
 
-      <section>
-        <h2>图片展示</h2>
-        <div id="anime-gallery" class="anime-extra-gallery"></div>
-      </section>
+          <ul id="anime-info"></ul>
+        </section>
 
-      <section>
-        <h2>相关链接</h2>
-        <ul id="anime-links"></ul>
-      </section>
+        <section>
+          <h2>图片展示</h2>
+          <div id="anime-gallery" class="anime-extra-gallery"></div>
+        </section>
 
-      <section>
-        <a href="../index.html?page=anime" class="back-link">← 返回动漫列表</a>
-      </section>
-    </main>
+        <section>
+          <h2>相关链接</h2>
+          <ul id="anime-links"></ul>
+        </section>
 
+        <section>
+          <a href="../index.html?page=anime" class="back-link">← 返回动漫列表</a>
+        </section>
+      </main>
+
+      <!-- ✅ footer 也必须放进来 -->
+      <footer>
+        <p>2026 Yang's website</p>
+      </footer>
+
+    </div>
+
+    <!-- 浮层可以留在外面（这是对的） -->
     <div class="image-lightbox" id="image-lightbox">
       <span class="lightbox-close" id="lightbox-close">&times;</span>
       <img class="lightbox-image" id="lightbox-image" src="" alt="">
     </div>
-    
-    <footer>
-      <p>2026 Yang's website</p>
-    </footer>
+
   </div>
 
   <script src="../js/theme.js"></script>
