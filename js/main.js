@@ -4,104 +4,120 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!main) return;
 
+  // 保存首页原始内容
   const homeContent = main.innerHTML;
 
-  // ⭐ 核心：全部改成 html/路径
+  // page 参数到实际文件的映射
   const pageMap = {
-    home: "index.html",
+    home: null,
     gallery: "html/gallery.html",
     anime: "html/anime.html",
     notes: "html/notes.html",
     diary: "html/diary.html",
     comment: "html/comment.html",
-    about: "html/about.html"
+    about: "html/about.html",
   };
 
-  const fileToPageKey = {
-    "index.html": "home",
-    "gallery.html": "gallery",
-    "anime.html": "anime",
-    "notes.html": "notes",
-    "diary.html": "diary",
-    "comment.html": "comment",
-    "about.html": "about"
-  };
+  function getPageFromHref(href) {
+    if (!href) return null;
 
-  function getPageFromUrl() {
+    if (href === "index.html" || href === "./" || href === "/") {
+      return "home";
+    }
+
+    if (href.startsWith("index.html?page=")) {
+      const params = new URLSearchParams(href.split("?")[1]);
+      return params.get("page") || "home";
+    }
+
+    return null;
+  }
+
+  function getCurrentPageFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return params.get("page") || "home";
   }
 
   function updateHighlight(page) {
-    navLinks.forEach(link => {
+    navLinks.forEach((link) => {
       const href = link.getAttribute("href");
-
-      if (page === "home" && href === "index.html") {
-        link.classList.add("active");
-      } else if (href === `index.html?page=${page}`) {
-        link.classList.add("active");
-      } else {
-        link.classList.remove("active");
-      }
+      const linkPage = getPageFromHref(href);
+      link.classList.toggle("active", linkPage === page);
     });
+  }
+
+  function setUrl(page, push = true) {
+    const url = page === "home" ? "index.html" : `index.html?page=${page}`;
+
+    if (push) {
+      history.pushState({ page }, "", url);
+    } else {
+      history.replaceState({ page }, "", url);
+    }
   }
 
   function loadPage(page, push = true) {
+    if (!pageMap.hasOwnProperty(page)) return;
+
     if (page === "home") {
       main.innerHTML = homeContent;
       updateHighlight("home");
-
-      if (push) {
-        history.pushState({ page }, "", "index.html");
-      }
+      setUrl("home", push);
       return;
     }
 
-    const url = pageMap[page];
+    const file = pageMap[page];
 
-    fetch(url)
-      .then(res => res.text())
-      .then(html => {
+    fetch(file)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`无法加载 ${file}`);
+        }
+        return res.text();
+      })
+      .then((html) => {
         const doc = new DOMParser().parseFromString(html, "text/html");
         const newMain = doc.querySelector("#main-content");
 
+        if (!newMain) {
+          throw new Error(`${file} 中没有找到 #main-content`);
+        }
+
         main.innerHTML = newMain.innerHTML;
         updateHighlight(page);
-
-        if (push) {
-          history.pushState({ page }, "", `index.html?page=${page}`);
-        }
+        setUrl(page, push);
+      })
+      .catch((err) => {
+        console.error("页面切换失败：", err);
       });
   }
 
-  navLinks.forEach(link => {
-    link.addEventListener("click", e => {
+  // 拦截左侧导航点击
+  navLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
       const href = link.getAttribute("href");
+      const page = getPageFromHref(href);
 
-      if (href.startsWith("index.html")) {
+      if (page) {
         e.preventDefault();
-        const page = getPageFromUrlFromHref(href);
-        loadPage(page);
+        loadPage(page, true);
       }
     });
   });
 
-  function getPageFromUrlFromHref(href) {
-    if (href.includes("page=")) {
-      return href.split("page=")[1];
-    }
-    return "home";
-  }
-
-  window.addEventListener("popstate", e => {
-    const page = (e.state && e.state.page) || getPageFromUrl();
+  // 浏览器前进/后退
+  window.addEventListener("popstate", (e) => {
+    const page = (e.state && e.state.page) || getCurrentPageFromUrl();
     loadPage(page, false);
   });
 
-  const initPage = getPageFromUrl();
-  updateHighlight(initPage);
+  // 首次进入页面时，根据 URL 自动加载
+  const initialPage = getCurrentPageFromUrl();
+  updateHighlight(initialPage);
 
-  if (initPage !== "home") {
-    loadPage(initPage, false);
+  if (initialPage !== "home") {
+    loadPage(initialPage, false);
+  } else {
+    history.replaceState({ page: "home" }, "", "index.html");
   }
 });
