@@ -71,7 +71,45 @@ const animeData = {
     links: [
       { text: "观影链接", url: "https://example.com" },
     ]
-  }
+  },
+
+  spy: {
+    title: "间谍过家家",
+    image: "../assets/animes/间谍过家家.jpg",
+    description: "为了潜入名校，西国能力最强的间谍“黄昏”被下令组建家庭。但是，他的“女儿”居然是能够读取他人内心的超能力者，“妻子”是暗杀者？互相隐藏了真实身份的新家庭，面临考验与世界危机的痛快家庭喜剧就此展开",
+    info: [
+      "题材：战斗 / 搞笑 / 日常",
+      "主角：阿尼亚，黄昏，约尔",
+    ],
+    gallery: [
+      "../assets/animes/间谍过家家.jpg",
+      "../assets/animes/间谍过家家1.jpg",
+      "../assets/animes/间谍过家家2.jpg" ,
+      "../assets/animes/间谍过家家3.jpg" 
+    ],
+    links: [
+      { text: "观影链接", url: "https://example.com" },
+    ]
+  },
+
+  titan: {
+    title: "进击的巨人",
+    image: "../assets/animes/进击的巨人.jpg",
+    description: "那一天，人类想起了被他们支配的恐惧",
+    info: [
+      "题材：热血 / 奇幻 / 神作",
+      "主角：艾伦·耶格尔",
+    ],
+    gallery: [
+      "../assets/animes/进击的巨人.jpg",
+      "../assets/animes/进击的巨人1.jpg",
+      "../assets/animes/进击的巨人2.jpg",
+      "../assets/animes/进击的巨人3.jpg"
+    ],
+    links: [
+      { text: "观影链接", url: "https://example.com" },
+    ]
+  },
 };
 
 function getAnimeId() {
