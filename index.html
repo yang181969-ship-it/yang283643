@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yang181969</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style-global.css">
+  <link rel="stylesheet" href="css/style-theme.css">
+  <link rel="stylesheet" href="css/style-animes.css">
+</head>
+<body>
+  <div class="layout">
+
+    <!-- 头部 -->
+    <header>
+      <a href="index.html" class="logo">
+        <img src="assets/images/logo.png" alt="logo">
+        <span>Yang181969</span>
+      </a>
+
+      <div class="theme-control">
+        <button id="theme-toggle">🎨</button>
+        <div class="theme-panel" id="theme-panel">
+          <label>Theme Color</label>
+          <div class="theme-preview"></div>
+          <input type="range" id="hue-slider" min="0" max="360" value="330">
+        </div>
+      </div>
+    </header>
+
+    <!-- 左侧导航 -->
+    <nav>
+      <a href="index.html" class="nav-link">主页</a>
+      <a href="index.html?page=gallery" class="nav-link">画廊</a>
+      <a href="index.html?page=anime" class="nav-link">动漫</a>
+      <a href="index.html?page=notes" class="nav-link">笔记</a>
+      <a href="index.html?page=diary" class="nav-link">日记</a>
+      <a href="index.html?page=comment" class="nav-link">留言</a>
+      <a href="index.html?page=about" class="nav-link">关于</a>
+    </nav>
+
+    <!-- 主内容 -->
+    <main id="main-content">
+      <section>
+        <h2>关于这个网页</h2>
+        <p>这是我个人的网站，用来记录生活、动漫和笔记。</p>
+      </section>
+
+      <section>
+        <h2>你可以在这里看到什么？</h2>
+        <ul>
+          <li>生活记录</li>
+          <li>动漫推荐</li>
+          <li>学习笔记</li>
+          <li>留言互动</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>欢迎交流</h2>
+        <p>可以在留言页面留下你的建议。</p>
+      </section>
+    </main>
+
+    <!-- 底部 -->
+    <footer>
+      <p>2026 Yang's website</p>
+    </footer>
+
+  </div>
+
+  <!-- JS -->
+  <script src="js/theme.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>
