@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     anime: "html/anime.html",
     notes: "html/notes.html",
     diary: "html/diary.html",
+    update: "html/update.html",
     comment: "html/comment.html",
     about: "html/about.html",
   };
