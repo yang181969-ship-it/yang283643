@@ -61,6 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (page === "comment" && typeof initCommentPage === "function") {
       initCommentPage();
     }
+
+    if (page === "anime" && typeof initAnimePage === "function") {
+      initAnimePage();
+    }
   }
 
   function loadPage(page, push = true) {
@@ -141,14 +145,12 @@ function centerNavLink(link) {
   const navRect = nav.getBoundingClientRect();
   const linkRect = link.getBoundingClientRect();
 
-  // 目标：让 link 尽量出现在容器中间
   let targetLeft =
     nav.scrollLeft +
     (linkRect.left - navRect.left) -
-    (nav.clientWidth / 2) +
-    (link.clientWidth / 2);
+    nav.clientWidth / 2 +
+    link.clientWidth / 2;
 
-  // 边界限制：靠左或靠右时不强行居中
   const maxScrollLeft = nav.scrollWidth - nav.clientWidth;
   targetLeft = Math.max(0, Math.min(targetLeft, maxScrollLeft));
 
@@ -158,18 +160,16 @@ function centerNavLink(link) {
   });
 }
 
-// 给所有导航链接绑定点击事件
 function bindNavAutoCenter() {
   const navLinks = document.querySelectorAll("nav .nav-link");
 
-  navLinks.forEach(link => {
+  navLinks.forEach((link) => {
     link.addEventListener("click", function () {
       centerNavLink(this);
     });
   });
 }
 
-// 页面加载后，让当前 active 项自动进入可视区域
 function centerActiveNavLink() {
   const activeLink = document.querySelector("nav .nav-link.active");
   if (!activeLink) return;

@@ -14,7 +14,7 @@ const animeData = {
       "../assets/animes/魔女之旅3.jpg"
     ],
     links: [
-      { text: "观影链接", url: "https://example.com" },
+      { text: "观影链接", url: "https://yhdm6.top/v/3398.html" },
     ]
   },
 
@@ -33,7 +33,7 @@ const animeData = {
       "../assets/animes/葬送的芙莉莲3.jpg"
     ],
     links: [
-      { text: "观影链接", url: "https://example.com" },
+      { text: "观影链接", url: "https://yhdm6.top/v/22881.html" },
     ]
   },
 
@@ -51,7 +51,7 @@ const animeData = {
       "../assets/animes/紫罗兰永恒花园2.jpg"  
     ],
     links: [
-      { text: "观影链接", url: "https://example.com" },
+      { text: "观影链接", url: "https://yhdm6.top/vsh/%E7%B4%AB%E7%BD%97%E5%85%B0%E6%B0%B8%E6%81%92%E8%8A%B1%E5%9B%AD-------------.html" },
     ]
   },
 
@@ -69,7 +69,7 @@ const animeData = {
       "../assets/animes/鬼灭之刃2.jpg"  
     ],
     links: [
-      { text: "观影链接", url: "https://example.com" },
+      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E9%AC%BC%E7%81%AD%E4%B9%8B%E5%88%83&submit=" },
     ]
   },
 
@@ -88,7 +88,7 @@ const animeData = {
       "../assets/animes/间谍过家家3.jpg" 
     ],
     links: [
-      { text: "观影链接", url: "https://example.com" },
+      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E9%97%B4%E8%B0%8D%E8%BF%87%E5%AE%B6%E5%AE%B6&submit=" },
     ]
   },
 
@@ -107,7 +107,7 @@ const animeData = {
       "../assets/animes/进击的巨人3.jpg"
     ],
     links: [
-      { text: "观影链接", url: "https://example.com" },
+      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA&submit=" },
     ]
   },
 };
