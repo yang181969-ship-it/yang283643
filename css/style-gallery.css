@@ -1,0 +1,152 @@
+/* ===== 顶部控制栏 ===== */
+.gallery-controls {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  background: var(--bg-main);
+}
+
+.gallery-control-group {
+  position: relative;
+}
+
+.gallery-controls button {
+  min-width: 136px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gallery-controls button:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+/* 下拉菜单 */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 100%;
+  transform: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.dropdown div {
+  padding: 12px 16px;
+  cursor: pointer;
+  text-align: center;
+  color: var(--text-main);
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dropdown div:hover {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.dropdown div.active {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+/* ===== 图片区域：瀑布流 ===== */
+.gallery-grid {
+  column-count: 5;
+  column-gap: 12px;
+}
+
+.gallery-item {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.gallery-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;      /* 取消原来的高度上限 */
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gallery-item img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+}
+
+/* ===== 放大 ===== */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  padding: 24px;
+}
+
+.lightbox img {
+  display: block;
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 12px;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 1200px) {
+  .gallery-grid {
+    column-count: 4;
+  }
+}
+
+@media (max-width: 900px) {
+  .gallery-grid {
+    column-count: 3;
+  }
+}
+
+@media (max-width: 600px) {
+  .gallery-controls {
+    gap: 12px;
+    padding: 10px 0;
+  }
+
+  .gallery-controls button {
+    min-width: 120px;
+    padding: 10px 18px;
+    font-size: 15px;
+  }
+
+  .gallery-grid {
+    column-count: 2;
+    column-gap: 10px;
+  }
+
+  .gallery-item {
+    margin-bottom: 10px;
+  }
+}

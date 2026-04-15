@@ -65,6 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (page === "anime" && typeof initAnimePage === "function") {
       initAnimePage();
     }
+
+    if (page === "gallery" && typeof initGalleryPage === "function") {
+      initGalleryPage();
+    }
   }
 
   function loadPage(page, push = true) {

@@ -1,7 +1,29 @@
 <main id="main-content">
-    <section>
-        <h2>
-            目前什么也没有
-        </h2>
-    </section>
+  <!-- 顶部控制栏 -->
+  <div class="gallery-controls">
+    <div class="gallery-control-group">
+      <button id="filter-btn" type="button">分类 ▼</button>
+      <div class="dropdown" id="filter-menu">
+        <div data-filter="all">全部</div>
+        <div data-filter="real">现实</div>
+        <div data-filter="anime">动漫</div>
+      </div>
+    </div>
+
+    <div class="gallery-control-group">
+      <button id="sort-btn" type="button">排列 ▼</button>
+      <div class="dropdown" id="sort-menu">
+        <div data-sort="default">默认</div>
+        <div data-sort="random">随机</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 图片区域 -->
+  <div id="gallery-grid" class="gallery-grid"></div>
+
+  <!-- 图片放大 -->
+  <div id="lightbox" class="lightbox">
+    <img id="lightbox-img" alt="放大图片">
+  </div>
 </main>
