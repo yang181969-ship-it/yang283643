@@ -129,3 +129,57 @@ document.addEventListener("DOMContentLoaded", () => {
     history.replaceState({ page: "home" }, "", "index.html");
   }
 });
+
+// ===== 手机端导航点击后自动滚动到可视区域中间（带边界限制） =====
+function centerNavLink(link) {
+  const nav = document.querySelector("nav");
+  if (!nav || !link) return;
+
+  // 只在手机/窄屏下启用
+  if (window.innerWidth > 900) return;
+
+  const navRect = nav.getBoundingClientRect();
+  const linkRect = link.getBoundingClientRect();
+
+  // 目标：让 link 尽量出现在容器中间
+  let targetLeft =
+    nav.scrollLeft +
+    (linkRect.left - navRect.left) -
+    (nav.clientWidth / 2) +
+    (link.clientWidth / 2);
+
+  // 边界限制：靠左或靠右时不强行居中
+  const maxScrollLeft = nav.scrollWidth - nav.clientWidth;
+  targetLeft = Math.max(0, Math.min(targetLeft, maxScrollLeft));
+
+  nav.scrollTo({
+    left: targetLeft,
+    behavior: "smooth"
+  });
+}
+
+// 给所有导航链接绑定点击事件
+function bindNavAutoCenter() {
+  const navLinks = document.querySelectorAll("nav .nav-link");
+
+  navLinks.forEach(link => {
+    link.addEventListener("click", function () {
+      centerNavLink(this);
+    });
+  });
+}
+
+// 页面加载后，让当前 active 项自动进入可视区域
+function centerActiveNavLink() {
+  const activeLink = document.querySelector("nav .nav-link.active");
+  if (!activeLink) return;
+
+  setTimeout(() => {
+    centerNavLink(activeLink);
+  }, 100);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  bindNavAutoCenter();
+  centerActiveNavLink();
+});
