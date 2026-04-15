@@ -183,3 +183,30 @@ document.addEventListener("DOMContentLoaded", () => {
   bindNavAutoCenter();
   centerActiveNavLink();
 });
+
+function initBackToTop() {
+  const btn = document.getElementById("back-to-top");
+  const scrollContainer = document.querySelector(".content-scroll");
+
+  if (!btn || !scrollContainer) return;
+
+  // 滚动时控制显示
+  scrollContainer.addEventListener("scroll", () => {
+    if (scrollContainer.scrollTop > 300) {
+      btn.classList.add("show");
+    } else {
+      btn.classList.remove("show");
+    }
+  });
+
+  // 点击回到顶部
+  btn.addEventListener("click", () => {
+    scrollContainer.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+}
+
+// 初始化
+document.addEventListener("DOMContentLoaded", initBackToTop);

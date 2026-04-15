@@ -280,3 +280,41 @@ footer {
     border-radius: 14px;
   }
 }
+
+/* 返回顶部按钮 */
+#back-to-top {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+
+  width: 44px;
+  height: 44px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: var(--primary);
+  color: #fff;
+  font-size: 18px;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+
+  z-index: 999;
+}
+
+/* 显示状态 */
+#back-to-top.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* hover效果 */
+#back-to-top:hover {
+  transform: translateY(-2px);
+}
