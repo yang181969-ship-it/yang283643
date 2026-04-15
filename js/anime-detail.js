@@ -110,6 +110,25 @@ const animeData = {
       { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA&submit=" },
     ]
   },
+
+  datebattle: {
+    title: "约会大作战",
+    image: "../assets/animes/约会大作战.jpg",
+    description: "故事以男主为了证拯救未知物种——精灵而与其约会，让其爱上自己为主线展开，中间经历各种挫折后知晓精灵来历之谜的故事",
+    info: [
+      "题材：奇幻 / 战斗 / 后宫",
+      "主角：五河士道",
+    ],
+    gallery: [
+      "../assets/animes/约会大作战.jpg",
+      "../assets/animes/约会大作战1.jpg",
+      "../assets/animes/约会大作战2.jpg",
+      "../assets/animes/约会大作战3.jpg"
+    ],
+    links: [
+      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E7%BA%A6%E4%BC%9A%E5%A4%A7%E4%BD%9C%E6%88%98&submit=" },
+    ]
+  },
 };
 
 function getAnimeId() {
