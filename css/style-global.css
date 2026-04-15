@@ -197,3 +197,57 @@ footer {
     font-size: 22px;
   }
 }
+
+/* =====================
+   📱 Mobile Layout System
+===================== */
+
+@media (max-width: 768px) {
+
+  /* ===== 导航栏横向滑动 ===== */
+  .nav {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 12px;
+    padding: 10px 16px;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav a {
+    flex: 0 0 auto;
+  }
+
+  /* ===== 固定 header ===== */
+  header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  /* ===== 固定 nav ===== */
+  .nav {
+    position: fixed;
+    top: 80px; /* ⚠️ 根据你的header高度改 */
+    width: 100%;
+    z-index: 999;
+  }
+
+  /* ===== 页面滚动控制 ===== */
+  body {
+    overflow: hidden;
+  }
+
+  main {
+    position: absolute;
+    top: 140px; /* header + nav 高度 */
+    bottom: 0;
+    width: 100%;
+    overflow-y: auto;
+  }
+
+}
