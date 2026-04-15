@@ -223,3 +223,16 @@ function escapeHTML(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+const imageUpload = document.getElementById("image-upload");
+const fileNameText = document.getElementById("file-name");
+
+if (imageUpload && fileNameText) {
+  imageUpload.addEventListener("change", function () {
+    if (this.files && this.files.length > 0) {
+      fileNameText.textContent = this.files[0].name;
+    } else {
+      fileNameText.textContent = "未选择文件";
+    }
+  });
+}

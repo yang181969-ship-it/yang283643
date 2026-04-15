@@ -46,15 +46,10 @@
           ></textarea>
         </div>
 
-        <div class="form-group">
-          <label for="comment-image">上传图片</label>
-          <input
-            type="file"
-            id="comment-image"
-            name="comment-image"
-            accept="image/*"
-          >
-          <div id="comment-image-preview" class="comment-image-preview"></div>
+        <div class="custom-file-upload">
+          <label for="image-upload" class="file-btn">选择图片</label>
+          <span id="file-name" class="file-name">未选择文件</span>
+          <input type="file" id="image-upload" accept="image/*">
         </div>
 
         <div class="form-actions">
