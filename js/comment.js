@@ -8,15 +8,24 @@ function initCommentPage() {
   const list = document.getElementById("comment-list");
   const starRating = document.getElementById("star-rating");
   const ratingText = document.getElementById("rating-text");
-  const imageInput = document.getElementById("comment-image");
-  const imagePreview = document.getElementById("comment-image-preview");
+  const imageInput = document.getElementById("image-upload");
+  const fileNameText = document.getElementById("file-name");
 
-  if (!form || !list || !starRating || !ratingText || !imageInput || !imagePreview) {
+  if (!form || !list || !starRating || !ratingText || !imageInput || !fileNameText) {
     return;
   }
 
   commentCurrentRating = 0;
   commentCurrentImageData = "";
+
+  let imagePreview = document.getElementById("comment-image-preview");
+
+  if (!imagePreview) {
+    imagePreview = document.createElement("div");
+    imagePreview.id = "comment-image-preview";
+    imagePreview.className = "comment-image-preview";
+    imageInput.parentElement.insertAdjacentElement("afterend", imagePreview);
+  }
 
   renderStarRating();
   bindImagePreview();
@@ -89,9 +98,12 @@ function initCommentPage() {
 
       if (!file) {
         commentCurrentImageData = "";
+        fileNameText.textContent = "未选择文件";
         imagePreview.innerHTML = "";
         return;
       }
+
+      fileNameText.textContent = file.name;
 
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -139,6 +151,7 @@ function initCommentPage() {
       form.reset();
       commentCurrentRating = 0;
       commentCurrentImageData = "";
+      fileNameText.textContent = "未选择文件";
       imagePreview.innerHTML = "";
       updateStarDisplay(commentCurrentRating);
       renderComments();
@@ -216,23 +229,10 @@ function renderStarDisplay(score) {
 }
 
 function escapeHTML(str) {
-  return str
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-}
-
-const imageUpload = document.getElementById("image-upload");
-const fileNameText = document.getElementById("file-name");
-
-if (imageUpload && fileNameText) {
-  imageUpload.addEventListener("change", function () {
-    if (this.files && this.files.length > 0) {
-      fileNameText.textContent = this.files[0].name;
-    } else {
-      fileNameText.textContent = "未选择文件";
-    }
-  });
 }
