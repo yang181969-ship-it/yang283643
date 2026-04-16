@@ -83,75 +83,9 @@ document.addEventListener("DOMContentLoaded", () => {
       initGalleryPage();
     }
 
-    if (page === "notes") {
-      initNotesPage();
+    if (page === "notes" && typeof window.initNotesPage === "function") {
+      window.initNotesPage();
     }
-  }
-
-  function initNotesPage() {
-    const categories = document.querySelectorAll(".notes-category");
-    const panels = document.querySelectorAll(".notes-panel");
-
-    categories.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        categories.forEach((item) => item.classList.remove("active"));
-        panels.forEach((panel) => panel.classList.remove("active"));
-
-        btn.classList.add("active");
-
-        const target = document.getElementById(btn.dataset.target);
-        if (target) target.classList.add("active");
-
-        // 切换面板后重新渲染当前 main 区域中的公式
-        requestAnimationFrame(() => {
-          renderMathSafe();
-        });
-      });
-    });
-
-    // 等动态内容真正插入完成后再渲染 LaTeX
-    requestAnimationFrame(() => {
-      renderMathSafe();
-    });
-
-    // p5.js 动画
-    setTimeout(() => {
-      if (!window.p5 || !document.getElementById("notes-p5-demo")) return;
-
-      new p5((p) => {
-        let t = 0;
-
-        p.setup = function () {
-          const host = document.getElementById("notes-p5-demo");
-          const canvas = p.createCanvas(host.clientWidth, 220);
-          canvas.parent("notes-p5-demo");
-        };
-
-        p.draw = function () {
-          p.clear();
-          p.background(248, 250, 252);
-
-          p.stroke(120, 120, 180);
-          p.strokeWeight(2);
-          p.noFill();
-
-          p.beginShape();
-          for (let x = 0; x <= p.width; x += 8) {
-            const y = 110 + 36 * Math.sin(x * 0.03 + t);
-            p.vertex(x, y);
-          }
-          p.endShape();
-
-          t += 0.04;
-        };
-
-        p.windowResized = function () {
-          const host = document.getElementById("notes-p5-demo");
-          if (!host) return;
-          p.resizeCanvas(host.clientWidth, 220);
-        };
-      });
-    }, 300);
   }
 
   function afterPageLoad(page, push) {
@@ -161,7 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(() => {
       runPageInit(page);
 
-      // 给 KaTeX 再一个更稳的渲染时机
       if (page === "notes") {
         setTimeout(() => {
           renderMathSafe();
