@@ -1,51 +1,12 @@
 /* ====== Anime 列表页 ====== */
 
 .anime-section {
+  display: none;
   scroll-margin-top: 70px;
 }
 
-.anime-gallery {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-.anime-item {
-  width: 100%;
-  min-width: 0;
-}
-
-/* 整个卡片 */
-.anime-card {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  text-decoration: none;
-}
-
-/* 固定图片盒子尺寸 */
-.anime-card img {
+.anime-section.active {
   display: block;
-  width: 100%;
-  height: 260px;
-  object-fit: cover;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.anime-card img:hover {
-  transform: scale(1.05);
-}
-
-.anime-card p {
-  margin: 8px 0 0;
-  text-align: center;
-  font-size: 14px;
-  color: #333;
 }
 
 /* ===== 顶部切换栏 ===== */
@@ -55,7 +16,8 @@
   z-index: 5;
   display: flex;
   gap: 10px;
-  padding: 12px 0 16px;
+  padding: 6px 0 14px;
+  margin: 0 0 10px;
   background: var(--bg-main);
 }
 
@@ -78,6 +40,80 @@
 .anime-tabs button.active {
   background: var(--primary);
   color: #fff;
+}
+
+/* ===== 动漫网格 ===== */
+.anime-gallery {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.anime-item {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ===== 整个卡片 ===== */
+.anime-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-decoration: none;
+}
+
+.anime-card img {
+  display: block;
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.anime-card img:hover {
+  transform: scale(1.05);
+}
+
+.anime-card p {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: #333;
+}
+
+/* ===== 图片容器 / 状态角标 ===== */
+.anime-image-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.anime-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 600;
+  z-index: 2;
+}
+
+.anime-badge.finished {
+  background: #22c55e;
+}
+
+.anime-badge.ongoing {
+  background: #f59e0b;
+}
+
+.anime-badge.upcoming {
+  background: #3b82f6;
 }
 
 /* ====== 动漫详情页 ====== */
@@ -191,38 +227,6 @@
   transform: scale(1.1);
 }
 
-/* 图片容器 */
-.anime-image-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-/* 角标 */
-.anime-badge {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  padding: 4px 8px;
-  font-size: 12px;
-  border-radius: 6px;
-  color: #fff;
-  font-weight: 600;
-  z-index: 2;
-}
-
-/* 不同状态颜色 */
-.anime-badge.finished {
-  background: #22c55e;
-}
-
-.anime-badge.ongoing {
-  background: #f59e0b;
-}
-
-.anime-badge.upcoming {
-  background: #3b82f6;
-}
-
 /* ====== 响应式 ====== */
 
 @media (max-width: 1000px) {
@@ -245,14 +249,15 @@
   }
 
   .anime-tabs {
-    padding: 10px 0 14px;
+    padding: 4px 0 10px;
     gap: 8px;
+    flex-wrap: wrap;
   }
 
   .anime-tabs button {
-    padding: 20px 30px;       /* 🔥 变大 */
-    font-size: 16px;          /* 🔥 字体更大 */
-    border-radius: 999px;     /* 保持圆润 */
+    padding: 12px 18px;
+    font-size: 15px;
+    border-radius: 999px;
     border: none;
     cursor: pointer;
     background: #e5e7eb;
@@ -260,13 +265,8 @@
     font-weight: 600;
     transition: 0.2s ease;
   }
-}
 
-/* ===== Tab 切换显示控制 ===== */
-.anime-section {
-  display: none;
-}
-
-.anime-section.active {
-  display: block;
+  .anime-card img {
+    height: 220px;
+  }
 }

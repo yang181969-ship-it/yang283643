@@ -1,68 +1,66 @@
+/* ===== 页面整体：不再单独控制整页 padding，由 global 统一 ===== */
 .update-page {
   width: 100%;
   margin: 0;
-  padding: 30px 24px 40px;
+  padding: 0 !important;
   box-sizing: border-box;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
+/* ===== 标题区域 ===== */
 .update-page h2 {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   color: var(--primary-dark);
+  font-size: 28px;
 }
 
 .update-intro {
-  margin: 0 0 28px;
+  margin: 0 0 20px;
   color: var(--text-muted);
   line-height: 1.6;
 }
 
-/* 清掉中间这一层 section 可能继承到的全局卡片样式 */
+/* ===== 列表容器 ===== */
 .update-list {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  width: 100%;
+  gap: 18px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
   margin: 0;
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
 }
 
-/* 再保险一点，避免 section 通用样式干扰 */
-.update-page > .update-list {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 0;
-}
-
+/* ===== 小卡片 ===== */
 .update-card {
   width: 100%;
-  margin: 0;
   background: var(--bg-card);
   border: 1px solid var(--border-soft);
-  border-radius: 18px;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: var(--shadow-soft);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .update-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
 }
 
+/* ===== 卡片头 ===== */
 .update-card-header {
   padding: 14px 18px;
   background: var(--primary);
-  color: #ffffff;
+  color: #fff;
   font-weight: 700;
   font-size: 16px;
 }
 
+/* ===== 卡片内容 ===== */
 .update-card-body {
   padding: 18px;
 }
@@ -74,7 +72,7 @@
 }
 
 .update-card-body p {
-  margin: 0;
+  margin: 6px 0 0;
   color: var(--text-muted);
   line-height: 1.8;
   font-size: 15px;
@@ -82,27 +80,18 @@
 
 @media (max-width: 768px) {
   .update-page {
-    padding: 22px 16px 30px;
+    padding: 0 !important;
   }
 
-  .update-list {
-    gap: 18px;
+  .update-card {
+    border-radius: 16px;
   }
 
   .update-card-header {
     font-size: 15px;
-    padding: 12px 14px;
-  }
-
-  .update-card-body {
-    padding: 16px;
   }
 
   .update-card-body h3 {
     font-size: 18px;
-  }
-
-  .update-card-body p {
-    font-size: 14px;
   }
 }

@@ -1,404 +1,398 @@
-const COMMENT_STORAGE_KEY = "yang181969_comment_board_data";
-const COMMENT_MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
-
-// ===== Waline 配置 =====
 const WALINE_SERVER_URL = "https://yang283643-waline.vercel.app";
 
-// 以后如果你要接图床 / 上传 API，就把这个地址改成你的接口
-const COMMENT_IMAGE_UPLOAD_API = "";
+// 这里是管理员昵称白名单
+const ADMIN_NAMES = ["xy-yang"];
 
-let commentCurrentRating = 0;
-let commentCurrentImageData = "";
 let walineInstance = null;
+let walineStyleReady = false;
+let walineModulePromise = null;
+let walineObserver = null;
+let enhanceScheduled = false;
 
-/**
- * 留言板页面初始化
- * 供 main.js 中 runPageInit("comment") 调用
- */
 function initCommentPage() {
-  const localMode = document.getElementById("comment-local-mode");
-  const walineMode = document.getElementById("comment-waline-mode");
-  const walineEl = document.getElementById("waline");
+  const walineRoot = document.getElementById("waline");
+  if (!walineRoot) return;
 
-  // 新版双模式结构：优先走 Waline
-  if (walineMode && walineEl) {
-    if (WALINE_SERVER_URL) {
-      if (localMode) localMode.style.display = "none";
-      walineMode.style.display = "";
-      initWalineComment();
-      return;
-    }
+  ensureWalineStyle();
 
-    if (localMode) localMode.style.display = "";
-    walineMode.style.display = "none";
-    initLocalCommentBoard();
-    return;
-  }
-
-  // 旧版单模式结构：没有双模式容器时，继续本地留言
-  initLocalCommentBoard();
+  requestAnimationFrame(() => {
+    initWalineComment();
+  });
 }
 
-function initLocalCommentBoard() {
-  const form = document.getElementById("comment-form");
-  const list = document.getElementById("comment-list");
-  const starRating = document.getElementById("star-rating");
-  const ratingText = document.getElementById("rating-text");
-  const imageInput = document.getElementById("image-upload");
-  const fileNameText = document.getElementById("file-name");
-  let imagePreview = document.getElementById("comment-image-preview");
+function ensureWalineStyle() {
+  if (walineStyleReady) return;
 
-  if (
-    !form ||
-    !list ||
-    !starRating ||
-    !ratingText ||
-    !imageInput ||
-    !fileNameText
-  ) {
-    return;
+  const styleId = "waline-client-style";
+
+  if (!document.getElementById(styleId)) {
+    const link = document.createElement("link");
+    link.id = styleId;
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/@waline/client@v3/dist/waline.css";
+    document.head.appendChild(link);
   }
 
-  if (!imagePreview) {
-    imagePreview = document.createElement("div");
-    imagePreview.id = "comment-image-preview";
-    imagePreview.className = "comment-image-preview";
-    imageInput.parentElement.insertAdjacentElement("afterend", imagePreview);
+  walineStyleReady = true;
+}
+
+function loadWalineModule() {
+  if (!walineModulePromise) {
+    walineModulePromise = import("https://unpkg.com/@waline/client@v3/dist/waline.js");
   }
+  return walineModulePromise;
+}
 
-  commentCurrentRating = 0;
-  commentCurrentImageData = "";
+function getCurrentCommentPath() {
+  return window.location.pathname + window.location.search;
+}
 
-  renderStarRating();
-  bindImagePreview();
-  bindFormSubmit();
-  renderComments();
+async function initWalineComment() {
+  const walineRoot = document.getElementById("waline");
+  if (!walineRoot) return;
 
-  function renderStarRating() {
-    starRating.innerHTML = "";
+  const currentPath = getCurrentCommentPath();
 
-    for (let i = 1; i <= 5; i++) {
-      const star = document.createElement("div");
-      star.className = "star-item";
-      star.dataset.star = String(i);
+  try {
+    const { init } = await loadWalineModule();
 
-      star.innerHTML = `
-        <span class="star-bg">★</span>
-        <span class="star-fill">★</span>
-      `;
-
-      star.addEventListener("mousemove", (e) => {
-        const previewRating = getHalfStarValue(e, star, i);
-        updateStarDisplay(previewRating);
-      });
-
-      star.addEventListener("click", (e) => {
-        commentCurrentRating = getHalfStarValue(e, star, i);
-        updateStarDisplay(commentCurrentRating);
-      });
-
-      starRating.appendChild(star);
+    if (walineObserver) {
+      walineObserver.disconnect();
+      walineObserver = null;
     }
 
-    starRating.onmouseleave = () => {
-      updateStarDisplay(commentCurrentRating);
-    };
+    if (walineInstance && typeof walineInstance.destroy === "function") {
+      walineInstance.destroy();
+    }
 
-    updateStarDisplay(commentCurrentRating);
-  }
+    walineInstance = null;
+    walineRoot.innerHTML = "";
+    walineRoot.classList.remove("editor-expanded");
+    walineRoot.dataset.currentRating = "0";
+    delete walineRoot.dataset.editorBound;
+    enhanceScheduled = false;
 
-  function getHalfStarValue(event, starElement, starIndex) {
-    const rect = starElement.getBoundingClientRect();
-    const offsetX = event.clientX - rect.left;
-    return offsetX < rect.width / 2 ? starIndex - 0.5 : starIndex;
-  }
-
-  function updateStarDisplay(tempRating) {
-    const stars = starRating.querySelectorAll(".star-item");
-
-    stars.forEach((star, index) => {
-      const fill = star.querySelector(".star-fill");
-      const starNumber = index + 1;
-
-      let fillPercent = 0;
-
-      if (tempRating >= starNumber) {
-        fillPercent = 100;
-      } else if (tempRating >= starNumber - 0.5) {
-        fillPercent = 50;
-      } else {
-        fillPercent = 0;
-      }
-
-      fill.style.width = `${fillPercent}%`;
+    walineInstance = init({
+      el: "#waline",
+      serverURL: WALINE_SERVER_URL,
+      path: currentPath,
+      lang: "zh-CN",
+      login: "disable",
+      emoji: false,
+      search: false,
+      pageSize: 20,
+      commentSorting: "latest",
+      meta: ["nick", "mail", "link"],
+      requiredMeta: ["nick"],
+      wordLimit: 500,
+      dark: "auto",
+      reaction: false,
     });
 
-    ratingText.textContent = `当前评分：${tempRating} 星`;
-  }
-
-  function bindImagePreview() {
-    imageInput.onchange = () => {
-      const file = imageInput.files && imageInput.files[0];
-
-      if (!file) {
-        resetImageState();
-        return;
-      }
-
-      if (!file.type.startsWith("image/")) {
-        alert("请选择图片文件。");
-        imageInput.value = "";
-        resetImageState();
-        return;
-      }
-
-      if (file.size > COMMENT_MAX_IMAGE_SIZE) {
-        alert("图片不能超过 3MB。");
-        imageInput.value = "";
-        resetImageState();
-        return;
-      }
-
-      fileNameText.textContent = file.name;
-
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        const result = e.target && e.target.result;
-        if (typeof result !== "string") {
-          alert("图片读取失败，请重新选择。");
-          imageInput.value = "";
-          resetImageState();
-          return;
-        }
-
-        commentCurrentImageData = result;
-        imagePreview.innerHTML = `<img src="${result}" alt="预览图片">`;
-      };
-
-      reader.onerror = () => {
-        alert("图片读取失败，请重新选择。");
-        imageInput.value = "";
-        resetImageState();
-      };
-
-      reader.readAsDataURL(file);
-    };
-  }
-
-  function resetImageState() {
-    commentCurrentImageData = "";
-    fileNameText.textContent = "未选择文件";
-    imagePreview.innerHTML = "";
-  }
-
-  function bindFormSubmit() {
-    form.onsubmit = (e) => {
-      e.preventDefault();
-
-      const usernameInput = document.getElementById("comment-username");
-      const contentInput = document.getElementById("comment-content");
-
-      if (!usernameInput || !contentInput) return;
-
-      const username = usernameInput.value.trim();
-      const content = contentInput.value.trim();
-
-      if (!username) {
-        alert("请先填写用户名。");
-        usernameInput.focus();
-        return;
-      }
-
-      if (!content) {
-        alert("请输入留言内容。");
-        contentInput.focus();
-        return;
-      }
-
-      const comments = getComments();
-
-      const newComment = {
-        id: Date.now(),
-        username,
-        content,
-        rating: commentCurrentRating,
-        image: commentCurrentImageData,
-        time: formatTime(new Date())
-      };
-
-      comments.unshift(newComment);
-      saveComments(comments);
-
-      form.reset();
-      commentCurrentRating = 0;
-      resetImageState();
-      updateStarDisplay(commentCurrentRating);
-      renderComments();
-    };
-  }
-
-  function renderComments() {
-    const comments = getComments();
-
-    if (!comments.length) {
-      list.innerHTML =
-        '<div class="comment-empty">还没有留言，快来留下第一条建议吧！</div>';
-      return;
-    }
-
-    list.innerHTML = comments
-      .map((comment) => {
-        return `
-          <article class="comment-card">
-            <div class="comment-card-header">
-              <div class="comment-username">${escapeHTML(comment.username)}</div>
-              <div class="comment-time">${escapeHTML(comment.time)}</div>
-            </div>
-
-            <div class="comment-score">${renderStarDisplay(comment.rating)}</div>
-
-            <div class="comment-text">${escapeHTML(comment.content)}</div>
-
-            ${
-              comment.image
-                ? `<div class="comment-image-box">
-                    <img src="${comment.image}" alt="用户上传图片" loading="lazy">
-                  </div>`
-                : ""
-            }
-          </article>
-        `;
-      })
-      .join("");
+    setTimeout(() => {
+      bindWalineEditorBehavior();
+      runEnhancements();
+      observeWalineUpdates();
+    }, 500);
+  } catch (error) {
+    console.error("Waline 加载失败：", error);
+    walineRoot.innerHTML = `
+      <div class="comment-empty">留言系统加载失败，请稍后再试。</div>
+    `;
   }
 }
 
-/**
- * Waline 初始化
- */
-function initWalineComment() {
-  const walineEl = document.getElementById("waline");
-  if (!walineEl) return;
+function bindWalineEditorBehavior() {
+  const root = document.getElementById("waline");
+  if (!root) return;
 
-  const currentPath = window.location.pathname + window.location.search;
+  if (root.dataset.editorBound === "true") return;
+  root.dataset.editorBound = "true";
 
-  if (walineInstance) {
-    walineInstance.update({
-      path: currentPath
-    });
-    return;
-  }
-
-  import("https://unpkg.com/@waline/client@v3/dist/waline.js")
-    .then(({ init }) => {
-      walineInstance = init({
-        el: "#waline",
-        serverURL: WALINE_SERVER_URL,
-        path: currentPath,
-        lang: "zh-CN",
-        login: "enable",
-        commentSorting: "latest",
-        pageSize: 10,
-        meta: ["nick", "mail", "link"],
-        requiredMeta: ["nick"],
-        wordLimit: 500,
-        dark: "auto",
-        imageUploader: COMMENT_IMAGE_UPLOAD_API ? uploadCommentImage : false
-      });
-    })
-    .catch((error) => {
-      console.error("Waline 加载失败：", error);
-      walineEl.innerHTML = `
-        <div class="comment-empty">留言系统加载失败，请稍后再试。</div>
-      `;
-    });
-}
-
-/**
- * 预留给 Waline 的图片上传函数
- * 部署图床 / 上传接口后可直接启用
- */
-async function uploadCommentImage(file) {
-  if (!COMMENT_IMAGE_UPLOAD_API) {
-    throw new Error("图片上传接口未配置");
-  }
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await fetch(COMMENT_IMAGE_UPLOAD_API, {
-    method: "POST",
-    body: formData
+  root.addEventListener("focusin", () => {
+    root.classList.add("editor-expanded");
+    ensureRatingUI();
   });
 
-  if (!response.ok) {
-    throw new Error("图片上传失败");
-  }
+  root.addEventListener("focusout", () => {
+    setTimeout(() => {
+      const activeInside = root.contains(document.activeElement);
+      const currentEditor = getWalineEditor(root);
+      const hasText = !!getEditorText(currentEditor).trim();
 
-  const data = await response.json();
-
-  if (!data || !data.url) {
-    throw new Error("服务器未返回图片地址");
-  }
-
-  return data.url;
+      if (!activeInside && !hasText) {
+        root.classList.remove("editor-expanded");
+      }
+    }, 120);
+  });
 }
 
-function getComments() {
-  const raw = localStorage.getItem(COMMENT_STORAGE_KEY);
-
-  if (!raw) return [];
-
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    console.error("留言数据解析失败：", error);
-    return [];
-  }
+function getWalineEditor(root) {
+  return root.querySelector(".wl-editor");
 }
 
-function saveComments(comments) {
-  try {
-    localStorage.setItem(COMMENT_STORAGE_KEY, JSON.stringify(comments));
-  } catch (error) {
-    console.error("留言保存失败：", error);
-    alert("保存失败，可能是图片过大或本地存储空间不足。");
-  }
+function getEditorText(editor) {
+  if (!editor) return "";
+  if (typeof editor.value === "string") return editor.value;
+  if (typeof editor.textContent === "string") return editor.textContent;
+  return "";
 }
 
-function formatTime(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hour = String(date.getHours()).padStart(2, "0");
-  const minute = String(date.getMinutes()).padStart(2, "0");
+function setEditorText(editor, text) {
+  if (!editor) return;
 
-  return `${year}-${month}-${day} ${hour}:${minute}`;
-}
-
-function renderStarDisplay(score) {
-  const fullStars = Math.floor(score);
-  const hasHalf = score % 1 !== 0;
-  const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
-
-  let result = "★".repeat(fullStars);
-
-  if (hasHalf) {
-    result += "☆";
+  if (typeof editor.value === "string") {
+    editor.value = text;
+  } else {
+    editor.textContent = text;
   }
 
-  result += "✩".repeat(emptyStars);
-
-  return `${result}（${score} / 5）`;
+  editor.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
-function escapeHTML(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+function createRatingBox(root) {
+  const ratingBox = document.createElement("div");
+  ratingBox.className = "rating-box";
+  ratingBox.innerHTML = `
+    <div class="rating-label">评分</div>
+    <div class="rating-stars" aria-label="评分选择">
+      <button type="button" class="rating-star" data-value="1" aria-label="1星">★</button>
+      <button type="button" class="rating-star" data-value="2" aria-label="2星">★</button>
+      <button type="button" class="rating-star" data-value="3" aria-label="3星">★</button>
+      <button type="button" class="rating-star" data-value="4" aria-label="4星">★</button>
+      <button type="button" class="rating-star" data-value="5" aria-label="5星">★</button>
+    </div>
+    <div class="rating-text">可选，不打分也可以直接评论</div>
+  `;
+
+  const stars = Array.from(ratingBox.querySelectorAll(".rating-star"));
+  const ratingText = ratingBox.querySelector(".rating-text");
+
+  function paintStars(value) {
+    stars.forEach((star) => {
+      const starValue = Number(star.dataset.value);
+      star.classList.toggle("active", starValue <= value);
+    });
+
+    ratingText.textContent =
+      value > 0 ? `已选择 ${value} 星` : "可选，不打分也可以直接评论";
+  }
+
+  stars.forEach((star) => {
+    star.addEventListener("mouseenter", () => {
+      paintStars(Number(star.dataset.value));
+    });
+
+    star.addEventListener("click", () => {
+      const clickedValue = Number(star.dataset.value);
+      const currentValue = Number(root.dataset.currentRating || "0");
+      const nextValue = currentValue === clickedValue ? 0 : clickedValue;
+
+      root.dataset.currentRating = String(nextValue);
+      paintStars(nextValue);
+      root.classList.add("editor-expanded");
+    });
+  });
+
+  ratingBox.addEventListener("mouseleave", () => {
+    paintStars(Number(root.dataset.currentRating || "0"));
+  });
+
+  paintStars(Number(root.dataset.currentRating || "0"));
+  return ratingBox;
+}
+
+function ensureRatingUI() {
+  const root = document.getElementById("waline");
+  if (!root) return;
+
+  const panel = root.querySelector(".wl-panel");
+  if (!panel) return;
+
+  let ratingBox = panel.querySelector(".rating-box");
+  if (!ratingBox) {
+    ratingBox = createRatingBox(root);
+    panel.prepend(ratingBox);
+  }
+
+  const submitBtn = root.querySelector(".wl-submit");
+  if (!submitBtn) return;
+
+  if (submitBtn.dataset.ratingSubmitBound === "true") return;
+  submitBtn.dataset.ratingSubmitBound = "true";
+
+  submitBtn.addEventListener(
+    "click",
+    () => {
+      const ratingValue = Number(root.dataset.currentRating || "0");
+      if (!ratingValue) return;
+
+      const editor = getWalineEditor(root);
+      if (!editor) return;
+
+      const currentText = getEditorText(editor).trim();
+      if (!currentText) return;
+
+      if (/^评分：★{1,5}\n/.test(currentText)) return;
+
+      setEditorText(editor, `评分：${"★".repeat(ratingValue)}\n${currentText}`);
+    },
+    { capture: true }
+  );
+}
+
+function decorateLikeButtons() {
+  const root = document.getElementById("waline");
+  if (!root) return;
+
+  const likeButtons = root.querySelectorAll(".wl-like");
+  likeButtons.forEach((btn) => {
+    if (btn.dataset.likeEnhanced === "true") return;
+    btn.dataset.likeEnhanced = "true";
+
+    btn.addEventListener("click", () => {
+      btn.classList.remove("like-burst");
+      void btn.offsetWidth;
+      btn.classList.add("like-burst");
+
+      setTimeout(() => {
+        btn.classList.remove("like-burst");
+      }, 380);
+    });
+  });
+}
+
+function decorateReplyThreads() {
+  const root = document.getElementById("waline");
+  if (!root) return;
+
+  const replies = root.querySelectorAll(".wl-replies");
+  replies.forEach((item) => {
+    if (item.dataset.replyEnhanced === "true") return;
+    item.dataset.replyEnhanced = "true";
+    item.classList.add("reply-thread-enhanced");
+  });
+}
+
+function createLetterAvatar(letter, isAdmin) {
+  const avatar = document.createElement("div");
+  avatar.className = "custom-letter-avatar";
+  if (isAdmin) avatar.classList.add("is-admin");
+  avatar.textContent = letter;
+  return avatar;
+}
+
+function isAdminComment(cardItem) {
+  const nick = cardItem.querySelector(".wl-card .wl-head .wl-nick");
+  if (!nick) return false;
+
+  const name = nick.textContent.trim().toLowerCase();
+  return ADMIN_NAMES.includes(name);
+}
+
+function enhanceCommentCards() {
+  const root = document.getElementById("waline");
+  if (!root) return;
+
+  const cardItems = root.querySelectorAll(".wl-cards .wl-card-item");
+
+  cardItems.forEach((cardItem) => {
+    const avatarImg = cardItem.querySelector(".wl-user img.wl-user-avatar");
+    const nick = cardItem.querySelector(".wl-card .wl-head .wl-nick");
+    const card = cardItem.querySelector(".wl-card");
+
+    if (!avatarImg || !nick || !card) return;
+
+    const name = nick.textContent.trim();
+    if (!name) return;
+
+    const letter = name.charAt(0).toUpperCase();
+    const isAdmin = isAdminComment(cardItem);
+
+    card.classList.toggle("is-admin", isAdmin);
+
+    const avatarWrapper = cardItem.querySelector(".wl-user");
+    if (avatarWrapper && avatarWrapper.dataset.avatarEnhanced !== "true") {
+      const customAvatar = createLetterAvatar(letter, isAdmin);
+      avatarWrapper.appendChild(customAvatar);
+      avatarWrapper.dataset.avatarEnhanced = "true";
+
+      avatarImg.style.display = "none";
+      avatarImg.setAttribute("aria-hidden", "true");
+    } else if (avatarWrapper) {
+      const customAvatar = avatarWrapper.querySelector(".custom-letter-avatar");
+      if (customAvatar) {
+        customAvatar.textContent = letter;
+        customAvatar.classList.toggle("is-admin", isAdmin);
+      }
+    }
+
+    let badge = cardItem.querySelector(".custom-admin-badge");
+
+    if (!isAdmin) {
+      if (badge) badge.remove();
+      return;
+    }
+
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "custom-admin-badge";
+      badge.textContent = "管理员";
+      nick.parentNode.insertBefore(badge, nick);
+    }
+  });
+}
+
+function runEnhancements() {
+  ensureRatingUI();
+  decorateLikeButtons();
+  decorateReplyThreads();
+  enhanceCommentCards();
+}
+
+function scheduleEnhancements() {
+  if (enhanceScheduled) return;
+  enhanceScheduled = true;
+
+  requestAnimationFrame(() => {
+    enhanceScheduled = false;
+    runEnhancements();
+  });
+}
+
+function observeWalineUpdates() {
+  const root = document.getElementById("waline");
+  if (!root) return;
+
+  if (walineObserver) {
+    walineObserver.disconnect();
+  }
+
+  walineObserver = new MutationObserver(() => {
+    scheduleEnhancements();
+  });
+
+  walineObserver.observe(root, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+if (!window.__walineEscBound) {
+  window.__walineEscBound = true;
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+
+    const currentRoot = document.getElementById("waline");
+    if (!currentRoot) return;
+
+    const currentEditor = getWalineEditor(currentRoot);
+    if (!currentEditor) return;
+
+    if (!getEditorText(currentEditor).trim()) {
+      currentEditor.blur();
+      currentRoot.classList.remove("editor-expanded");
+    }
+  });
 }

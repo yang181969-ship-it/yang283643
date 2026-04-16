@@ -78,6 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
       main.innerHTML = homeContent;
       updateHighlight("home");
       setUrl("home", push);
+
+      requestAnimationFrame(() => {
+        runPageInit("home");
+      });
       return;
     }
 
@@ -101,7 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
         main.innerHTML = newMain.innerHTML;
         updateHighlight(page);
         setUrl(page, push);
-        runPageInit(page);
+
+        // 等新 DOM 真正进入文档，再初始化对应页面
+        requestAnimationFrame(() => {
+          runPageInit(page);
+        });
       })
       .catch((err) => {
         console.error("页面切换失败：", err);
@@ -135,6 +143,9 @@ document.addEventListener("DOMContentLoaded", () => {
     loadPage(initialPage, false);
   } else {
     history.replaceState({ page: "home" }, "", "index.html");
+    requestAnimationFrame(() => {
+      runPageInit("home");
+    });
   }
 });
 

@@ -3,6 +3,14 @@
   box-sizing: border-box;
 }
 
+:root {
+  --page-max-width: 1320px;
+  --page-pad-top: 16px;
+  --page-pad-x: 40px;
+  --page-pad-bottom: 40px;
+  --page-gap: 20px;
+}
+
 html,
 body {
   margin: 0;
@@ -114,18 +122,63 @@ nav a.active {
   background: var(--bg-main);
 }
 
-/* Main */
+/* Main：统一版心和留白 */
 main {
   flex: 1 0 auto;
-  padding: 28px;
+  width: 100%;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--page-pad-top) var(--page-pad-x) var(--page-pad-bottom);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--page-gap);
   background: var(--bg-main);
   min-width: 0;
 }
 
-section {
+/* ===== 通用页面容器 ===== */
+.page-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ===== 通用标题系统 ===== */
+.page-title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.page-desc {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+/* ===== 通用卡片系统 ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+/* 默认 section 卡片规则 */
+section:not(.comment-page):not(.update-page):not(.page-container) {
   background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-radius: 18px;
@@ -161,6 +214,13 @@ footer {
 
 /* ========== Tablet / Mobile ========== */
 @media (max-width: 900px) {
+  :root {
+    --page-pad-top: 16px;
+    --page-pad-x: 18px;
+    --page-pad-bottom: 32px;
+    --page-gap: 18px;
+  }
+
   html,
   body {
     height: 100%;
@@ -193,13 +253,13 @@ footer {
 
   nav {
     flex-direction: row;
-    flex-wrap: nowrap;          /* 关键：不换行 */
+    flex-wrap: nowrap;
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
     border-right: none;
     border-bottom: 1px solid var(--border-soft);
-    overflow-x: auto;           /* 关键：横向滚动 */
+    overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
@@ -210,7 +270,7 @@ footer {
   }
 
   nav a {
-    flex: 0 0 auto;             /* 关键：不压缩 */
+    flex: 0 0 auto;
     white-space: nowrap;
     font-size: 16px;
     padding: 10px 16px;
@@ -226,22 +286,38 @@ footer {
 
   .content-scroll {
     min-height: 0;
-    overflow-y: auto;           /* 关键：只让内容区滚动 */
+    overflow-y: auto;
     overflow-x: hidden;
   }
 
   main {
-    padding: 18px;
+    max-width: 100%;
   }
 
-  section {
+  .card,
+  section:not(.comment-page):not(.update-page):not(.page-container) {
     padding: 20px;
     border-radius: 16px;
+  }
+
+  .page-title {
+    font-size: 26px;
+  }
+
+  .page-desc {
+    margin-bottom: 18px;
   }
 }
 
 /* ========== Small phones ========== */
 @media (max-width: 480px) {
+  :root {
+    --page-pad-top: 14px;
+    --page-pad-x: 14px;
+    --page-pad-bottom: 28px;
+    --page-gap: 16px;
+  }
+
   header {
     padding: 12px 14px;
   }
@@ -270,14 +346,19 @@ footer {
     border-radius: 10px;
   }
 
-  main {
-    padding: 14px;
-    gap: 16px;
-  }
-
-  section {
+  .card,
+  section:not(.comment-page):not(.update-page):not(.page-container) {
     padding: 18px;
     border-radius: 14px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-desc {
+    font-size: 13px;
+    margin-bottom: 16px;
   }
 }
 
@@ -286,35 +367,26 @@ footer {
   position: fixed;
   bottom: 80px;
   right: 24px;
-
   width: 44px;
   height: 44px;
-
   border: none;
   border-radius: 50%;
-
   background: var(--primary);
   color: #fff;
   font-size: 18px;
-
   cursor: pointer;
-
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   opacity: 0;
   pointer-events: none;
   transition: all 0.3s ease;
-
   z-index: 999;
 }
 
-/* 显示状态 */
 #back-to-top.show {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* hover效果 */
 #back-to-top:hover {
   transform: translateY(-2px);
 }
