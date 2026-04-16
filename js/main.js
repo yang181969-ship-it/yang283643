@@ -4,10 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!main) return;
 
-  // 保存首页原始内容
   const homeContent = main.innerHTML;
 
-  // page 参数到实际文件的映射
   const pageMap = {
     home: null,
     gallery: "html/gallery.html",
@@ -57,7 +55,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  /* =========================
+     页面初始化（重点改动）
+  ========================= */
   function runPageInit(page) {
+
     if (page === "comment" && typeof initCommentPage === "function") {
       initCommentPage();
     }
@@ -69,7 +71,90 @@ document.addEventListener("DOMContentLoaded", () => {
     if (page === "gallery" && typeof initGalleryPage === "function") {
       initGalleryPage();
     }
+
+    /* ===== 新增：notes 页面 ===== */
+    if (page === "notes") {
+      initNotesPage();
+    }
+
+    /* ===== about 页面暂时无需逻辑 ===== */
   }
+
+  /* =========================
+     Notes 初始化
+  ========================= */
+  function initNotesPage() {
+
+    /* KaTeX 渲染 */
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\(", right: "\\)", display: false },
+          { left: "\\[", right: "\\]", display: true }
+        ],
+        throwOnError: false
+      });
+    }
+
+    /* 分类切换 */
+    const categories = document.querySelectorAll(".notes-category");
+    const panels = document.querySelectorAll(".notes-panel");
+
+    categories.forEach(btn => {
+      btn.addEventListener("click", () => {
+        categories.forEach(item => item.classList.remove("active"));
+        panels.forEach(panel => panel.classList.remove("active"));
+
+        btn.classList.add("active");
+
+        const target = document.getElementById(btn.dataset.target);
+        if (target) target.classList.add("active");
+      });
+    });
+
+    /* p5.js 动画 */
+    setTimeout(() => {
+      if (!window.p5 || !document.getElementById("notes-p5-demo")) return;
+
+      new p5((p) => {
+        let t = 0;
+
+        p.setup = function () {
+          const host = document.getElementById("notes-p5-demo");
+          const canvas = p.createCanvas(host.clientWidth, 220);
+          canvas.parent("notes-p5-demo");
+        };
+
+        p.draw = function () {
+          p.clear();
+          p.background(248, 250, 252);
+
+          p.stroke(120, 120, 180);
+          p.strokeWeight(2);
+          p.noFill();
+
+          p.beginShape();
+          for (let x = 0; x <= p.width; x += 8) {
+            const y = 110 + 36 * Math.sin(x * 0.03 + t);
+            p.vertex(x, y);
+          }
+          p.endShape();
+
+          t += 0.04;
+        };
+
+        p.windowResized = function () {
+          const host = document.getElementById("notes-p5-demo");
+          if (!host) return;
+          p.resizeCanvas(host.clientWidth, 220);
+        };
+      });
+
+    }, 300);
+  }
+
+  /* ========================= */
 
   function loadPage(page, push = true) {
     if (!pageMap.hasOwnProperty(page)) return;
@@ -106,7 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateHighlight(page);
         setUrl(page, push);
 
-        // 等新 DOM 真正进入文档，再初始化对应页面
         requestAnimationFrame(() => {
           runPageInit(page);
         });
@@ -116,7 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // 拦截左侧导航点击
   navLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
       const href = link.getAttribute("href");
@@ -129,13 +212,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 浏览器前进/后退
   window.addEventListener("popstate", (e) => {
     const page = (e.state && e.state.page) || getCurrentPageFromUrl();
     loadPage(page, false);
   });
 
-  // 首次进入页面时，根据 URL 自动加载
   const initialPage = getCurrentPageFromUrl();
   updateHighlight(initialPage);
 
@@ -149,63 +230,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ===== 手机端导航点击后自动滚动到可视区域中间（带边界限制） =====
-function centerNavLink(link) {
-  const nav = document.querySelector("nav");
-  if (!nav || !link) return;
-
-  // 只在手机/窄屏下启用
-  if (window.innerWidth > 900) return;
-
-  const navRect = nav.getBoundingClientRect();
-  const linkRect = link.getBoundingClientRect();
-
-  let targetLeft =
-    nav.scrollLeft +
-    (linkRect.left - navRect.left) -
-    nav.clientWidth / 2 +
-    link.clientWidth / 2;
-
-  const maxScrollLeft = nav.scrollWidth - nav.clientWidth;
-  targetLeft = Math.max(0, Math.min(targetLeft, maxScrollLeft));
-
-  nav.scrollTo({
-    left: targetLeft,
-    behavior: "smooth"
-  });
-}
-
-function bindNavAutoCenter() {
-  const navLinks = document.querySelectorAll("nav .nav-link");
-
-  navLinks.forEach((link) => {
-    link.addEventListener("click", function () {
-      centerNavLink(this);
-    });
-  });
-}
-
-function centerActiveNavLink() {
-  const activeLink = document.querySelector("nav .nav-link.active");
-  if (!activeLink) return;
-
-  setTimeout(() => {
-    centerNavLink(activeLink);
-  }, 100);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  bindNavAutoCenter();
-  centerActiveNavLink();
-});
-
+/* ===== 返回顶部按钮 ===== */
 function initBackToTop() {
   const btn = document.getElementById("back-to-top");
   const scrollContainer = document.querySelector(".content-scroll");
 
   if (!btn || !scrollContainer) return;
 
-  // 滚动时控制显示
   scrollContainer.addEventListener("scroll", () => {
     if (scrollContainer.scrollTop > 300) {
       btn.classList.add("show");
@@ -214,7 +245,6 @@ function initBackToTop() {
     }
   });
 
-  // 点击回到顶部
   btn.addEventListener("click", () => {
     scrollContainer.scrollTo({
       top: 0,
@@ -223,5 +253,4 @@ function initBackToTop() {
   });
 }
 
-// 初始化
 document.addEventListener("DOMContentLoaded", initBackToTop);

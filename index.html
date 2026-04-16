@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="css/style-comment.css">
   <link rel="stylesheet" href="css/style-update.css">
   <link rel="stylesheet" href="css/style-gallery.css">
+  <link rel="stylesheet" href="css/style-notes.css">
+  <link rel="stylesheet" href="css/style-about.css">
 </head>
 <body>
   <div class="layout">
@@ -47,24 +49,33 @@
     <!-- 主内容 -->
     <div class="content-scroll">
       <main id="main-content">
-        <section>
-          <h2>关于这个网页</h2>
-          <p>这是我个人的网站，用来记录生活、动漫和笔记。</p>
-        </section>
+        <section class="home-page no-card">
 
-        <section>
-          <h2>你可以在这里看到什么？</h2>
-          <ul>
-            <li>生活记录</li>
-            <li>动漫推荐</li>
-            <li>学习笔记</li>
-            <li>留言互动</li>
-          </ul>
-        </section>
+          <div class="home-hero">
+            <h2 class="page-title">主页</h2>
+            <p class="page-desc">这是我的个人网站，用来记录兴趣、图片、动漫、笔记和交流。</p>
+          </div>
 
-        <section>
-          <h2>欢迎交流</h2>
-          <p>可以在留言页面留下你的建议。</p>
+          <article class="card">
+            <h2>关于这个网页</h2>
+            <p>这是我个人的网站，用来记录生活、动漫和笔记。</p>
+          </article>
+
+          <article class="card">
+            <h2>你可以在这里看到什么？</h2>
+            <ul>
+              <li>生活记录</li>
+              <li>动漫推荐</li>
+              <li>学习笔记</li>
+              <li>留言互动</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h2>欢迎交流</h2>
+            <p>可以在留言页面留下你的建议。</p>
+          </article>
+
         </section>
       </main>
 
@@ -85,6 +96,5 @@
   <script src="js/gallery-data.js"></script>
 
   <button id="back-to-top">↑</button>
-
 </body>
 </html>

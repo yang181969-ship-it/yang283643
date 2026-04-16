@@ -1,29 +1,38 @@
 <main id="main-content">
-  <!-- 顶部控制栏 -->
-  <div class="gallery-controls">
-    <div class="gallery-control-group">
-      <button id="filter-btn" type="button">分类 ▼</button>
-      <div class="dropdown" id="filter-menu">
-        <div data-filter="all">全部</div>
-        <div data-filter="real">现实</div>
-        <div data-filter="anime">动漫</div>
+  <section class="no-card">
+
+    <div class="gallery-hero">
+      <h2 class="page-title">画廊</h2>
+      <p class="page-desc">收集和展示现实与动漫图片。</p>
+    </div>
+
+    <!-- 顶部控制栏 -->
+    <div class="gallery-controls">
+      <div class="gallery-control-group">
+        <button id="filter-btn" type="button">分类 ▼</button>
+        <div class="dropdown" id="filter-menu">
+          <div data-filter="all">全部</div>
+          <div data-filter="real">现实</div>
+          <div data-filter="anime">动漫</div>
+        </div>
+      </div>
+
+      <div class="gallery-control-group">
+        <button id="sort-btn" type="button">排列 ▼</button>
+        <div class="dropdown" id="sort-menu">
+          <div data-sort="default">默认</div>
+          <div data-sort="random">随机</div>
+        </div>
       </div>
     </div>
 
-    <div class="gallery-control-group">
-      <button id="sort-btn" type="button">排列 ▼</button>
-      <div class="dropdown" id="sort-menu">
-        <div data-sort="default">默认</div>
-        <div data-sort="random">随机</div>
-      </div>
+    <!-- 图片区域 -->
+    <div id="gallery-grid" class="gallery-grid"></div>
+
+    <!-- 图片放大 -->
+    <div id="lightbox" class="lightbox">
+      <img id="lightbox-img" alt="放大图片">
     </div>
-  </div>
 
-  <!-- 图片区域 -->
-  <div id="gallery-grid" class="gallery-grid"></div>
-
-  <!-- 图片放大 -->
-  <div id="lightbox" class="lightbox">
-    <img id="lightbox-img" alt="放大图片">
-  </div>
+  </section>
 </main>

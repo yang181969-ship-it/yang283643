@@ -1,8 +1,74 @@
-<!-- 这是笔记 -->
- <main id="main-content">
-    <section>
-        <h2>
-            目前什么也没有
-        </h2>
-    </section>
+<main id="main-content">
+  <section class="notes-page no-card">
+
+    <!-- 页面标题 -->
+    <div class="notes-hero">
+      <h2 class="page-title">笔记</h2>
+      <p class="page-desc">记录数学与物理学习过程中的推导、理解与小型可视化实验。</p>
+    </div>
+
+    <div class="notes-layout">
+
+      <!-- 左侧分类 -->
+      <aside class="notes-sidebar card">
+        <h3 class="notes-sidebar-title">分类</h3>
+
+        <div class="notes-category-group">
+          <div class="notes-category-head">数学</div>
+          <button class="notes-category active" data-target="notes-math-calculus">微积分</button>
+          <button class="notes-category" data-target="notes-math-linear">线性代数</button>
+          <button class="notes-category" data-target="notes-math-abstract">抽象代数</button>
+        </div>
+
+        <div class="notes-category-group">
+          <div class="notes-category-head">物理</div>
+          <button class="notes-category" data-target="notes-physics-mechanics">力学</button>
+          <button class="notes-category" data-target="notes-physics-em">电磁学</button>
+          <button class="notes-category" data-target="notes-physics-quantum">量子</button>
+        </div>
+
+        <div class="notes-category-group">
+          <div class="notes-category-head">工具</div>
+          <button class="notes-category" data-target="notes-tools-latex">LaTeX</button>
+          <button class="notes-category" data-target="notes-tools-visual">可视化</button>
+        </div>
+      </aside>
+
+      <!-- 右侧内容 -->
+      <div class="notes-main">
+
+        <section id="notes-math-calculus" class="notes-panel active">
+          <article class="card note-card">
+            <div class="note-card-top">
+              <span class="note-tag">微积分</span>
+              <span class="note-date">示例笔记</span>
+            </div>
+            <h3 class="note-title">傅里叶级数的基本形式</h3>
+
+            <p class="note-text">对周期函数 \(f(x)\)，可以尝试写成</p>
+
+            <div class="note-math">
+              \[
+              f(x) \sim \frac{a_0}{2} + \sum_{n=1}^{\infty}\left(a_n\cos nx + b_n\sin nx\right)
+              \]
+            </div>
+
+            <p class="note-text">
+              这里的核心是三角函数系在合适内积下的正交性。
+            </p>
+          </article>
+        </section>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- p5.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+
 </main>

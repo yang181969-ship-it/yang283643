@@ -13,20 +13,6 @@
   margin-bottom: 22px;
 }
 
-.comment-title {
-  margin: 0 0 8px;
-  font-size: 2rem;
-  line-height: 1.2;
-  color: var(--primary-dark);
-}
-
-.comment-intro {
-  margin: 0 0 20px;
-  color: var(--text-muted);
-  font-size: 1rem;
-  line-height: 1.8;
-}
-
 /* ===== Waline 整体做成一张卡片 ===== */
 #waline {
   width: 100%;

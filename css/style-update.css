@@ -1,4 +1,4 @@
-/* ===== 页面整体：不再单独控制整页 padding，由 global 统一 ===== */
+/* ===== 页面整体：由 global 统一版心 ===== */
 .update-page {
   width: 100%;
   margin: 0;
@@ -8,19 +8,6 @@
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-}
-
-/* ===== 标题区域 ===== */
-.update-page h2 {
-  margin: 0 0 8px;
-  color: var(--primary-dark);
-  font-size: 28px;
-}
-
-.update-intro {
-  margin: 0 0 20px;
-  color: var(--text-muted);
-  line-height: 1.6;
 }
 
 /* ===== 列表容器 ===== */
@@ -79,10 +66,6 @@
 }
 
 @media (max-width: 768px) {
-  .update-page {
-    padding: 0 !important;
-  }
-
   .update-card {
     border-radius: 16px;
   }
