@@ -3,59 +3,69 @@
     <h2>留言板</h2>
     <p class="comment-intro">欢迎留下你的建议、评分和图片。</p>
 
-    <!-- 留言展示区 -->
-    <section class="comment-display-section">
-      <h3>最新留言</h3>
-      <div id="comment-list" class="comment-list"></div>
-    </section>
+    <!-- 本地留言模式 -->
+    <div id="comment-local-mode">
+      <!-- 留言展示区 -->
+      <section class="comment-display-section">
+        <h3>最新留言</h3>
+        <div id="comment-list" class="comment-list"></div>
+      </section>
 
-    <!-- 留言输入区 -->
-    <section class="comment-form-section">
-      <h3>发表留言</h3>
+      <!-- 留言输入区 -->
+      <section class="comment-form-section">
+        <h3>发表留言</h3>
 
-      <form id="comment-form" class="comment-form">
-        <div class="form-group">
-          <label for="comment-username">用户名</label>
-          <input
-            type="text"
-            id="comment-username"
-            name="comment-username"
-            maxlength="20"
-            placeholder="请输入用户名（可随便填写）"
-            required
-          >
-        </div>
+        <form id="comment-form" class="comment-form" novalidate>
+          <div class="form-group">
+            <label for="comment-username">用户名</label>
+            <input
+              type="text"
+              id="comment-username"
+              name="comment-username"
+              maxlength="20"
+              placeholder="请输入用户名（可随便填写）"
+              required
+            >
+          </div>
 
-        <div class="form-group">
+          <div class="form-group">
             <label>评分</label>
             <div class="rating-area">
-                <div id="star-rating" class="star-rating" aria-label="星级评分"></div>
-                <div id="rating-text" class="rating-text">当前评分:0 星</div>
+              <div id="star-rating" class="star-rating" aria-label="星级评分"></div>
+              <div id="rating-text" class="rating-text">当前评分：0 星</div>
             </div>
-        </div>
+          </div>
 
-        <div class="form-group">
-          <label for="comment-content">留言内容</label>
-          <textarea
-            id="comment-content"
-            name="comment-content"
-            rows="5"
-            maxlength="500"
-            placeholder="请输入你的建议或想说的话..."
-            required
-          ></textarea>
-        </div>
+          <div class="form-group">
+            <label for="comment-content">留言内容</label>
+            <textarea
+              id="comment-content"
+              name="comment-content"
+              rows="5"
+              maxlength="500"
+              placeholder="请输入你的建议或想说的话..."
+              required
+            ></textarea>
+          </div>
 
-        <div class="custom-file-upload">
-          <label for="image-upload" class="file-btn">选择图片</label>
-          <span id="file-name" class="file-name">未选择文件</span>
-          <input type="file" id="image-upload" accept="image/*">
-        </div>
+          <div class="custom-file-upload">
+            <label for="image-upload" class="file-btn">选择图片</label>
+            <span id="file-name" class="file-name">未选择文件</span>
+            <input type="file" id="image-upload" accept="image/*">
+          </div>
 
-        <div class="form-actions">
-          <button type="submit" class="comment-submit-btn">发布留言</button>
-        </div>
-      </form>
-    </section>
+          <div id="comment-image-preview" class="comment-image-preview"></div>
+
+          <div class="form-actions">
+            <button type="submit" class="comment-submit-btn">发布留言</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <!-- Waline 模式 -->
+    <div id="comment-waline-mode" style="display: none;">
+      <div id="waline"></div>
+    </div>
   </section>
 </main>
