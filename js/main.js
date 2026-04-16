@@ -55,11 +55,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* =========================
-     页面初始化（重点改动）
-  ========================= */
-  function runPageInit(page) {
+  function renderMathSafe() {
+    const container = document.getElementById("main-content");
+    if (!container || !window.renderMathInElement) return;
 
+    renderMathInElement(container, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+        { left: "\\(", right: "\\)", display: false },
+        { left: "\\[", right: "\\]", display: true }
+      ],
+      throwOnError: false
+    });
+  }
+
+  function runPageInit(page) {
     if (page === "comment" && typeof initCommentPage === "function") {
       initCommentPage();
     }
@@ -72,48 +83,38 @@ document.addEventListener("DOMContentLoaded", () => {
       initGalleryPage();
     }
 
-    /* ===== 新增：notes 页面 ===== */
     if (page === "notes") {
       initNotesPage();
     }
-
-    /* ===== about 页面暂时无需逻辑 ===== */
   }
 
-  /* =========================
-     Notes 初始化
-  ========================= */
   function initNotesPage() {
-
-    /* KaTeX 渲染 */
-    if (window.renderMathInElement) {
-      renderMathInElement(document.body, {
-        delimiters: [
-          { left: "$$", right: "$$", display: true },
-          { left: "\\(", right: "\\)", display: false },
-          { left: "\\[", right: "\\]", display: true }
-        ],
-        throwOnError: false
-      });
-    }
-
-    /* 分类切换 */
     const categories = document.querySelectorAll(".notes-category");
     const panels = document.querySelectorAll(".notes-panel");
 
-    categories.forEach(btn => {
+    categories.forEach((btn) => {
       btn.addEventListener("click", () => {
-        categories.forEach(item => item.classList.remove("active"));
-        panels.forEach(panel => panel.classList.remove("active"));
+        categories.forEach((item) => item.classList.remove("active"));
+        panels.forEach((panel) => panel.classList.remove("active"));
 
         btn.classList.add("active");
 
         const target = document.getElementById(btn.dataset.target);
         if (target) target.classList.add("active");
+
+        // 切换面板后重新渲染当前 main 区域中的公式
+        requestAnimationFrame(() => {
+          renderMathSafe();
+        });
       });
     });
 
-    /* p5.js 动画 */
+    // 等动态内容真正插入完成后再渲染 LaTeX
+    requestAnimationFrame(() => {
+      renderMathSafe();
+    });
+
+    // p5.js 动画
     setTimeout(() => {
       if (!window.p5 || !document.getElementById("notes-p5-demo")) return;
 
@@ -150,23 +151,31 @@ document.addEventListener("DOMContentLoaded", () => {
           p.resizeCanvas(host.clientWidth, 220);
         };
       });
-
     }, 300);
   }
 
-  /* ========================= */
+  function afterPageLoad(page, push) {
+    updateHighlight(page);
+    setUrl(page, push);
+
+    requestAnimationFrame(() => {
+      runPageInit(page);
+
+      // 给 KaTeX 再一个更稳的渲染时机
+      if (page === "notes") {
+        setTimeout(() => {
+          renderMathSafe();
+        }, 0);
+      }
+    });
+  }
 
   function loadPage(page, push = true) {
-    if (!pageMap.hasOwnProperty(page)) return;
+    if (!Object.prototype.hasOwnProperty.call(pageMap, page)) return;
 
     if (page === "home") {
       main.innerHTML = homeContent;
-      updateHighlight("home");
-      setUrl("home", push);
-
-      requestAnimationFrame(() => {
-        runPageInit("home");
-      });
+      afterPageLoad("home", push);
       return;
     }
 
@@ -188,12 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         main.innerHTML = newMain.innerHTML;
-        updateHighlight(page);
-        setUrl(page, push);
-
-        requestAnimationFrame(() => {
-          runPageInit(page);
-        });
+        afterPageLoad(page, push);
       })
       .catch((err) => {
         console.error("页面切换失败：", err);
