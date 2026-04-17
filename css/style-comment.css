@@ -1,4 +1,3 @@
-/* ===== 留言板页面本身：不再单独控制整页 padding，由 global 统一 ===== */
 .comment-page {
   width: 100%;
   margin: 0;
@@ -13,7 +12,7 @@
   margin-bottom: 22px;
 }
 
-/* ===== Waline 整体做成一张卡片 ===== */
+/* ===== Waline 外层 ===== */
 #waline {
   width: 100%;
   box-sizing: border-box;
@@ -55,9 +54,7 @@
   color: var(--text-main) !important;
 }
 
-/* =========================
-   输入区
-========================= */
+/* ===== 输入区 ===== */
 #waline .wl-panel {
   order: 1;
   width: 100%;
@@ -96,7 +93,6 @@
   display: grid;
 }
 
-/* 去掉昵称 / 邮箱 / 网址输入框下面的虚线 */
 #waline .wl-header,
 #waline .wl-meta-head,
 #waline .wl-fields,
@@ -128,7 +124,6 @@
 }
 
 #waline .rating-label {
-  display: block;
   font-size: 0.96rem;
   font-weight: 700;
   color: #334155;
@@ -166,7 +161,6 @@
 }
 
 #waline .rating-text {
-  display: block;
   font-size: 0.9rem;
   color: #94a3b8;
 }
@@ -216,7 +210,7 @@
   overflow: auto;
 }
 
-/* ===== 隐藏输入区下方那排小图标 ===== */
+/* ===== 隐藏输入区小图标 ===== */
 #waline .wl-toolbar,
 #waline .wl-actions,
 #waline .wl-actions .wl-action,
@@ -282,7 +276,6 @@
   box-shadow: none;
 }
 
-/* 去掉表情 / GIF / 图片相关入口 */
 #waline .wl-emoji,
 #waline .wl-gif,
 #waline .wl-picker,
@@ -291,9 +284,7 @@
   display: none !important;
 }
 
-/* =========================
-   评论区
-========================= */
+/* ===== 评论区 ===== */
 #waline .wl-panel + .wl-sort,
 #waline .wl-panel + .wl-comments,
 #waline .wl-panel + .wl-empty,
@@ -329,13 +320,6 @@
   color: var(--text-main);
 }
 
-#waline .wl-sort a,
-#waline .wl-sort button,
-#waline .wl-sort span {
-  white-space: nowrap;
-  font-size: 0.98rem;
-}
-
 #waline .wl-comments {
   order: 3;
   width: 100%;
@@ -348,7 +332,6 @@
   min-height: 140px;
 }
 
-#waline .wl-comments .wl-empty,
 #waline .wl-empty {
   min-height: 110px;
   display: flex;
@@ -390,7 +373,7 @@
   font-size: 0.9rem;
 }
 
-/* ===== 让外侧原头像列隐藏，头像并入卡片 ===== */
+/* ===== 隐藏原头像列 ===== */
 #waline .wl-card-item.avatar-inside-card {
   display: block;
 }
@@ -405,7 +388,6 @@
 
 /* ===== 评论卡片 ===== */
 #waline .wl-card {
-  position: relative;
   border: 1px solid #edf2f7 !important;
   border-radius: 20px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04) !important;
@@ -424,24 +406,47 @@
   margin-bottom: 0;
 }
 
-#waline .wl-card,
-#waline .wl-card * {
-  outline: none;
-}
-
-/* ===== 评论头部 ===== */
+/* ===== 头部：左右分区 ===== */
 #waline .wl-card .wl-head {
   display: flex !important;
-  align-items: center !important;
+  align-items: flex-start !important;
   flex-wrap: wrap !important;
-  column-gap: 12px !important;
-  row-gap: 8px !important;
-  min-height: 40px;
+  row-gap: 10px !important;
 }
 
-/* 第一行：头像 */
+#waline .custom-head-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+#waline .custom-action-slot {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 14px !important;
+  margin-left: auto !important;
+  flex: 0 0 auto !important;
+}
+
+#waline .custom-action-slot .wl-like,
+#waline .custom-action-slot .wl-reply,
+#waline .custom-action-slot .wl-action,
+#waline .custom-action-slot .wl-likecount,
+#waline .custom-action-slot .wl-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  float: none !important;
+  position: static !important;
+  margin: 0 !important;
+}
+
+/* ===== 头像 ===== */
 #waline .custom-avatar-slot {
-  order: 1 !important;
   width: 36px;
   height: 36px;
   flex: 0 0 36px;
@@ -453,15 +458,12 @@
 #waline .custom-letter-avatar {
   width: 36px;
   height: 36px;
-  min-width: 36px;
-  min-height: 36px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 0.98rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
   color: #ffffff;
   background: linear-gradient(135deg, #f9a8d4, #fbcfe8);
   border: 2px solid rgba(255, 255, 255, 0.96);
@@ -474,9 +476,8 @@
   box-shadow: 0 4px 12px rgba(234, 179, 8, 0.2);
 }
 
-/* 第一行：身份标签 */
+/* ===== 标签 ===== */
 #waline .custom-role-badge {
-  order: 2 !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -486,7 +487,6 @@
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1;
-  flex: 0 0 auto;
 }
 
 #waline .custom-role-badge.is-admin {
@@ -501,52 +501,21 @@
   border: 1px solid #e2e8f0;
 }
 
-/* 第一行：昵称 */
+/* ===== 昵称与时间 ===== */
 #waline .wl-nick {
-  order: 3 !important;
   font-weight: 800;
   font-size: 1rem;
   color: var(--text-main) !important;
   text-decoration: none;
-  flex: 0 1 auto;
 }
 
-/* 第一行：时间 */
 #waline .wl-time {
-  order: 4 !important;
   color: #94a3b8;
   font-size: 0.9rem;
-  flex: 0 0 auto;
 }
 
-/* 第一行：操作按钮右对齐 */
-#waline .custom-action-slot {
-  order: 5 !important;
-  margin-left: auto !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 14px !important;
-  flex: 0 0 auto !important;
-}
-
-#waline .custom-action-slot .wl-like,
-#waline .custom-action-slot .wl-reply,
-#waline .custom-action-slot .wl-action,
-#waline .custom-action-slot .wl-likecount,
-#waline .custom-action-slot .wl-actions {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  float: none !important;
-  position: static !important;
-  margin: 0 !important;
-}
-
-/* 第二行：浏览器 / 系统标签独占一整行 */
+/* ===== 浏览器 / 系统标签独占一整行 ===== */
 #waline .wl-meta {
-  order: 20 !important;
   flex: 0 0 100% !important;
   width: 100% !important;
   display: flex !important;
@@ -556,7 +525,6 @@
   margin-top: 8px !important;
 }
 
-/* ===== 浏览器 / 系统标签 ===== */
 #waline .wl-badge,
 #waline .wl-browser,
 #waline .wl-os {
@@ -579,13 +547,7 @@
   color: inherit !important;
 }
 
-#waline .wl-meta .wl-badge,
-#waline .wl-meta .wl-browser,
-#waline .wl-meta .wl-os {
-  margin-right: 0;
-}
-
-/* ===== 评论内容 ===== */
+/* ===== 评论正文 ===== */
 #waline .wl-content {
   line-height: 1.9;
   font-size: 0.96rem;
@@ -607,7 +569,7 @@
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
-/* ===== 回复层级优化 ===== */
+/* ===== 回复层级 ===== */
 #waline .wl-replies,
 #waline .reply-thread-enhanced {
   margin-top: 14px;
@@ -632,7 +594,7 @@
   border-radius: 999px;
 }
 
-/* ===== 操作按钮 ===== */
+/* ===== 点赞 / 回复交互 ===== */
 #waline .wl-action {
   color: #94a3b8;
   transition: color 0.18s ease, transform 0.18s ease;
@@ -658,15 +620,9 @@
 }
 
 @keyframes like-pop {
-  0% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(1.35);
-  }
-  100% {
-    transform: scale(1.12);
-  }
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1.12); }
 }
 
 #waline .wl-like.like-burst {
@@ -698,77 +654,7 @@
   }
 }
 
-@media (max-width: 768px) {
-  .comment-page {
-    padding: 0 !important;
-  }
-
-  #waline {
-    padding: 20px 16px 18px;
-    border-radius: 20px;
-  }
-
-  #waline .wl-sort::before,
-  #waline .wl-panel::before {
-    font-size: 1.7rem;
-  }
-
-  #waline .wl-header {
-    grid-template-columns: 1fr;
-  }
-
-  #waline .rating-box {
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  #waline .rating-star {
-    font-size: 1.4rem;
-  }
-
-  #waline .wl-footer {
-    align-items: stretch !important;
-  }
-
-  #waline .wl-submit {
-    width: 100%;
-  }
-
-  #waline .wl-replies,
-  #waline .reply-thread-enhanced {
-    margin-left: 12px;
-    padding-left: 12px;
-  }
-
-  #waline .custom-avatar-slot {
-    width: 34px;
-    height: 34px;
-    flex-basis: 34px;
-  }
-
-  #waline .custom-letter-avatar {
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
-    min-height: 34px;
-    font-size: 0.92rem;
-  }
-
-  #waline .wl-head {
-    align-items: flex-start !important;
-  }
-
-  #waline .custom-action-slot {
-    margin-left: auto !important;
-  }
-
-  #waline .wl-content img,
-  #waline .wl-comment img {
-    max-width: 100%;
-  }
-}
-
-/* ===== 留言系统状态提示卡片 ===== */
+/* ===== 状态提示卡片 ===== */
 .comment-status-card {
   width: 100%;
   box-sizing: border-box;
@@ -839,7 +725,60 @@
   transform: translateY(0);
 }
 
+/* ===== 移动端 ===== */
 @media (max-width: 768px) {
+  .comment-page {
+    padding: 0 !important;
+  }
+
+  #waline {
+    padding: 20px 16px 18px;
+    border-radius: 20px;
+  }
+
+  #waline .wl-sort::before,
+  #waline .wl-panel::before {
+    font-size: 1.7rem;
+  }
+
+  #waline .wl-header {
+    grid-template-columns: 1fr;
+  }
+
+  #waline .rating-box {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  #waline .rating-star {
+    font-size: 1.4rem;
+  }
+
+  #waline .wl-submit {
+    width: 100%;
+  }
+
+  #waline .custom-avatar-slot,
+  #waline .custom-letter-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  #waline .custom-head-left {
+    gap: 10px;
+  }
+
+  #waline .wl-replies,
+  #waline .reply-thread-enhanced {
+    margin-left: 12px;
+    padding-left: 12px;
+  }
+
+  #waline .wl-content img,
+  #waline .wl-comment img {
+    max-width: 100%;
+  }
+
   .comment-status-card {
     padding: 22px 16px;
     border-radius: 20px;
@@ -856,5 +795,190 @@
 
   .comment-retry-btn {
     width: 100%;
+  }
+}
+
+/* ===== 升级版 VPN 弹窗 ===== */
+
+body.vpn-modal-open {
+  overflow: hidden;
+}
+
+/* 整体容器 */
+.comment-vpn-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+/* 背景 */
+.comment-vpn-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(10px);
+  animation: maskIn 0.25s ease;
+}
+
+/* 卡片 */
+.comment-vpn-card {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(560px, 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #fff7fb 100%);
+  border-radius: 28px 28px 0 0;
+  padding: 26px 22px 24px;
+  box-shadow: 0 -20px 60px rgba(15, 23, 42, 0.18);
+
+  animation: slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 关闭动画 */
+.comment-vpn-modal.closing .comment-vpn-card {
+  animation: slideDown 0.25s ease forwards;
+}
+
+.comment-vpn-modal.closing .comment-vpn-mask {
+  animation: maskOut 0.25s ease forwards;
+}
+
+/* 关闭按钮 */
+.comment-vpn-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f5f9;
+  font-size: 1.4rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.comment-vpn-close:hover {
+  background: #fce7f3;
+  color: var(--primary-dark);
+  transform: rotate(90deg);
+}
+
+/* 标题（唯一标题） */
+.comment-vpn-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  margin-bottom: 16px;
+}
+
+/* 内容 */
+.comment-vpn-content {
+  font-size: 1rem;
+  line-height: 1.9;
+  color: #475569;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  padding: 14px 14px;
+  border: 1px solid rgba(244, 114, 182, 0.12);
+}
+
+/* 标签 */
+.comment-vpn-tags {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.comment-vpn-tags span {
+  background: #fdf2f8;
+  border: 1px solid rgba(244, 114, 182, 0.15);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+/* 按钮 */
+.comment-vpn-btn {
+  margin-top: 20px;
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--primary);
+  box-shadow: 0 10px 24px var(--glow);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.comment-vpn-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+/* 动画 */
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(100%);
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  to {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes maskIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes maskOut {
+  to { opacity: 0; }
+}
+
+/* PC 居中弹窗（更高级） */
+@media (min-width: 768px) {
+  .comment-vpn-card {
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    border-radius: 28px;
+    animation: fadeScaleIn 0.25s ease;
+  }
+
+  .comment-vpn-modal.closing .comment-vpn-card {
+    animation: fadeScaleOut 0.2s ease forwards;
+  }
+
+  @keyframes fadeScaleIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -40%) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes fadeScaleOut {
+    to {
+      opacity: 0;
+      transform: translate(-50%, -40%) scale(0.95);
+    }
   }
 }
