@@ -429,12 +429,13 @@
   outline: none;
 }
 
-/* ===== 评论头部重新强制排版 ===== */
+/* ===== 评论头部 ===== */
 #waline .wl-card .wl-head {
   display: flex !important;
   align-items: center !important;
   flex-wrap: wrap !important;
-  gap: 12px !important;
+  column-gap: 12px !important;
+  row-gap: 8px !important;
   min-height: 40px;
 }
 
@@ -507,6 +508,7 @@
   font-size: 1rem;
   color: var(--text-main) !important;
   text-decoration: none;
+  flex: 0 1 auto;
 }
 
 /* 第一行：时间 */
@@ -514,6 +516,32 @@
   order: 4 !important;
   color: #94a3b8;
   font-size: 0.9rem;
+  flex: 0 0 auto;
+}
+
+/* 第一行：操作按钮右对齐 */
+#waline .custom-action-slot {
+  order: 5 !important;
+  margin-left: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 14px !important;
+  flex: 0 0 auto !important;
+}
+
+#waline .custom-action-slot .wl-like,
+#waline .custom-action-slot .wl-reply,
+#waline .custom-action-slot .wl-action,
+#waline .custom-action-slot .wl-likecount,
+#waline .custom-action-slot .wl-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  float: none !important;
+  position: static !important;
+  margin: 0 !important;
 }
 
 /* 第二行：浏览器 / 系统标签独占一整行 */
@@ -727,39 +755,106 @@
   }
 
   #waline .wl-head {
-    padding-right: 88px;
+    align-items: flex-start !important;
   }
 
-  #waline .wl-head > .wl-actions,
-  #waline .wl-head > .wl-action,
-  #waline .wl-head > .wl-like,
-  #waline .wl-head > .wl-reply {
-    right: 0;
-    margin: 0 !important;
+  #waline .custom-action-slot {
+    margin-left: auto !important;
   }
+
   #waline .wl-content img,
   #waline .wl-comment img {
     max-width: 100%;
   }
 }
 
-#waline .custom-action-slot {
-  order: 10 !important;
-  margin-left: auto !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 14px !important;
-  flex: 0 0 auto !important;
+/* ===== 留言系统状态提示卡片 ===== */
+.comment-status-card {
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid var(--border-soft);
+  border-radius: 24px;
+  box-shadow: var(--shadow-soft);
+  padding: 28px 24px;
+  text-align: center;
 }
 
-#waline .custom-action-slot .wl-like,
-#waline .custom-action-slot .wl-reply,
-#waline .custom-action-slot .wl-action,
-#waline .custom-action-slot .wl-likecount {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  float: none !important;
-  position: static !important;
-  margin: 0 !important;
+.comment-status-card.is-loading {
+  border-color: #dbeafe;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.comment-status-card.is-warning {
+  border-color: #fde68a;
+  background: linear-gradient(180deg, #fffdf5 0%, #fffaf0 100%);
+}
+
+.comment-status-card.is-error {
+  border-color: #fecaca;
+  background: linear-gradient(180deg, #fffefe 0%, #fff7f7 100%);
+}
+
+.comment-status-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.comment-status-text {
+  font-size: 1rem;
+  line-height: 1.9;
+  color: #475569;
+}
+
+.comment-status-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.comment-retry-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--primary);
+  box-shadow: 0 8px 18px var(--glow);
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.comment-retry-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.comment-retry-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .comment-status-card {
+    padding: 22px 16px;
+    border-radius: 20px;
+  }
+
+  .comment-status-title {
+    font-size: 1.35rem;
+  }
+
+  .comment-status-text {
+    font-size: 0.96rem;
+    line-height: 1.8;
+  }
+
+  .comment-retry-btn {
+    width: 100%;
+  }
 }

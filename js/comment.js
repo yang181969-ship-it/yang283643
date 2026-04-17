@@ -1,5 +1,13 @@
 const WALINE_SERVER_URL = "https://yang283643-waline.vercel.app";
 
+const WALINE_CSS_CANDIDATES = [
+  "https://unpkg.com/@waline/client@v3/dist/waline.css"
+];
+
+const WALINE_JS_CANDIDATES = [
+  "https://unpkg.com/@waline/client@v3/dist/waline.js"
+];
+
 let walineInstance = null;
 let walineStyleReady = false;
 let walineModulePromise = null;
@@ -10,32 +18,131 @@ function initCommentPage() {
   const walineRoot = document.getElementById("waline");
   if (!walineRoot) return;
 
-  ensureWalineStyle();
+  showCommentLoading(walineRoot);
 
   requestAnimationFrame(() => {
     initWalineComment();
   });
 }
 
-function ensureWalineStyle() {
-  if (walineStyleReady) return;
-
-  const styleId = "waline-client-style";
-
-  if (!document.getElementById(styleId)) {
-    const link = document.createElement("link");
-    link.id = styleId;
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/@waline/client@v3/dist/waline.css";
-    document.head.appendChild(link);
-  }
-
-  walineStyleReady = true;
+function showCommentLoading(root) {
+  root.innerHTML = `
+    <div class="comment-status-card is-loading">
+      <div class="comment-status-title">留言系统加载中</div>
+      <div class="comment-status-text">正在检测当前网络环境与评论服务可用性，请稍候……</div>
+    </div>
+  `;
 }
 
-function loadWalineModule() {
-  if (!walineModulePromise) {
-    walineModulePromise = import("https://unpkg.com/@waline/client@v3/dist/waline.js");
+function showVpnRequiredNotice(root) {
+  root.innerHTML = `
+    <div class="comment-status-card is-warning">
+      <div class="comment-status-title">留言功能当前不可用</div>
+      <div class="comment-status-text">
+        检测到当前网络环境下无法连接留言系统。<br>
+        本页面的评论服务目前依赖境外链路，通常需要开启 VPN 后才能正常使用。
+      </div>
+      <div class="comment-status-actions">
+        <button type="button" class="comment-retry-btn" id="comment-retry-btn">重新检测</button>
+      </div>
+    </div>
+  `;
+
+  const retryBtn = document.getElementById("comment-retry-btn");
+  if (retryBtn) {
+    retryBtn.addEventListener("click", () => {
+      showCommentLoading(root);
+      initWalineComment(true);
+    });
+  }
+}
+
+function showCommentGenericError(root) {
+  root.innerHTML = `
+    <div class="comment-status-card is-error">
+      <div class="comment-status-title">留言系统加载失败</div>
+      <div class="comment-status-text">
+        评论资源或评论服务暂时不可用，请稍后再试。<br>
+        如果你在中国大陆网络环境下访问，这通常是因为当前未开启 VPN。
+      </div>
+      <div class="comment-status-actions">
+        <button type="button" class="comment-retry-btn" id="comment-retry-btn">重新检测</button>
+      </div>
+    </div>
+  `;
+
+  const retryBtn = document.getElementById("comment-retry-btn");
+  if (retryBtn) {
+    retryBtn.addEventListener("click", () => {
+      showCommentLoading(root);
+      initWalineComment(true);
+    });
+  }
+}
+
+function loadCssWithFallback(urls, id) {
+  return new Promise((resolve, reject) => {
+    const existing = document.getElementById(id);
+    if (existing) {
+      resolve(existing.href || true);
+      return;
+    }
+
+    let index = 0;
+
+    function tryNext() {
+      if (index >= urls.length) {
+        reject(new Error("所有 Waline CSS 地址均加载失败"));
+        return;
+      }
+
+      const href = urls[index++];
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = href;
+
+      link.onload = () => resolve(href);
+      link.onerror = () => {
+        link.remove();
+        tryNext();
+      };
+
+      document.head.appendChild(link);
+    }
+
+    tryNext();
+  });
+}
+
+function ensureWalineStyle() {
+  if (walineStyleReady) return Promise.resolve(true);
+
+  return loadCssWithFallback(WALINE_CSS_CANDIDATES, "waline-client-style")
+    .then(() => {
+      walineStyleReady = true;
+      return true;
+    });
+}
+
+async function importModuleWithFallback(urls) {
+  let lastError = null;
+
+  for (const url of urls) {
+    try {
+      return await import(url);
+    } catch (error) {
+      lastError = error;
+      console.warn(`Waline 模块加载失败：${url}`, error);
+    }
+  }
+
+  throw lastError || new Error("所有 Waline JS 地址均加载失败");
+}
+
+function loadWalineModule(forceReload = false) {
+  if (!walineModulePromise || forceReload) {
+    walineModulePromise = importModuleWithFallback(WALINE_JS_CANDIDATES);
   }
   return walineModulePromise;
 }
@@ -44,14 +151,29 @@ function getCurrentCommentPath() {
   return window.location.pathname + window.location.search;
 }
 
-async function initWalineComment() {
+function detectProbablyNeedVpn(error) {
+  const msg = String(error?.message || error || "").toLowerCase();
+
+  return (
+    msg.includes("failed to fetch") ||
+    msg.includes("importing a module script failed") ||
+    msg.includes("load failed") ||
+    msg.includes("networkerror") ||
+    msg.includes("network error") ||
+    msg.includes("fetch") ||
+    msg.includes("timeout")
+  );
+}
+
+async function initWalineComment(forceReload = false) {
   const walineRoot = document.getElementById("waline");
   if (!walineRoot) return;
 
   const currentPath = getCurrentCommentPath();
 
   try {
-    const { init } = await loadWalineModule();
+    await ensureWalineStyle();
+    const { init } = await loadWalineModule(forceReload);
 
     if (walineObserver) {
       walineObserver.disconnect();
@@ -87,15 +209,25 @@ async function initWalineComment() {
     });
 
     setTimeout(() => {
+      const panel = walineRoot.querySelector(".wl-panel");
+      const editor = walineRoot.querySelector(".wl-editor");
+
+      if (!panel || !editor) {
+        throw new Error("Waline 初始化未完成，当前网络环境可能无法访问评论服务");
+      }
+
       bindWalineEditorBehavior();
       runEnhancements();
       observeWalineUpdates();
     }, 500);
   } catch (error) {
     console.error("Waline 加载失败：", error);
-    walineRoot.innerHTML = `
-      <div class="comment-empty">留言系统加载失败，请稍后再试。</div>
-    `;
+
+    if (detectProbablyNeedVpn(error)) {
+      showVpnRequiredNotice(walineRoot);
+    } else {
+      showCommentGenericError(walineRoot);
+    }
   }
 }
 
@@ -279,7 +411,6 @@ function createLetterAvatar(letter, isAdmin) {
   return avatar;
 }
 
-/* 只信任 Waline 自己给出的管理员标记，不再按昵称白名单判断 */
 function isAdminComment(cardItem) {
   if (!cardItem) return false;
 
@@ -312,6 +443,13 @@ function ensureRoleBadge(head, isAdmin) {
   badge.classList.toggle("is-visitor", !isAdmin);
 }
 
+function ensureTimePosition(head) {
+  if (!head) return;
+  const time = head.querySelector(".wl-time");
+  if (!time) return;
+  head.appendChild(time);
+}
+
 function moveActionsToRight(head) {
   if (!head) return;
 
@@ -319,13 +457,27 @@ function moveActionsToRight(head) {
   if (!actionSlot) {
     actionSlot = document.createElement("div");
     actionSlot.className = "custom-action-slot";
-    head.appendChild(actionSlot);
   }
 
-  const directChildren = Array.from(head.children);
+  const selectors = [
+    ".wl-like",
+    ".wl-reply",
+    ".wl-likecount",
+    ".wl-action",
+    ".wl-actions"
+  ];
 
-  directChildren.forEach((node) => {
-    if (node.classList?.contains("custom-action-slot")) return;
+  selectors.forEach((selector) => {
+    head.querySelectorAll(`:scope > ${selector}`).forEach((node) => {
+      if (node !== actionSlot) {
+        actionSlot.appendChild(node);
+      }
+    });
+  });
+
+  Array.from(head.children).forEach((node) => {
+    if (!node || node === actionSlot) return;
+
     if (node.classList?.contains("custom-avatar-slot")) return;
     if (node.classList?.contains("custom-role-badge")) return;
     if (node.classList?.contains("wl-nick")) return;
@@ -333,7 +485,13 @@ function moveActionsToRight(head) {
     if (node.classList?.contains("wl-meta")) return;
 
     const className = node.className || "";
+
     if (
+      node.classList?.contains("wl-like") ||
+      node.classList?.contains("wl-reply") ||
+      node.classList?.contains("wl-action") ||
+      node.classList?.contains("wl-actions") ||
+      node.classList?.contains("wl-likecount") ||
       className.includes("wl-like") ||
       className.includes("wl-reply") ||
       className.includes("wl-action") ||
@@ -342,6 +500,8 @@ function moveActionsToRight(head) {
       actionSlot.appendChild(node);
     }
   });
+
+  head.appendChild(actionSlot);
 }
 
 function moveAvatarIntoCard(cardItem, isAdmin) {
@@ -351,7 +511,7 @@ function moveAvatarIntoCard(cardItem, isAdmin) {
   const head = card?.querySelector(".wl-head");
   const nick = head?.querySelector(".wl-nick");
 
-  if (!avatarWrapper || !card || !head || !nick) return;
+  if (!card || !head || !nick) return;
 
   let avatarSlot = head.querySelector(".custom-avatar-slot");
   if (!avatarSlot) {
@@ -379,8 +539,29 @@ function moveAvatarIntoCard(cardItem, isAdmin) {
     avatarImg.setAttribute("aria-hidden", "true");
   }
 
-  avatarWrapper.style.display = "none";
+  if (avatarWrapper) {
+    avatarWrapper.style.display = "none";
+  }
+
   cardItem.classList.add("avatar-inside-card");
+}
+
+function normalizeHeadOrder(head) {
+  if (!head) return;
+
+  const avatar = head.querySelector(".custom-avatar-slot");
+  const badge = head.querySelector(".custom-role-badge");
+  const nick = head.querySelector(".wl-nick");
+  const time = head.querySelector(".wl-time");
+  const meta = head.querySelector(".wl-meta");
+  const actions = head.querySelector(".custom-action-slot");
+
+  if (avatar) head.appendChild(avatar);
+  if (badge) head.appendChild(badge);
+  if (nick) head.appendChild(nick);
+  if (time) head.appendChild(time);
+  if (actions) head.appendChild(actions);
+  if (meta) head.appendChild(meta);
 }
 
 function enhanceCommentCards() {
@@ -403,7 +584,9 @@ function enhanceCommentCards() {
 
     moveAvatarIntoCard(cardItem, isAdmin);
     ensureRoleBadge(head, isAdmin);
+    ensureTimePosition(head);
     moveActionsToRight(head);
+    normalizeHeadOrder(head);
   });
 }
 
