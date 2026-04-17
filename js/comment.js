@@ -52,8 +52,8 @@ function showVpnIntroModal() {
       </div>
 
       <div class="comment-vpn-tags">
-        <span>需要 VPN</span>
         <span>后续会迁移国内</span>
+        <span>请耐心等待</span>
       </div>
 
       <button class="comment-vpn-btn">我知道了</button>
