@@ -51,8 +51,8 @@
 #waline .wl-empty,
 #waline .wl-info,
 #waline .wl-load-more {
-  background-color: transparent;
-  color: var(--text-main);
+  background-color: transparent !important;
+  color: var(--text-main) !important;
 }
 
 /* =========================
@@ -79,12 +79,8 @@
 }
 
 #waline .wl-panel::after {
-  content: "点击输入框后展开完整评论面板";
-  display: block;
-  color: #94a3b8;
-  font-size: 0.92rem;
-  margin-top: 14px;
-  text-align: right;
+  display: none !important;
+  content: none !important;
 }
 
 #waline .wl-header {
@@ -92,10 +88,32 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 12px;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
 
 #waline.editor-expanded .wl-header {
   display: grid;
+}
+
+/* 去掉昵称 / 邮箱 / 网址输入框下面的虚线 */
+#waline .wl-header,
+#waline .wl-meta-head,
+#waline .wl-fields,
+#waline .wl-panel .wl-header,
+#waline .wl-header > *,
+#waline .wl-header .wl-item,
+#waline .wl-header .wl-field,
+#waline .wl-header label,
+#waline .wl-header input {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+#waline .wl-header::before,
+#waline .wl-header::after {
+  display: none !important;
+  content: none !important;
 }
 
 /* ===== 评分 ===== */
@@ -198,31 +216,42 @@
   overflow: auto;
 }
 
-#waline .wl-toolbar {
+/* ===== 隐藏输入区下方那排小图标 ===== */
+#waline .wl-toolbar,
+#waline .wl-actions,
+#waline .wl-actions .wl-action,
+#waline .wl-actions button,
+#waline .wl-actions i,
+#waline .wl-actions svg,
+#waline .wl-footer .wl-action,
+#waline .wl-footer .wl-preview,
+#waline .wl-footer .wl-upload,
+#waline .wl-footer .wl-upload-btn,
+#waline .wl-footer .wl-gif,
+#waline .wl-footer .wl-emoji,
+#waline .wl-upload,
+#waline .wl-upload-btn,
+#waline input[type="file"] {
   display: none !important;
 }
 
-#waline .wl-actions,
+#waline .wl-actions {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  gap: 0 !important;
+}
+
 #waline .wl-footer {
   display: none !important;
 }
 
-#waline.editor-expanded .wl-actions,
 #waline.editor-expanded .wl-footer {
   display: flex !important;
-}
-
-#waline.editor-expanded .wl-actions {
-  margin-top: 12px;
-  margin-bottom: 10px;
-  align-items: center;
-  gap: 10px;
-}
-
-#waline.editor-expanded .wl-footer {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 /* ===== 提交按钮 ===== */
@@ -253,7 +282,7 @@
   box-shadow: none;
 }
 
-/* 去掉表情 / GIF */
+/* 去掉表情 / GIF / 图片相关入口 */
 #waline .wl-emoji,
 #waline .wl-gif,
 #waline .wl-picker,
@@ -361,8 +390,22 @@
   font-size: 0.9rem;
 }
 
+/* ===== 让外侧原头像列隐藏，头像并入卡片 ===== */
+#waline .wl-card-item.avatar-inside-card {
+  display: block;
+}
+
+#waline .wl-card-item.avatar-inside-card > .wl-user {
+  display: none !important;
+}
+
+#waline .wl-card-item.avatar-inside-card .wl-card {
+  width: 100%;
+}
+
 /* ===== 评论卡片 ===== */
 #waline .wl-card {
+  position: relative;
   border: 1px solid #edf2f7 !important;
   border-radius: 20px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04) !important;
@@ -386,58 +429,103 @@
   outline: none;
 }
 
-/* ===== 默认头像移除后，使用自定义字母头像 ===== */
+/* ===== 评论头部重新强制排版 ===== */
+#waline .wl-card .wl-head {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  min-height: 40px;
+}
+
+/* 第一行：头像 */
+#waline .custom-avatar-slot {
+  order: 1 !important;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 #waline .custom-letter-avatar {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
-  font-weight: 800;
+  font-size: 0.98rem;
+  font-weight: 700;
   letter-spacing: 0.02em;
-  color: #fff;
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  border: 2px solid rgba(255, 255, 255, 0.88);
-  box-shadow: 0 6px 14px var(--glow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-}
-
-#waline .custom-letter-avatar:hover {
-  transform: scale(1.06);
-  box-shadow: 0 10px 22px var(--glow);
+  color: #ffffff;
+  background: linear-gradient(135deg, #f9a8d4, #fbcfe8);
+  border: 2px solid rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 12px rgba(244, 114, 182, 0.18);
 }
 
 #waline .custom-letter-avatar.is-admin {
-  filter: brightness(1.08) saturate(1.12);
+  background: linear-gradient(135deg, #fde68a, #fcd34d);
+  color: #7c5c00;
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.2);
 }
 
-/* ===== 昵称 ===== */
+/* 第一行：身份标签 */
+#waline .custom-role-badge {
+  order: 2 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+#waline .custom-role-badge.is-admin {
+  background: linear-gradient(135deg, #fde68a, #fcd34d);
+  color: #7c5c00;
+  border: 1px solid rgba(180, 120, 0, 0.2);
+}
+
+#waline .custom-role-badge.is-visitor {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* 第一行：昵称 */
 #waline .wl-nick {
+  order: 3 !important;
   font-weight: 800;
   font-size: 1rem;
   color: var(--text-main) !important;
-  transition: color 0.18s ease;
-}
-
-#waline .wl-nick:hover {
-  color: var(--primary-dark) !important;
   text-decoration: none;
 }
 
-#waline .wl-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-#waline .wl-meta .wl-time {
+/* 第一行：时间 */
+#waline .wl-time {
+  order: 4 !important;
   color: #94a3b8;
   font-size: 0.9rem;
+}
+
+/* 第二行：浏览器 / 系统标签独占一整行 */
+#waline .wl-meta {
+  order: 20 !important;
+  flex: 0 0 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-top: 8px !important;
 }
 
 /* ===== 浏览器 / 系统标签 ===== */
@@ -466,7 +554,7 @@
 #waline .wl-meta .wl-badge,
 #waline .wl-meta .wl-browser,
 #waline .wl-meta .wl-os {
-  margin-right: 6px;
+  margin-right: 0;
 }
 
 /* ===== 评论内容 ===== */
@@ -474,6 +562,8 @@
   line-height: 1.9;
   font-size: 0.96rem;
   color: #334155;
+  word-break: break-word;
+  margin-top: 10px;
 }
 
 #waline .wl-content p:first-child {
@@ -482,8 +572,10 @@
 
 #waline .wl-content img,
 #waline .wl-comment img {
+  display: block;
   border-radius: 14px;
   max-width: min(100%, 420px);
+  height: auto;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
@@ -578,31 +670,6 @@
   }
 }
 
-/* ===== 管理员昵称 ===== */
-#waline .wl-admin .wl-nick,
-#waline .wl-card.is-admin .wl-nick {
-  color: var(--primary-dark) !important;
-}
-
-/* ===== 管理员徽章 ===== */
-#waline .custom-admin-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 24px;
-  padding: 0 10px;
-  margin-right: 10px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #f8d77a, #e3a92f);
-  color: #6b4a00;
-  border: 1px solid rgba(182, 123, 0, 0.18);
-  box-shadow: 0 4px 12px rgba(227, 169, 47, 0.22);
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1;
-  vertical-align: middle;
-}
-
 @media (max-width: 768px) {
   .comment-page {
     padding: 0 !important;
@@ -631,17 +698,68 @@
     font-size: 1.4rem;
   }
 
+  #waline .wl-footer {
+    align-items: stretch !important;
+  }
+
+  #waline .wl-submit {
+    width: 100%;
+  }
+
   #waline .wl-replies,
   #waline .reply-thread-enhanced {
     margin-left: 12px;
     padding-left: 12px;
   }
 
-  #waline .custom-letter-avatar {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    min-height: 40px;
-    flex-basis: 40px;
+  #waline .custom-avatar-slot {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
   }
+
+  #waline .custom-letter-avatar {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    font-size: 0.92rem;
+  }
+
+  #waline .wl-head {
+    padding-right: 88px;
+  }
+
+  #waline .wl-head > .wl-actions,
+  #waline .wl-head > .wl-action,
+  #waline .wl-head > .wl-like,
+  #waline .wl-head > .wl-reply {
+    right: 0;
+    margin: 0 !important;
+  }
+  #waline .wl-content img,
+  #waline .wl-comment img {
+    max-width: 100%;
+  }
+}
+
+#waline .custom-action-slot {
+  order: 10 !important;
+  margin-left: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  flex: 0 0 auto !important;
+}
+
+#waline .custom-action-slot .wl-like,
+#waline .custom-action-slot .wl-reply,
+#waline .custom-action-slot .wl-action,
+#waline .custom-action-slot .wl-likecount {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  float: none !important;
+  position: static !important;
+  margin: 0 !important;
 }

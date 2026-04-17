@@ -1,8 +1,5 @@
 const WALINE_SERVER_URL = "https://yang283643-waline.vercel.app";
 
-// 这里是管理员昵称白名单
-const ADMIN_NAMES = ["xy-yang"];
-
 let walineInstance = null;
 let walineStyleReady = false;
 let walineModulePromise = null;
@@ -282,12 +279,108 @@ function createLetterAvatar(letter, isAdmin) {
   return avatar;
 }
 
+/* 只信任 Waline 自己给出的管理员标记，不再按昵称白名单判断 */
 function isAdminComment(cardItem) {
-  const nick = cardItem.querySelector(".wl-card .wl-head .wl-nick");
-  if (!nick) return false;
+  if (!cardItem) return false;
 
-  const name = nick.textContent.trim().toLowerCase();
-  return ADMIN_NAMES.includes(name);
+  if (cardItem.classList.contains("wl-admin")) return true;
+  if (cardItem.querySelector(".wl-admin")) return true;
+
+  const nick = cardItem.querySelector(".wl-card .wl-head .wl-nick");
+  if (nick && nick.classList.contains("wl-admin")) return true;
+
+  const badge = cardItem.querySelector(".wl-badge");
+  if (badge && /admin|管理员/i.test(badge.textContent.trim())) return true;
+
+  return false;
+}
+
+function ensureRoleBadge(head, isAdmin) {
+  if (!head) return;
+
+  let badge = head.querySelector(".custom-role-badge");
+  const roleText = isAdmin ? "管理员" : "游客";
+
+  if (!badge) {
+    badge = document.createElement("span");
+    badge.className = "custom-role-badge";
+    head.insertBefore(badge, head.firstChild);
+  }
+
+  badge.textContent = roleText;
+  badge.classList.toggle("is-admin", isAdmin);
+  badge.classList.toggle("is-visitor", !isAdmin);
+}
+
+function moveActionsToRight(head) {
+  if (!head) return;
+
+  let actionSlot = head.querySelector(".custom-action-slot");
+  if (!actionSlot) {
+    actionSlot = document.createElement("div");
+    actionSlot.className = "custom-action-slot";
+    head.appendChild(actionSlot);
+  }
+
+  const directChildren = Array.from(head.children);
+
+  directChildren.forEach((node) => {
+    if (node.classList?.contains("custom-action-slot")) return;
+    if (node.classList?.contains("custom-avatar-slot")) return;
+    if (node.classList?.contains("custom-role-badge")) return;
+    if (node.classList?.contains("wl-nick")) return;
+    if (node.classList?.contains("wl-time")) return;
+    if (node.classList?.contains("wl-meta")) return;
+
+    const className = node.className || "";
+    if (
+      className.includes("wl-like") ||
+      className.includes("wl-reply") ||
+      className.includes("wl-action") ||
+      className.includes("wl-actions")
+    ) {
+      actionSlot.appendChild(node);
+    }
+  });
+}
+
+function moveAvatarIntoCard(cardItem, isAdmin) {
+  const avatarWrapper = cardItem.querySelector(".wl-user");
+  const avatarImg = avatarWrapper?.querySelector("img.wl-user-avatar");
+  const card = cardItem.querySelector(".wl-card");
+  const head = card?.querySelector(".wl-head");
+  const nick = head?.querySelector(".wl-nick");
+
+  if (!avatarWrapper || !card || !head || !nick) return;
+
+  let avatarSlot = head.querySelector(".custom-avatar-slot");
+  if (!avatarSlot) {
+    avatarSlot = document.createElement("div");
+    avatarSlot.className = "custom-avatar-slot";
+    head.insertBefore(avatarSlot, head.firstChild);
+  }
+
+  const name = nick.textContent.trim();
+  if (!name) return;
+
+  const letter = name.charAt(0).toUpperCase();
+
+  let customAvatar = avatarSlot.querySelector(".custom-letter-avatar");
+  if (!customAvatar) {
+    customAvatar = createLetterAvatar(letter, isAdmin);
+    avatarSlot.appendChild(customAvatar);
+  } else {
+    customAvatar.textContent = letter;
+    customAvatar.classList.toggle("is-admin", isAdmin);
+  }
+
+  if (avatarImg) {
+    avatarImg.style.display = "none";
+    avatarImg.setAttribute("aria-hidden", "true");
+  }
+
+  avatarWrapper.style.display = "none";
+  cardItem.classList.add("avatar-inside-card");
 }
 
 function enhanceCommentCards() {
@@ -297,49 +390,20 @@ function enhanceCommentCards() {
   const cardItems = root.querySelectorAll(".wl-cards .wl-card-item");
 
   cardItems.forEach((cardItem) => {
-    const avatarImg = cardItem.querySelector(".wl-user img.wl-user-avatar");
-    const nick = cardItem.querySelector(".wl-card .wl-head .wl-nick");
     const card = cardItem.querySelector(".wl-card");
+    const head = card?.querySelector(".wl-head");
+    const nick = head?.querySelector(".wl-nick");
 
-    if (!avatarImg || !nick || !card) return;
+    if (!card || !head || !nick) return;
 
-    const name = nick.textContent.trim();
-    if (!name) return;
-
-    const letter = name.charAt(0).toUpperCase();
     const isAdmin = isAdminComment(cardItem);
 
     card.classList.toggle("is-admin", isAdmin);
+    card.classList.toggle("is-visitor", !isAdmin);
 
-    const avatarWrapper = cardItem.querySelector(".wl-user");
-    if (avatarWrapper && avatarWrapper.dataset.avatarEnhanced !== "true") {
-      const customAvatar = createLetterAvatar(letter, isAdmin);
-      avatarWrapper.appendChild(customAvatar);
-      avatarWrapper.dataset.avatarEnhanced = "true";
-
-      avatarImg.style.display = "none";
-      avatarImg.setAttribute("aria-hidden", "true");
-    } else if (avatarWrapper) {
-      const customAvatar = avatarWrapper.querySelector(".custom-letter-avatar");
-      if (customAvatar) {
-        customAvatar.textContent = letter;
-        customAvatar.classList.toggle("is-admin", isAdmin);
-      }
-    }
-
-    let badge = cardItem.querySelector(".custom-admin-badge");
-
-    if (!isAdmin) {
-      if (badge) badge.remove();
-      return;
-    }
-
-    if (!badge) {
-      badge = document.createElement("span");
-      badge.className = "custom-admin-badge";
-      badge.textContent = "管理员";
-      nick.parentNode.insertBefore(badge, nick);
-    }
+    moveAvatarIntoCard(cardItem, isAdmin);
+    ensureRoleBadge(head, isAdmin);
+    moveActionsToRight(head);
   });
 }
 
