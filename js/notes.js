@@ -13,9 +13,7 @@ function loadScript(src) {
   });
 }
 
-// KaTeX 加载 Promise，全局只加载一次
 let _katexPromise = null;
-
 function loadKaTeX() {
   if (_katexPromise) return _katexPromise;
   _katexPromise = loadScript("https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js")
@@ -27,15 +25,14 @@ function loadP5() {
   return loadScript("https://cdn.bootcdn.net/ajax/libs/p5.js/1.11.3/p5.min.js");
 }
 
-// ===== 提前预加载 KaTeX：notes.js 一被加载就立即开始请求，不等用户触发 =====
+// ===== 提前预加载 KaTeX =====
 loadKaTeX().catch(() => {});
 
-/* ===== 核心：只渲染尚未处理过的卡片 ===== */
+/* ===== 渲染公式 ===== */
 function renderMathInCards(cards) {
   const unrendered = [...cards].filter(
     (card) => !card.dataset.mathRendered && !card.classList.contains("is-hidden")
   );
-
   if (!unrendered.length) return;
 
   function doRender() {
@@ -49,7 +46,6 @@ function renderMathInCards(cards) {
         ],
         throwOnError: false
       });
-      // 标记为已渲染，切换分类时不重复处理
       card.dataset.mathRendered = "1";
     });
   }
@@ -72,16 +68,15 @@ function initNotesPage() {
   const categoryButtons = notesPage.querySelectorAll(".notes-category");
   const noteCards = notesPage.querySelectorAll(".note-card");
   const emptyState = notesPage.querySelector("#notes-empty");
-
   if (!noteCards.length) return;
 
   function clearActiveStates() {
-    groupToggles.forEach((btn) => btn.classList.remove("active"));
-    categoryButtons.forEach((btn) => btn.classList.remove("active"));
+    groupToggles.forEach(btn => btn.classList.remove("active"));
+    categoryButtons.forEach(btn => btn.classList.remove("active"));
   }
 
   function filterAllNotes() {
-    noteCards.forEach((card) => card.classList.remove("is-hidden"));
+    noteCards.forEach(card => card.classList.remove("is-hidden"));
     if (emptyState) emptyState.hidden = true;
     renderMathInCards(noteCards);
   }
@@ -89,8 +84,7 @@ function initNotesPage() {
   function filterNotesByCategory(category) {
     let visibleCount = 0;
     const nowVisible = [];
-
-    noteCards.forEach((card) => {
+    noteCards.forEach(card => {
       if (card.dataset.category === category) {
         card.classList.remove("is-hidden");
         nowVisible.push(card);
@@ -99,12 +93,11 @@ function initNotesPage() {
         card.classList.add("is-hidden");
       }
     });
-
     if (emptyState) emptyState.hidden = visibleCount !== 0;
     renderMathInCards(nowVisible);
   }
 
-  groupToggles.forEach((toggle) => {
+  groupToggles.forEach(toggle => {
     toggle.addEventListener("click", () => {
       const parentGroup = toggle.closest(".notes-group");
       const mode = toggle.dataset.mode;
@@ -113,12 +106,9 @@ function initNotesPage() {
       if (mode === "all") {
         clearActiveStates();
         toggle.classList.add("active");
-        notesPage.querySelectorAll(".notes-group").forEach((group) => {
-          if (group.querySelector('[data-mode="all"]')) {
-            group.classList.add("is-open");
-          } else {
-            group.classList.remove("is-open");
-          }
+        notesPage.querySelectorAll(".notes-group").forEach(group => {
+          if (group.querySelector('[data-mode="all"]')) group.classList.add("is-open");
+          else group.classList.remove("is-open");
         });
         filterAllNotes();
         return;
@@ -126,27 +116,23 @@ function initNotesPage() {
 
       if (groupName) {
         const isOpen = parentGroup.classList.contains("is-open");
-        notesPage.querySelectorAll(".notes-group").forEach((group) => {
-          if (group !== parentGroup && !group.querySelector('[data-mode="all"]')) {
-            group.classList.remove("is-open");
-          }
+        notesPage.querySelectorAll(".notes-group").forEach(group => {
+          if (group !== parentGroup && !group.querySelector('[data-mode="all"]')) group.classList.remove("is-open");
         });
         parentGroup.classList.toggle("is-open", !isOpen);
       }
     });
   });
 
-  categoryButtons.forEach((button) => {
+  categoryButtons.forEach(button => {
     button.addEventListener("click", () => {
       clearActiveStates();
       button.classList.add("active");
 
       const parentGroup = button.closest(".notes-group");
       if (parentGroup) {
-        notesPage.querySelectorAll(".notes-group").forEach((group) => {
-          if (group !== parentGroup && !group.querySelector('[data-mode="all"]')) {
-            group.classList.remove("is-open");
-          }
+        notesPage.querySelectorAll(".notes-group").forEach(group => {
+          if (group !== parentGroup && !group.querySelector('[data-mode="all"]')) group.classList.remove("is-open");
         });
         parentGroup.classList.add("is-open");
       }
@@ -171,3 +157,40 @@ function initNotesPage() {
 
 document.addEventListener("DOMContentLoaded", initNotesPage);
 window.initNotesPage = initNotesPage;
+
+/* ===== 动态加载 Markdown 笔记 ===== */
+async function loadNoteMarkdown(file) {
+  const res = await fetch(file);
+  const text = await res.text();
+  return text;
+}
+
+async function renderNotesFromJSON() {
+  const indexRes = await fetch('data/notes-index.json');
+  const notesIndex = await indexRes.json();
+  const container = document.getElementById('notes-content');
+  container.innerHTML = '';
+
+  for (let note of notesIndex) {
+    const mdContent = await loadNoteMarkdown(note.file);
+
+    const article = document.createElement('article');
+    article.className = 'note-card';
+    article.dataset.category = note.category;
+
+    article.innerHTML = `
+      <div class="note-card-top">
+        <span class="note-tag">${note.category}</span>
+        <span class="note-meta">${note.meta}</span>
+      </div>
+      <h2>${note.title}</h2>
+      <div class="note-markdown">${mdContent}</div>
+    `;
+
+    container.appendChild(article);
+  }
+
+  renderMathInCards(container.querySelectorAll('.note-card'));
+}
+
+document.addEventListener("DOMContentLoaded", renderNotesFromJSON);

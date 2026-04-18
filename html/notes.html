@@ -9,60 +9,6 @@
         </div>
 
         <div class="notes-content" id="notes-content">
-          <article class="note-card" data-category="微积分">
-            <div class="note-card-top">
-              <span class="note-tag">微积分</span>
-              <span class="note-meta">示例笔记</span>
-            </div>
-
-            <h2>傅里叶级数的基本形式</h2>
-            <p>对周期函数 \(f(x)\)，可以尝试写成</p>
-
-            <div class="note-formula">
-              \[
-              f(x)\sim \frac{a_0}{2}+\sum_{n=1}^{\infty}(a_n\cos nx+b_n\sin nx)
-              \]
-            </div>
-
-            <p>这里的核心是三角函数系在合适内积下的正交性。</p>
-          </article>
-
-          <article class="note-card" data-category="线性代数">
-            <div class="note-card-top">
-              <span class="note-tag">线性代数</span>
-              <span class="note-meta">示例笔记</span>
-            </div>
-
-            <h2>矩阵的特征值与迹</h2>
-            <p>若矩阵 \(A\) 的特征值为 \(\lambda_1,\lambda_2,\cdots,\lambda_n\)，则</p>
-
-            <div class="note-formula">
-              \[
-              \mathrm{tr}(A)=\sum_{i=1}^{n}\lambda_i
-              \]
-            </div>
-
-            <p>这是特征多项式系数与矩阵不变量之间的重要联系。</p>
-          </article>
-
-          <article class="note-card" data-category="电磁学">
-            <div class="note-card-top">
-              <span class="note-tag">电磁学</span>
-              <span class="note-meta">示例笔记</span>
-            </div>
-
-            <h2>高斯定律的积分形式</h2>
-            <p>对于闭合曲面 \(S\)，电场通量满足</p>
-
-            <div class="note-formula">
-              \[
-              \oint_S \mathbf{E}\cdot d\mathbf{S}=\frac{Q_{\mathrm{in}}}{\varepsilon_0}
-              \]
-            </div>
-
-            <p>它尤其适合处理具有高度对称性的静电场问题。</p>
-          </article>
-
           <p class="notes-empty" id="notes-empty" hidden>这个分类下暂时还没有笔记。</p>
         </div>
       </div>
@@ -88,6 +34,7 @@
               <button class="notes-category" data-category="微积分" type="button">微积分</button>
               <button class="notes-category" data-category="线性代数" type="button">线性代数</button>
               <button class="notes-category" data-category="抽象代数" type="button">抽象代数</button>
+              <button class="notes-category" data-category="趣题" type="button">趣题</button>
             </div>
           </div>
 
@@ -101,6 +48,7 @@
               <button class="notes-category" data-category="力学" type="button">力学</button>
               <button class="notes-category" data-category="电磁学" type="button">电磁学</button>
               <button class="notes-category" data-category="量子" type="button">量子</button>
+              <button class="notes-category" data-category="趣题" type="button">趣题</button>
             </div>
           </div>
 
@@ -111,7 +59,7 @@
             </button>
 
             <div class="notes-subcategories">
-              <button class="notes-category" data-category="LaTeX" type="button">LaTeX</button>
+              <button class="notes-category" data-category="公式渲染" type="button">公式渲染</button>
               <button class="notes-category" data-category="可视化" type="button">可视化</button>
             </div>
           </div>
