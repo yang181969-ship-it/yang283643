@@ -4,24 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yang181969</title>
+  <meta name="description" content="Yang181969的个人网站，记录兴趣、图片、动漫、笔记和交流。">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/style-global.css">
-  <link rel="stylesheet" href="css/style-theme.css">
-  <link rel="stylesheet" href="css/style-animes.css">
-  <link rel="stylesheet" href="css/style-comment.css">
-  <link rel="stylesheet" href="css/style-update.css">
-  <link rel="stylesheet" href="css/style-gallery.css">
-  <link rel="stylesheet" href="css/style-notes.css">
-  <link rel="stylesheet" href="css/style-about.css">
+  <!-- CSS：合并为单个文件，减少请求数 -->
+  <link rel="stylesheet" href="css/style.css">
 
-  <!-- KaTeX：改为国内镜像 -->
-  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css">
-  <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-  <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
-
-  <!-- p5.js：改为国内镜像 -->
-  <script defer src="https://cdn.bootcdn.net/ajax/libs/p5.js/1.11.3/p5.min.js"></script>
+  <!-- KaTeX CSS：非阻塞加载，只在需要时生效 -->
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css"></noscript>
 </head>
 <body>
   <div class="layout">
@@ -29,7 +19,7 @@
     <!-- 头部 -->
     <header>
       <a href="index.html" class="logo">
-        <img src="assets/images/logo.png" alt="logo">
+        <img src="assets/images/logo.png" alt="logo" width="52" height="52">
         <span>Yang181969</span>
       </a>
 
@@ -95,14 +85,20 @@
 
   </div>
 
-  <!-- JS -->
-  <script src="js/theme.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/comment.js"></script>
-  <script src="js/animes.js"></script>
-  <script src="js/gallery.js"></script>
-  <script src="js/gallery-data.js"></script>
-  <script src="js/notes.js"></script>
+  <!-- JS：全部加 defer，不阻塞页面渲染 -->
+  <script defer src="js/theme.js"></script>
+  <script defer src="js/main.js"></script>
+  <script defer src="js/comment.js"></script>
+  <script defer src="js/animes.js"></script>
+  <script defer src="js/gallery.js"></script>
+  <script defer src="js/gallery-data.js"></script>
+  <script defer src="js/notes.js"></script>
+
+  <!-- KaTeX 和 p5.js：按需加载，只在笔记页面用到时才请求 -->
+  <!-- 如果你的 notes.js 里没有动态加载逻辑，可以把下面两行取消注释改为按需引入 -->
+  <!-- <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script> -->
+  <!-- <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script> -->
+  <!-- <script defer src="https://cdn.bootcdn.net/ajax/libs/p5.js/1.11.3/p5.min.js"></script> -->
 
   <button id="back-to-top">↑</button>
 </body>

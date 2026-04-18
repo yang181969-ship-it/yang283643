@@ -79,31 +79,6 @@ function showVpnIntroModal() {
   confirmBtn.onclick = closeModal;
 }
 
-  function closeModal() {
-    modal.classList.add("is-closing");
-    document.body.classList.remove("comment-vpn-modal-open");
-
-    setTimeout(() => {
-      modal.remove();
-    }, 220);
-  }
-
-  closeBtn.addEventListener("click", closeModal);
-  confirmBtn.addEventListener("click", closeModal);
-
-
-  function closeModal() {
-    modal.classList.add("is-closing");
-    document.body.classList.remove("comment-vpn-modal-open");
-
-    setTimeout(() => {
-      modal.remove();
-    }, 220);
-  }
-
-  closeBtn.addEventListener("click", closeModal);
-  confirmBtn.addEventListener("click", closeModal);
-
 
 function showGenericError(root) {
   root.innerHTML = `
