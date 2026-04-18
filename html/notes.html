@@ -1,70 +1,100 @@
-<main id="main-content">
-  <section class="notes-page no-card">
-    <div class="notes-layout">
-      <!-- 左侧主内容 -->
-      <div class="notes-main">
-        <div class="notes-page-header">
-          <h1>笔记</h1>
-          <p>记录数学与物理学习过程中的推导、理解与小型可视化实验。</p>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>笔记</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <!-- KaTeX 样式 -->
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+  <header>
+    <!-- 可以放置你的全局 header -->
+  </header>
+
+  <main id="main-content">
+    <section class="notes-page no-card">
+      <div class="notes-layout">
+        <!-- 左侧主内容 -->
+        <div class="notes-main">
+          <div class="notes-page-header">
+            <h1>笔记</h1>
+            <p>记录数学与物理学习过程中的推导、理解与小型可视化实验。</p>
+          </div>
+
+          <div class="notes-content" id="notes-content">
+            <!-- 空状态提示 -->
+            <p class="notes-empty" id="notes-empty" hidden>这个分类下暂时还没有笔记。</p>
+          </div>
         </div>
 
-        <div class="notes-content" id="notes-content">
-          <p class="notes-empty" id="notes-empty" hidden>这个分类下暂时还没有笔记。</p>
-        </div>
+        <!-- 右侧分类导航 -->
+        <aside class="notes-sidebar">
+          <div class="notes-sidebar-card">
+            <h2>分类</h2>
+
+            <!-- 总览 -->
+            <div class="notes-group is-open">
+              <button class="notes-group-toggle active" type="button" data-mode="all">
+                <span>总览</span>
+              </button>
+            </div>
+
+            <!-- 数学 -->
+            <div class="notes-group">
+              <button class="notes-group-toggle" type="button" data-group="数学">
+                <span>数学</span>
+                <span class="notes-group-arrow">▾</span>
+              </button>
+
+              <div class="notes-subcategories">
+                <button class="notes-category" data-category="微积分" type="button">微积分</button>
+                <button class="notes-category" data-category="线性代数" type="button">线性代数</button>
+                <button class="notes-category" data-category="抽象代数" type="button">抽象代数</button>
+                <button class="notes-category" data-category="趣题" type="button">趣题</button>
+              </div>
+            </div>
+
+            <!-- 物理 -->
+            <div class="notes-group">
+              <button class="notes-group-toggle" type="button" data-group="物理">
+                <span>物理</span>
+                <span class="notes-group-arrow">▾</span>
+              </button>
+
+              <div class="notes-subcategories">
+                <button class="notes-category" data-category="力学" type="button">力学</button>
+                <button class="notes-category" data-category="电磁学" type="button">电磁学</button>
+                <button class="notes-category" data-category="量子" type="button">量子</button>
+                <button class="notes-category" data-category="趣题" type="button">趣题</button>
+              </div>
+            </div>
+
+            <!-- 工具 -->
+            <div class="notes-group">
+              <button class="notes-group-toggle" type="button" data-group="工具">
+                <span>工具</span>
+                <span class="notes-group-arrow">▾</span>
+              </button>
+
+              <div class="notes-subcategories">
+                <button class="notes-category" data-category="公式渲染" type="button">公式渲染</button>
+                <button class="notes-category" data-category="可视化" type="button">可视化</button>
+              </div>
+            </div>
+
+          </div>
+        </aside>
       </div>
+    </section>
+  </main>
 
-      <!-- 右侧分类导航 -->
-      <aside class="notes-sidebar">
-        <div class="notes-sidebar-card">
-          <h2>分类</h2>
+  <footer>
+    <!-- 可以放置全局 footer -->
+  </footer>
 
-          <div class="notes-group is-open">
-            <button class="notes-group-toggle active" type="button" data-mode="all">
-              <span>总览</span>
-            </button>
-          </div>
-
-          <div class="notes-group">
-            <button class="notes-group-toggle" type="button" data-group="数学">
-              <span>数学</span>
-              <span class="notes-group-arrow">▾</span>
-            </button>
-
-            <div class="notes-subcategories">
-              <button class="notes-category" data-category="微积分" type="button">微积分</button>
-              <button class="notes-category" data-category="线性代数" type="button">线性代数</button>
-              <button class="notes-category" data-category="抽象代数" type="button">抽象代数</button>
-              <button class="notes-category" data-category="趣题" type="button">趣题</button>
-            </div>
-          </div>
-
-          <div class="notes-group">
-            <button class="notes-group-toggle" type="button" data-group="物理">
-              <span>物理</span>
-              <span class="notes-group-arrow">▾</span>
-            </button>
-
-            <div class="notes-subcategories">
-              <button class="notes-category" data-category="力学" type="button">力学</button>
-              <button class="notes-category" data-category="电磁学" type="button">电磁学</button>
-              <button class="notes-category" data-category="量子" type="button">量子</button>
-              <button class="notes-category" data-category="趣题" type="button">趣题</button>
-            </div>
-          </div>
-
-          <div class="notes-group">
-            <button class="notes-group-toggle" type="button" data-group="工具">
-              <span>工具</span>
-              <span class="notes-group-arrow">▾</span>
-            </button>
-
-            <div class="notes-subcategories">
-              <button class="notes-category" data-category="公式渲染" type="button">公式渲染</button>
-              <button class="notes-category" data-category="可视化" type="button">可视化</button>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </div>
-  </section>
-</main>
+  <!-- notes.js：动态加载 Markdown 和渲染 -->
+  <script src="../js/notes.js" type="module"></script>
+</body>
+</html>

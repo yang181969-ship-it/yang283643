@@ -1,5 +1,20 @@
 [
-  { "category": "微积分", "title": "傅里叶级数的基本形式", "file": "content/math/calculus.md", "meta": "示例笔记" },
-  { "category": "线性代数", "title": "矩阵的特征值与迹", "file": "content/math/linear-algebra.md", "meta": "示例笔记" },
-  { "category": "电磁学", "title": "高斯定律的积分形式", "file": "content/physics/electromagnetism.md", "meta": "示例笔记" }
+  {
+    "title": "微积分笔记合集",
+    "category": "微积分",
+    "file": "content/math/calculus.md",
+    "meta": "数学笔记"
+  },
+  {
+    "title": "线性代数笔记合集",
+    "category": "线性代数",
+    "file": "content/math/linear-algebra.md",
+    "meta": "数学笔记"
+  },
+  {
+    "title": "电磁学笔记合集",
+    "category": "电磁学",
+    "file": "content/physics/electromagnetism.md",
+    "meta": "物理笔记"
+  }
 ]
