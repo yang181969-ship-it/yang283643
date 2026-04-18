@@ -4,22 +4,26 @@ function initAnimePage() {
 
   if (!tabs.length || !sections.length) return;
 
+  // 防止重复绑定（页面切换时可能多次调用）
   tabs.forEach((btn) => {
+    if (btn.dataset.animeInit) return;
+    btn.dataset.animeInit = "1";
+
     btn.addEventListener("click", () => {
       const targetId = btn.dataset.target;
 
-      // 切换按钮高亮
       tabs.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
-      // 切换内容显示
       sections.forEach((section) => {
-        if (section.id === targetId) {
-          section.classList.add("active");
-        } else {
-          section.classList.remove("active");
-        }
+        section.classList.toggle("active", section.id === targetId);
       });
     });
   });
+
+  // 默认激活第一个tab（如果没有active的话）
+  const hasActive = [...tabs].some((b) => b.classList.contains("active"));
+  if (!hasActive && tabs[0]) {
+    tabs[0].click();
+  }
 }
