@@ -2147,9 +2147,61 @@ body.vpn-modal-open {
 }
 
 .notes-category.active {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+/* 时间排序按钮（内容区顶部排序栏） */
+.notes-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.notes-sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding-bottom: 2px; /* 与标题底部对齐 */
+}
+
+.notes-sort {
+  padding: 7px 14px;
+  border: 1.5px solid var(--border-soft);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.notes-sort:hover {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  border-color: var(--primary);
+}
+
+.notes-sort.active {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px var(--glow);
+}
+
+/* 笔记卡片日期标签 */
+.note-date {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* 笔记卡片区 */
@@ -2279,8 +2331,15 @@ body.vpn-modal-open {
   }
 
   .notes-category:hover,
-  .notes-group-toggle:hover {
+  .notes-group-toggle:hover,
+  .notes-sort:hover {
     transform: none;
+  }
+
+  .notes-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 }
 
@@ -2313,6 +2372,198 @@ body.vpn-modal-open {
   .notes-group-toggle {
     font-size: 16px;
     padding: 10px 12px;
+  }
+}
+
+
+/* 已有 cursor:pointer；再加一个过渡提示条 */
+.note-card {
+  position: relative;
+  cursor: pointer;
+}
+
+/* 卡片底部"阅读全文"提示 */
+.note-read-more {
+  display: block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease, gap 0.2s ease;
+  user-select: none;
+}
+
+.note-card:hover .note-read-more {
+  color: var(--primary-dark);
+}
+
+/* 正文两行截断（与 notes.js 生成的 .note-markdown 对应） */
+.note-markdown {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* WebKit 内核浏览器 */
+  line-clamp: 2; /* 标准属性，兼容支持标准写法的浏览器 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  contain: layout;
+}
+
+/* ===== 笔记详情页布局 ===== */
+.note-detail-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 返回按钮行 */
+.note-detail-back {
+  display: flex;
+  align-items: center;
+}
+
+.note-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 1.5px solid var(--border-soft);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.note-back-btn:hover {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px var(--glow);
+}
+
+/* 详情卡片主体 */
+.note-detail-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 36px 40px;
+  box-shadow: var(--shadow-soft);
+  min-height: 200px;
+}
+
+/* 标题 */
+.note-detail-title {
+  margin: 14px 0 24px;
+  font-size: 32px;
+  line-height: 1.25;
+  color: var(--primary-dark);
+}
+
+/* 正文：完整展示，不截断 */
+.note-markdown-full {
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--text-main);
+}
+
+.note-markdown-full p  { margin: 0 0 16px; }
+.note-markdown-full h1 { font-size: 26px; margin: 28px 0 14px; color: var(--primary-dark); }
+.note-markdown-full h2 { font-size: 22px; margin: 24px 0 12px; color: var(--primary-dark); }
+.note-markdown-full h3 { font-size: 18px; margin: 20px 0 10px; color: var(--primary-dark); }
+
+.note-markdown-full ul {
+  margin: 0 0 16px;
+  padding-left: 1.5em;
+}
+
+.note-markdown-full li {
+  margin-bottom: 6px;
+  line-height: 1.8;
+}
+
+.note-markdown-full pre {
+  margin: 16px 0;
+  padding: 18px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.note-markdown-full code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.note-markdown-full .note-formula {
+  margin: 20px 0;
+}
+
+/* ===== 加载动画 ===== */
+.note-detail-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 60px 0;
+}
+
+.note-loading-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.3;
+  animation: note-dot-bounce 1.2s infinite ease-in-out;
+}
+
+.note-loading-dot:nth-child(1) { animation-delay: 0s; }
+.note-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.note-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes note-dot-bounce {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40%            { opacity: 1;   transform: scale(1.2); }
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 900px) {
+  .note-detail-card {
+    padding: 24px 22px;
+    border-radius: 16px;
+  }
+
+  .note-detail-title {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 480px) {
+  .note-detail-card {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+
+  .note-detail-title {
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+
+  .note-markdown-full {
+    font-size: 14px;
+  }
+
+  .note-back-btn {
+    font-size: 13px;
+    padding: 8px 14px;
   }
 }
 

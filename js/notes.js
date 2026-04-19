@@ -80,13 +80,7 @@ function normalizeLineEndings(text) {
   return String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
 
-/* ===== 极简 Markdown 渲染 =====
-   说明：
-   1. 保留空行分段
-   2. 数学公式块 \[ \] / $$ $$ 原样保留给 KaTeX
-   3. 行内公式 \( \) / $ $ 也原样保留
-   4. 支持最基础的标题、列表、段落、代码块
-*/
+/* ===== 极简 Markdown 渲染 ===== */
 function simpleMarkdownToHtml(md) {
   const text = normalizeLineEndings(md).trim();
   if (!text) return "";
@@ -147,11 +141,9 @@ function simpleMarkdownToHtml(md) {
     const rawLine = lines[i];
     const line = rawLine.trim();
 
-    // 代码块
     if (line.startsWith("```")) {
       flushParagraph();
       flushList();
-
       if (!inCodeBlock) {
         inCodeBlock = true;
       } else {
@@ -166,7 +158,6 @@ function simpleMarkdownToHtml(md) {
       continue;
     }
 
-    // 数学块
     if (!inMathBlock && (line === "\\[" || line === "$$")) {
       flushParagraph();
       flushList();
@@ -184,14 +175,12 @@ function simpleMarkdownToHtml(md) {
       continue;
     }
 
-    // 空行
     if (!line) {
       flushParagraph();
       flushList();
       continue;
     }
 
-    // 单独一行显示公式（宽松处理）
     if (isDisplayMathLine(rawLine) && !inMathBlock) {
       flushParagraph();
       flushList();
@@ -199,7 +188,6 @@ function simpleMarkdownToHtml(md) {
       continue;
     }
 
-    // 标题
     if (line.startsWith("### ")) {
       flushParagraph();
       flushList();
@@ -221,14 +209,12 @@ function simpleMarkdownToHtml(md) {
       continue;
     }
 
-    // 列表
     if (line.startsWith("- ") || line.startsWith("* ")) {
       flushParagraph();
       listBuffer.push(line.slice(2));
       continue;
     }
 
-    // 普通段落
     paragraphBuffer.push(rawLine);
   }
 
@@ -241,19 +227,10 @@ function simpleMarkdownToHtml(md) {
 }
 
 /* ===== 将一个 Markdown 文件拆成多篇笔记 =====
-   约定格式示例：
-
-   # 傅里叶级数的基本形式
-   @category: 微积分
-   @meta: 示例笔记
-
-   正文...
-
-   ---
-   # 收敛性问题
-   @category: 微积分
-
-   正文...
+   支持字段：
+     @category: 分类
+     @meta:     说明文字
+     @date:     写入时间，格式 YYYY-MM-DD
 */
 function parseMarkdownToNotes(md, fallback = {}) {
   const raw = normalizeLineEndings(md);
@@ -269,6 +246,7 @@ function parseMarkdownToNotes(md, fallback = {}) {
     let title = "";
     let category = fallback.category || "";
     let meta = fallback.meta || "";
+    let date = fallback.date || "";
     const contentLines = [];
 
     for (const rawLine of lines) {
@@ -289,6 +267,11 @@ function parseMarkdownToNotes(md, fallback = {}) {
         continue;
       }
 
+      if (line.startsWith("@date:")) {
+        date = line.replace("@date:", "").trim();
+        continue;
+      }
+
       contentLines.push(rawLine);
     }
 
@@ -299,9 +282,21 @@ function parseMarkdownToNotes(md, fallback = {}) {
       title: title || fallback.title || "未命名笔记",
       category: category || "未分类",
       meta: meta || "",
-      content
+      date: date || "",
+      content,
+      // 保留原始文件路径，供详情页使用
+      file: fallback.file || "",
+      blockIndex: index
     };
   });
+}
+
+/* ===== 格式化日期显示（YYYY-MM-DD → 本地短日期） ===== */
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
 }
 
 /* ===== 加载单个 Markdown 文件 ===== */
@@ -331,7 +326,6 @@ async function renderNotesFromJSON() {
 
     const notesIndex = await indexRes.json();
 
-    // 清空旧卡片，但保留 empty 元素
     container.innerHTML = "";
     if (emptyState) container.appendChild(emptyState);
 
@@ -345,16 +339,32 @@ async function renderNotesFromJSON() {
         const article = document.createElement("article");
         article.className = "note-card";
         article.dataset.category = note.category;
+        article.dataset.date = note.date || "";
+        article.dataset.noteId = note.id;
+
+        // 点击卡片跳转到详情页
+        article.addEventListener("click", () => {
+          const params = new URLSearchParams({
+            file: note.file,
+            index: note.blockIndex
+          });
+          window.location.href = `notes-detail.html?${params.toString()}`;
+        });
+
+        const dateDisplay = note.date
+          ? `<span class="note-date">${formatDate(note.date)}</span>`
+          : "";
 
         article.innerHTML = `
           <div class="note-card-top">
             <span class="note-tag">${escapeHtml(note.category)}</span>
-            <span class="note-meta">${escapeHtml(note.meta)}</span>
+            ${dateDisplay}
           </div>
           <h2>${escapeHtml(note.title)}</h2>
           <div class="note-markdown">
             ${simpleMarkdownToHtml(note.content)}
           </div>
+          <span class="note-read-more">阅读全文 →</span>
         `;
 
         container.insertBefore(article, emptyState || null);
@@ -381,24 +391,60 @@ async function renderNotesFromJSON() {
   }
 }
 
-/* ===== 绑定分类筛选 ===== */
+/* ===== 按日期对【当前可见】卡片重新排序（纯 DOM 操作） ===== */
+function sortCardsByDate(noteCards, direction) {
+  const container = document.getElementById("notes-content");
+  const emptyState = document.getElementById("notes-empty");
+  if (!container) return;
+
+  const visible = noteCards.filter((c) => !c.classList.contains("is-hidden"));
+
+  const sorted = [...visible].sort((a, b) => {
+    const da = a.dataset.date || "";
+    const db = b.dataset.date || "";
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return direction === "asc"
+      ? da.localeCompare(db)
+      : db.localeCompare(da);
+  });
+
+  sorted.forEach((card) => container.insertBefore(card, emptyState || null));
+}
+
+/* ===== 绑定分类筛选 + 内容区时间排序 ===== */
 function bindNotesFilter(noteCards) {
   const notesPage = document.querySelector(".notes-page");
   if (!notesPage) return;
 
   const groupToggles = notesPage.querySelectorAll(".notes-group-toggle");
   const categoryButtons = notesPage.querySelectorAll(".notes-category");
+  const sortButtons = notesPage.querySelectorAll(".notes-sort");
   const emptyState = notesPage.querySelector("#notes-empty");
 
-  function clearActiveStates() {
+  let activeSortDirection = null;
+
+  function clearNavActiveStates() {
     groupToggles.forEach((btn) => btn.classList.remove("active"));
     categoryButtons.forEach((btn) => btn.classList.remove("active"));
+  }
+
+  function clearSortActiveStates() {
+    sortButtons.forEach((btn) => btn.classList.remove("active"));
+  }
+
+  function applyCurrentSort() {
+    if (activeSortDirection) {
+      sortCardsByDate(noteCards, activeSortDirection);
+    }
   }
 
   function filterAllNotes() {
     noteCards.forEach((card) => card.classList.remove("is-hidden"));
     if (emptyState) emptyState.hidden = true;
     renderMathInCards(noteCards);
+    applyCurrentSort();
   }
 
   function filterNotesByCategory(category) {
@@ -417,6 +463,7 @@ function bindNotesFilter(noteCards) {
 
     if (emptyState) emptyState.hidden = visibleCount !== 0;
     renderMathInCards(nowVisible);
+    applyCurrentSort();
   }
 
   groupToggles.forEach((toggle) => {
@@ -426,7 +473,7 @@ function bindNotesFilter(noteCards) {
       const groupName = toggle.dataset.group;
 
       if (mode === "all") {
-        clearActiveStates();
+        clearNavActiveStates();
         toggle.classList.add("active");
 
         notesPage.querySelectorAll(".notes-group").forEach((group) => {
@@ -457,11 +504,14 @@ function bindNotesFilter(noteCards) {
 
   categoryButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      clearActiveStates();
+      clearNavActiveStates();
       button.classList.add("active");
 
       const parentGroup = button.closest(".notes-group");
       if (parentGroup) {
+        const parentToggle = parentGroup.querySelector(".notes-group-toggle");
+        if (parentToggle) parentToggle.classList.add("active");
+
         notesPage.querySelectorAll(".notes-group").forEach((group) => {
           if (group !== parentGroup && !group.querySelector('[data-mode="all"]')) {
             group.classList.remove("is-open");
@@ -474,13 +524,34 @@ function bindNotesFilter(noteCards) {
     });
   });
 
+  sortButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.classList.contains("active")) return;
+
+      const direction = button.dataset.sort;
+
+      clearSortActiveStates();
+      button.classList.add("active");
+      activeSortDirection = direction;
+      sortCardsByDate(noteCards, direction);
+    });
+  });
+
   const defaultOverview = notesPage.querySelector('.notes-group-toggle[data-mode="all"]');
   if (defaultOverview) {
-    clearActiveStates();
+    clearNavActiveStates();
     defaultOverview.classList.add("active");
     filterAllNotes();
   } else {
     renderMathInCards(noteCards);
+  }
+
+  const defaultSortBtn = notesPage.querySelector('.notes-sort[data-sort="desc"]');
+  if (defaultSortBtn) {
+    clearSortActiveStates();
+    defaultSortBtn.classList.add("active");
+    activeSortDirection = "desc";
+    sortCardsByDate(noteCards, "desc");
   }
 }
 
