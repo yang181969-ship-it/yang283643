@@ -7,8 +7,7 @@
 
 ## 1. 行内公式
 
-行内公式使用 `$...$` 包裹，例如：
-
+行内公式使用 $ 包裹，例如：
 ```markdown
 这是一个行内公式：$E=mc^2$。
 ```
@@ -18,7 +17,7 @@
 
 ## 2. 块级公式
 
-块级公式可以使用 `$$...$$` 或 `\[...\]` 包裹，例如：
+块级公式可以使用 $$ 或 \[...\] 包裹，例如：
 
 ```markdown
 $$
@@ -40,9 +39,9 @@ $$
 f(x) = \int_{-\infty}^{\infty} e^{-t^2} dt
 $$
 
-[
+\[
 f(x) = \sum_{n=0}^{\infty} \frac{x^n}{n!}
-]
+\]
 
 ## 3. 常用数学符号示例
 
@@ -51,7 +50,7 @@ f(x) = \sum_{n=0}^{\infty} \frac{x^n}{n!}
 * 根号：`\sqrt{x}` → $\sqrt{x}$
 * 求和：`\sum_{i=1}^{n} i` → $\sum_{i=1}^{n} i$
 * 积分：`\int_0^1 x dx` → $\int_0^1 x dx$
-* 向量/矩阵：`\vec{v}`, `\begin{bmatrix}a & b\\ c & d\end{bmatrix}` → $\vec{v}, \begin{bmatrix}a & b\ c & d\end{bmatrix}$
+* 向量/矩阵：`\vec{v}`, `\begin{bmatrix}a & b\\ c & d\end{bmatrix}` → $\vec{v}, \begin{bmatrix}a & b\\ c & d\end{bmatrix}$
 
 ## 4. 注意事项
 
@@ -60,7 +59,7 @@ f(x) = \sum_{n=0}^{\infty} \frac{x^n}{n!}
 3. 公式内部尽量使用 LaTeX 标准命令，避免特殊符号导致解析失败。
 4. 如果公式未渲染，请检查：
 
-   * 是否正确使用 `$` 或 `$$` 包裹；
+   * 是否正确使用单个或两个$符号包裹；
    * 是否存在 HTML 标签冲突；
    * 确保笔记已加载完成并触发 KaTeX 渲染。
 
@@ -71,7 +70,6 @@ f(x) = \sum_{n=0}^{\infty} \frac{x^n}{n!}
 * 矩阵、分段函数
 * 上下标、求和、积分
 * 常用函数符号如 $\sin, \cos, \log$
-* 自定义命令（推荐在笔记中明确解释）
 
 示例：
 
@@ -86,9 +84,9 @@ x^2, & x \ge 0 \\
 
 渲染效果：
 
-[
+\[
 f(x) = \begin{cases}
-x^2, & x \ge 0 \
+x^2, & x \ge 0 \\
 -x, & x < 0
 \end{cases}
-]
+\]

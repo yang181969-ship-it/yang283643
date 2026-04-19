@@ -9,6 +9,13 @@
     "category": "线性代数",
     "file": "content/math/linear-algebra.md"
   },
+
+  {
+    "title": "组合数学笔记合集",
+    "category": "组合数学",
+    "file":"content/math/combinatorics.md"
+  },
+
   {
     "title": "电磁学笔记合集",
     "category": "电磁学",

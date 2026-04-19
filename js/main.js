@@ -5,8 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!main) return;
 
   const homeContent = main.innerHTML;
-
-  // 缓存已加载过的页面内容，避免重复fetch
   const pageCache = new Map();
 
   const pageMap = {
@@ -78,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 显示/隐藏加载中状态
   function setLoading(isLoading) {
     main.style.opacity = isLoading ? "0.4" : "1";
     main.style.pointerEvents = isLoading ? "none" : "";
@@ -93,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 命中缓存，直接渲染
     if (pageCache.has(page)) {
       main.innerHTML = pageCache.get(page);
       afterPageLoad(page, push);
@@ -114,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!newMain) throw new Error(`${file} 中没有找到 #main-content`);
 
         const content = newMain.innerHTML;
-        pageCache.set(page, content); // 存入缓存
+        pageCache.set(page, content);
         main.innerHTML = content;
         afterPageLoad(page, push);
       })
@@ -141,7 +137,30 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   window.addEventListener("popstate", (e) => {
-    const page = (e.state && e.state.page) || getCurrentPageFromUrl();
+    const state = e.state || {};
+    const page = state.page || getCurrentPageFromUrl();
+
+    // 如果 state 里有笔记详情信息，说明是从笔记详情回退/前进
+    // notes.js 的 renderDetailView 已经通过 pushState 管理这段历史，
+    // 此处只需要在"回到列表"时重新渲染列表即可。
+    if (page === "notes" && !state.note) {
+      // 回到笔记列表：如果当前 DOM 不是列表（缺少 #notes-content），则重新加载
+      if (!document.getElementById("notes-content")) {
+        // 优先从缓存还原，避免重复 fetch
+        if (pageCache.has("notes")) {
+          main.innerHTML = pageCache.get("notes");
+          updateHighlight("notes");
+          requestAnimationFrame(() => {
+            if (typeof window.initNotesPage === "function") window.initNotesPage();
+          });
+        } else {
+          loadPage("notes", false);
+        }
+      }
+      updateHighlight("notes");
+      return;
+    }
+
     loadPage(page, false);
   });
 
