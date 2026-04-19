@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>笔记详情</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <!-- KaTeX 样式 -->
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+  <header>
+    <!-- 全局 header -->
+  </header>
+
+  <main id="main-content">
+    <section class="notes-page no-card">
+      <div class="note-detail-layout">
+
+        <!-- 返回按钮 -->
+        <div class="note-detail-back">
+          <button class="note-back-btn" id="note-back-btn" type="button">
+            ← 返回笔记列表
+          </button>
+        </div>
+
+        <!-- 笔记正文卡片 -->
+        <article class="note-detail-card" id="note-detail-card">
+          <!-- 加载中占位 -->
+          <div class="note-detail-loading" id="note-detail-loading">
+            <span class="note-loading-dot"></span>
+            <span class="note-loading-dot"></span>
+            <span class="note-loading-dot"></span>
+          </div>
+        </article>
+
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <!-- 全局 footer -->
+  </footer>
+
+  <script type="module">
+    /* ===== 复用 notes.js 的工具函数 ===== */
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+        const s = document.createElement("script");
+        s.src = src; s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    let _katexPromise = null;
+    function loadKaTeX() {
+      if (_katexPromise) return _katexPromise;
+      _katexPromise = loadScript("https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js")
+        .then(() => loadScript("https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"));
+      return _katexPromise;
+    }
+    loadKaTeX().catch(() => {});
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function normalizeLineEndings(text) {
+      return String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr + "T00:00:00");
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
+    }
+
+    /* ===== Markdown → HTML（与 notes.js 保持一致） ===== */
+    function simpleMarkdownToHtml(md) {
+      const text = normalizeLineEndings(md).trim();
+      if (!text) return "";
+
+      const lines = text.split("\n");
+      const html = [];
+      let paragraphBuffer = [], listBuffer = [], codeBuffer = [];
+      let inCodeBlock = false, inMathBlock = false;
+      let mathBlockBuffer = [];
+
+      function flushParagraph() {
+        if (!paragraphBuffer.length) return;
+        html.push(`<p>${paragraphBuffer.join("<br>")}</p>`);
+        paragraphBuffer = [];
+      }
+      function flushList() {
+        if (!listBuffer.length) return;
+        html.push("<ul>" + listBuffer.map(i => `<li>${i}</li>`).join("") + "</ul>");
+        listBuffer = [];
+      }
+      function flushCodeBlock() {
+        if (!codeBuffer.length) return;
+        html.push(`<pre><code>${escapeHtml(codeBuffer.join("\n"))}</code></pre>`);
+        codeBuffer = [];
+      }
+      function flushMathBlock() {
+        if (!mathBlockBuffer.length) return;
+        html.push(`<div class="note-formula">${mathBlockBuffer.join("\n")}</div>`);
+        mathBlockBuffer = [];
+      }
+      function isDisplayMathLine(line) {
+        const t = line.trim();
+        return t.startsWith("\\[") || t.endsWith("\\]") || t.startsWith("$$") || t.endsWith("$$");
+      }
+
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+
+        if (line.startsWith("```")) {
+          flushParagraph(); flushList();
+          inCodeBlock ? (inCodeBlock = false, flushCodeBlock()) : (inCodeBlock = true);
+          continue;
+        }
+        if (inCodeBlock) { codeBuffer.push(rawLine); continue; }
+
+        if (!inMathBlock && (line === "\\[" || line === "$$")) {
+          flushParagraph(); flushList();
+          inMathBlock = true; mathBlockBuffer.push(rawLine); continue;
+        }
+        if (inMathBlock) {
+          mathBlockBuffer.push(rawLine);
+          if (line === "\\]" || line === "$$") { inMathBlock = false; flushMathBlock(); }
+          continue;
+        }
+
+        if (!line) { flushParagraph(); flushList(); continue; }
+
+        if (isDisplayMathLine(rawLine) && !inMathBlock) {
+          flushParagraph(); flushList();
+          html.push(`<div class="note-formula">${rawLine}</div>`); continue;
+        }
+
+        if (line.startsWith("### ")) { flushParagraph(); flushList(); html.push(`<h3>${line.slice(4)}</h3>`); continue; }
+        if (line.startsWith("## "))  { flushParagraph(); flushList(); html.push(`<h2>${line.slice(3)}</h2>`); continue; }
+        if (line.startsWith("# "))   { flushParagraph(); flushList(); html.push(`<h1>${line.slice(2)}</h1>`); continue; }
+        if (line.startsWith("- ") || line.startsWith("* ")) { flushParagraph(); listBuffer.push(line.slice(2)); continue; }
+
+        paragraphBuffer.push(rawLine);
+      }
+
+      flushParagraph(); flushList(); flushCodeBlock(); flushMathBlock();
+      return html.join("\n");
+    }
+
+    function parseMarkdownToNotes(md, fallback = {}) {
+      const raw = normalizeLineEndings(md);
+      const blocks = raw.split(/\n---+\n/g).map(s => s.trim()).filter(Boolean);
+
+      return blocks.map((block, index) => {
+        const lines = block.split("\n");
+        let title = "", category = fallback.category || "", meta = fallback.meta || "", date = fallback.date || "";
+        const contentLines = [];
+
+        for (const rawLine of lines) {
+          const line = rawLine.trim();
+          if (!title && line.startsWith("# ")) { title = line.replace(/^#\s+/, "").trim(); continue; }
+          if (line.startsWith("@category:")) { category = line.replace("@category:", "").trim(); continue; }
+          if (line.startsWith("@meta:"))     { meta = line.replace("@meta:", "").trim(); continue; }
+          if (line.startsWith("@date:"))     { date = line.replace("@date:", "").trim(); continue; }
+          contentLines.push(rawLine);
+        }
+
+        return {
+          id: `${fallback.file || "note"}-${index}`,
+          title: title || fallback.title || "未命名笔记",
+          category: category || "未分类",
+          meta: meta || "",
+          date: date || "",
+          content: contentLines.join("\n").trim()
+        };
+      });
+    }
+
+    /* ===== 渲染详情页 ===== */
+    async function initDetailPage() {
+      const card = document.getElementById("note-detail-card");
+      const loading = document.getElementById("note-detail-loading");
+
+      // 返回按钮
+      document.getElementById("note-back-btn").addEventListener("click", () => {
+        if (document.referrer && document.referrer.includes("notes.html")) {
+          history.back();
+        } else {
+          window.location.href = "notes.html";
+        }
+      });
+
+      // 读取 URL 参数
+      const params = new URLSearchParams(location.search);
+      const file = params.get("file");
+      const blockIndex = parseInt(params.get("index") ?? "0", 10);
+
+      if (!file) {
+        card.innerHTML = `<p class="notes-empty">未指定笔记文件，请返回列表重新选择。</p>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(`加载失败: ${file}`);
+        const mdText = await res.text();
+
+        // 从文件路径推断 fallback
+        const fallback = { file };
+        const notes = parseMarkdownToNotes(mdText, fallback);
+        const note = notes[blockIndex] ?? notes[0];
+
+        if (!note) {
+          card.innerHTML = `<p class="notes-empty">未找到对应笔记内容。</p>`;
+          return;
+        }
+
+        // 更新页面标题
+        document.title = `${note.title} · 笔记`;
+
+        const dateDisplay = note.date
+          ? `<span class="note-date">${formatDate(note.date)}</span>` : "";
+
+        // 移除 loading，注入内容
+        if (loading) loading.remove();
+
+        card.innerHTML = `
+          <div class="note-card-top">
+            <span class="note-tag">${escapeHtml(note.category)}</span>
+            ${dateDisplay}
+          </div>
+          <h2 class="note-detail-title">${escapeHtml(note.title)}</h2>
+          <div class="note-detail-body note-markdown-full">
+            ${simpleMarkdownToHtml(note.content)}
+          </div>
+        `;
+
+        // 渲染公式
+        await loadKaTeX();
+        if (window.renderMathInElement) {
+          renderMathInElement(card, {
+            delimiters: [
+              { left: "$$", right: "$$", display: true },
+              { left: "$", right: "$", display: false },
+              { left: "\\(", right: "\\)", display: false },
+              { left: "\\[", right: "\\]", display: true }
+            ],
+            throwOnError: false
+          });
+        }
+
+      } catch (err) {
+        console.error(err);
+        if (loading) loading.remove();
+        card.innerHTML = `<p class="notes-empty">笔记加载失败，请检查路径或返回列表重试。</p>`;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", initDetailPage);
+  </script>
+</body>
+</html>
