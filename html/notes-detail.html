@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>笔记详情</title>
   <link rel="stylesheet" href="../css/style.css">
-  <!-- KaTeX 样式 -->
   <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css">
 </head>
 <body>
@@ -17,16 +16,13 @@
     <section class="notes-page no-card">
       <div class="note-detail-layout">
 
-        <!-- 返回按钮 -->
         <div class="note-detail-back">
           <button class="note-back-btn" id="note-back-btn" type="button">
             ← 返回笔记列表
           </button>
         </div>
 
-        <!-- 笔记正文卡片 -->
         <article class="note-detail-card" id="note-detail-card">
-          <!-- 加载中占位 -->
           <div class="note-detail-loading" id="note-detail-loading">
             <span class="note-loading-dot"></span>
             <span class="note-loading-dot"></span>
@@ -43,7 +39,7 @@
   </footer>
 
   <script type="module">
-    /* ===== 复用 notes.js 的工具函数 ===== */
+    /* ===== 脚本动态加载 ===== */
     function loadScript(src) {
       return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
@@ -62,6 +58,7 @@
     }
     loadKaTeX().catch(() => {});
 
+    /* ===== 工具函数 ===== */
     function escapeHtml(str) {
       return String(str ?? "")
         .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -78,16 +75,15 @@
       return d.toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
     }
 
-    /* ===== Markdown → HTML（与 notes.js 保持一致） ===== */
+    /* ===== Markdown → HTML ===== */
     function simpleMarkdownToHtml(md) {
       const text = normalizeLineEndings(md).trim();
       if (!text) return "";
 
       const lines = text.split("\n");
       const html = [];
-      let paragraphBuffer = [], listBuffer = [], codeBuffer = [];
+      let paragraphBuffer = [], listBuffer = [], codeBuffer = [], mathBlockBuffer = [];
       let inCodeBlock = false, inMathBlock = false;
-      let mathBlockBuffer = [];
 
       function flushParagraph() {
         if (!paragraphBuffer.length) return;
@@ -153,6 +149,7 @@
       return html.join("\n");
     }
 
+    /* ===== Markdown 解析 ===== */
     function parseMarkdownToNotes(md, fallback = {}) {
       const raw = normalizeLineEndings(md);
       const blocks = raw.split(/\n---+\n/g).map(s => s.trim()).filter(Boolean);
@@ -182,83 +179,93 @@
       });
     }
 
-    /* ===== 渲染详情页 ===== */
+    /* ===== 渲染详情内容 ===== */
+    function renderNoteContent(card, note) {
+      const dateDisplay = note.date
+        ? `<span class="note-date">${formatDate(note.date)}</span>` : "";
+
+      card.innerHTML = `
+        <div class="note-card-top">
+          <span class="note-tag">${escapeHtml(note.category)}</span>
+          ${dateDisplay}
+        </div>
+        <h2 class="note-detail-title">${escapeHtml(note.title)}</h2>
+        <div class="note-detail-body note-markdown-full">
+          ${simpleMarkdownToHtml(note.content)}
+        </div>
+      `;
+    }
+
+    /* ===== 错误状态 ===== */
+    function renderError(card, message) {
+      card.innerHTML = `<p class="notes-empty">${escapeHtml(message)}</p>`;
+    }
+
+    /* ===== 主初始化逻辑 ===== */
     async function initDetailPage() {
-      const card = document.getElementById("note-detail-card");
+      const card    = document.getElementById("note-detail-card");
       const loading = document.getElementById("note-detail-loading");
 
-      // 返回按钮
+      /* 返回按钮：优先回到 SPA 笔记列表，其次浏览器 back */
       document.getElementById("note-back-btn").addEventListener("click", () => {
-        if (document.referrer && document.referrer.includes("notes.html")) {
+        const ref = document.referrer;
+        if (ref && (ref.includes("index.html") || ref.includes("notes.html"))) {
           history.back();
         } else {
-          window.location.href = "notes.html";
+          window.location.href = "../index.html?page=notes";
         }
       });
 
-      // 读取 URL 参数
-      const params = new URLSearchParams(location.search);
-      const file = params.get("file");
+      /* 读取 URL 参数 */
+      const params     = new URLSearchParams(location.search);
+      const file       = params.get("file");
       const blockIndex = parseInt(params.get("index") ?? "0", 10);
 
       if (!file) {
-        card.innerHTML = `<p class="notes-empty">未指定笔记文件，请返回列表重新选择。</p>`;
+        if (loading) loading.remove();
+        renderError(card, "未指定笔记文件，请返回列表重新选择。");
         return;
       }
 
       try {
         const res = await fetch(file);
-        if (!res.ok) throw new Error(`加载失败: ${file}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const mdText = await res.text();
 
-        // 从文件路径推断 fallback
-        const fallback = { file };
-        const notes = parseMarkdownToNotes(mdText, fallback);
-        const note = notes[blockIndex] ?? notes[0];
+        const notes = parseMarkdownToNotes(mdText, { file });
+        const note  = notes[blockIndex] ?? notes[0];
 
         if (!note) {
-          card.innerHTML = `<p class="notes-empty">未找到对应笔记内容。</p>`;
+          if (loading) loading.remove();
+          renderError(card, "未找到对应笔记内容，请返回列表重新选择。");
           return;
         }
 
-        // 更新页面标题
+        /* 更新页面标题 */
         document.title = `${note.title} · 笔记`;
 
-        const dateDisplay = note.date
-          ? `<span class="note-date">${formatDate(note.date)}</span>` : "";
-
-        // 移除 loading，注入内容
+        /* 注入内容 */
         if (loading) loading.remove();
+        renderNoteContent(card, note);
 
-        card.innerHTML = `
-          <div class="note-card-top">
-            <span class="note-tag">${escapeHtml(note.category)}</span>
-            ${dateDisplay}
-          </div>
-          <h2 class="note-detail-title">${escapeHtml(note.title)}</h2>
-          <div class="note-detail-body note-markdown-full">
-            ${simpleMarkdownToHtml(note.content)}
-          </div>
-        `;
-
-        // 渲染公式
+        /* 渲染 KaTeX */
         await loadKaTeX();
         if (window.renderMathInElement) {
           renderMathInElement(card, {
             delimiters: [
-              { left: "$$", right: "$$", display: true },
-              { left: "$", right: "$", display: false },
+              { left: "$$",  right: "$$",  display: true  },
+              { left: "$",   right: "$",   display: false },
               { left: "\\(", right: "\\)", display: false },
-              { left: "\\[", right: "\\]", display: true }
+              { left: "\\[", right: "\\]", display: true  }
             ],
             throwOnError: false
           });
         }
 
       } catch (err) {
-        console.error(err);
+        console.error("[notes-detail]", err);
         if (loading) loading.remove();
-        card.innerHTML = `<p class="notes-empty">笔记加载失败，请检查路径或返回列表重试。</p>`;
+        renderError(card, `笔记加载失败（${err.message}），请检查路径或返回列表重试。`);
       }
     }
 

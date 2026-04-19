@@ -2410,19 +2410,91 @@ body.vpn-modal-open {
 }
 
 /* ===== 笔记详情页布局 ===== */
-.note-detail-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  max-width: 800px;
-  margin: 0 auto;
-  width: 100%;
+/* TOC 侧边栏：复用 notes-sidebar 的 sticky 定位 */
+.note-toc-sidebar {
+  position: sticky;
+  top: 16px;
+  align-self: start;
 }
 
-/* 返回按钮行 */
-.note-detail-back {
+/* TOC 卡片：与 notes-sidebar-card 风格一致 */
+.note-toc-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 24px 20px;
+  box-shadow: var(--shadow-soft);
+}
+
+.note-toc-card h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+/* 目录列表 */
+.note-toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 各级缩进 */
+.note-toc-level-1 { padding-left: 0; }
+.note-toc-level-2 { padding-left: 12px; }
+.note-toc-level-3 { padding-left: 24px; }
+
+/* TOC 链接 */
+.note-toc-link {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  border-left: 2px solid transparent;
+  word-break: break-all;
+}
+
+.note-toc-link:hover {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  border-left-color: var(--primary);
+}
+
+/* 当前激活章节 */
+.note-toc-link.is-active {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-weight: 700;
+  border-left-color: var(--primary);
+}
+
+/* 无目录时的空状态文字 */
+.note-toc-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* 详情页返回按钮行与正文卡片之间的间距 */
+.note-detail-back {
+  margin-bottom: 16px;
+}
+
+/* ===== 响应式：≤900px 隐藏 TOC，正文占全宽 ===== */
+@media (max-width: 900px) {
+  .note-toc-sidebar {
+    display: none;
+  }
 }
 
 .note-back-btn {
