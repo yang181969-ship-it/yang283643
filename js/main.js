@@ -264,13 +264,16 @@ document.addEventListener("DOMContentLoaded", initNavAutoCenter);
 function initMobileSearch() {
   const toggleBtn = document.getElementById("search-toggle");
   const searchBar = document.querySelector(".search-bar");
+  const searchControl = document.querySelector(".search-control");
   const backdrop  = document.getElementById("search-backdrop");
   const input     = document.getElementById("search-input");
-  if (!toggleBtn || !searchBar) return;
+  const themeToggle = document.getElementById("theme-toggle");
+  if (!toggleBtn || !searchBar || !searchControl) return;
 
   function open() {
     searchBar.classList.add("is-open");
     toggleBtn.classList.add("is-open");
+    searchControl.classList.add("is-open");
     backdrop?.classList.add("is-open");
     setTimeout(() => input?.focus(), 50);
   }
@@ -278,54 +281,54 @@ function initMobileSearch() {
   function close() {
     searchBar.classList.remove("is-open");
     toggleBtn.classList.remove("is-open");
+    searchControl.classList.remove("is-open");
     backdrop?.classList.remove("is-open");
   }
 
-  // 点击触发按钮：
-  // - 未展开：展开
-  // - 已展开 + 输入框有内容：触发搜索（模拟点击已有的 #search-btn，复用 search.js 的搜索逻辑）
-  // - 已展开 + 输入框为空：关闭
   toggleBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+
     const isOpen = searchBar.classList.contains("is-open");
     if (!isOpen) {
       open();
       return;
     }
+
     const kw = (input?.value || "").trim();
     if (kw) {
-      // 复用 search.js 绑定在 #search-btn 上的逻辑
       document.getElementById("search-btn")?.click();
-      // 搜索完成后自动关闭
       setTimeout(close, 0);
     } else {
       close();
     }
   });
 
-  // 点击搜索框内部不关闭
   searchBar.addEventListener("click", (e) => e.stopPropagation());
 
-  // 点击页面其他区域关闭
   document.addEventListener("click", () => {
     if (searchBar.classList.contains("is-open")) close();
   });
 
-  // 遮罩点击关闭（手机端）
   backdrop?.addEventListener("click", close);
 
-  // ESC 关闭
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") close();
   });
 
-  // 点击搜索按钮 / 回车后关闭
   document.getElementById("search-btn")?.addEventListener("click", () => {
     if (searchBar.classList.contains("is-open")) close();
   });
+
   input?.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && searchBar.classList.contains("is-open")) {
       setTimeout(close, 0);
+    }
+  });
+
+  /* 打开主题面板前，先关闭搜索，避免层级冲突 */
+  themeToggle?.addEventListener("click", () => {
+    if (searchBar.classList.contains("is-open")) {
+      close();
     }
   });
 }
