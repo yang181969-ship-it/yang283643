@@ -96,7 +96,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  background: linear-gradient(90deg, #ffffff 0%, #f7f9fd 100%);
+  background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-panel) 100%);
   border-bottom: 1px solid var(--border-soft);
   z-index: 50;
   min-width: 0;
@@ -488,9 +488,18 @@ footer {
 .search-icon {
   position: absolute;
   left: 11px;
-  font-size: 14px;
   pointer-events: none;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary); /* SVG 通过 currentColor 继承，调色盘变化时自动更新 */
+}
+
+.search-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 .search-input {
@@ -3138,3 +3147,62 @@ footer,
   transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 
+
+
+/* ============================================================
+   浮动按钮组（返回顶部 + 返回上一页）
+   ============================================================ */
+#floating-btns {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 999;
+  pointer-events: none;
+}
+
+#back-to-prev {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+#back-to-prev.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#back-to-prev:hover {
+  transform: translateY(-2px);
+}
+
+/* 覆盖原 #back-to-top 的 fixed 定位，由 #floating-btns 统一管理 */
+#floating-btns #back-to-top {
+  position: static;
+  bottom: auto;
+  right: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+#floating-btns button svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
