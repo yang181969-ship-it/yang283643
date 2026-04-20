@@ -446,6 +446,172 @@ footer {
   transform: translateY(-2px);
 }
 
+/* header 右侧区域：搜索框 + 调色盘 */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* ===== 搜索框 ===== */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 11px;
+  font-size: 14px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.search-input {
+  width: 220px;
+  height: 40px;
+  padding: 0 34px 0 34px;
+  border: 1.5px solid var(--border-soft);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, width 0.25s ease;
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px hsla(var(--primary-hue), 80%, 68%, 0.18);
+  width: 280px;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-clear {
+  position: absolute;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: var(--text-muted);
+  color: #fff;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.search-clear:hover {
+  opacity: 1;
+}
+
+.search-btn {
+  height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 2px 8px var(--glow);
+}
+
+.search-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--glow);
+}
+
+/* ===== 搜索结果页 ===== */
+.search-page {
+  width: 100%;
+}
+
+.search-result-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-result-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.search-result-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.search-result-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  line-height: 1.3;
+  color: var(--primary-dark);
+}
+
+.search-result-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+/* 高亮关键词 */
+.search-result-title mark,
+.search-result-desc mark {
+  background: hsla(var(--primary-hue), 80%, 68%, 0.28);
+  color: var(--primary-dark);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.search-empty {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+/* 响应式：窄屏收起搜索框 */
+@media (max-width: 900px) {
+  .search-input {
+    width: 140px;
+  }
+  .search-input:focus {
+    width: 180px;
+  }
+  .search-btn {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .search-bar {
+    display: none;
+  }
+}
+
 .theme-control {
   position: relative;
 }
@@ -2402,11 +2568,22 @@ body.vpn-modal-open {
 .note-markdown {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2; /* WebKit 内核浏览器 */
-  line-clamp: 2; /* 标准属性，兼容支持标准写法的浏览器 */
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* 兜底：防止公式块/标题撑开卡片高度 */
+  max-height: 3.2em;
   contain: layout;
+}
+
+/* 预览卡片中隐藏公式块和标题，只展示纯文字 */
+.note-markdown .note-formula,
+.note-markdown h1,
+.note-markdown h2,
+.note-markdown h3,
+.note-markdown h4 {
+  display: none;
 }
 
 /* ===== 笔记详情页布局 ===== */

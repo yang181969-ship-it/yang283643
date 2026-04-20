@@ -25,12 +25,30 @@
         <span>Yang181969</span>
       </a>
 
-      <div class="theme-control">
-        <button id="theme-toggle">🎨</button>
-        <div class="theme-panel" id="theme-panel">
-          <label>主题颜色</label>
-          <div class="theme-preview"></div>
-          <input type="range" id="hue-slider" min="0" max="360" value="330">
+      <div class="header-right">
+        <!-- 搜索框 -->
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              id="search-input"
+              class="search-input"
+              placeholder="搜索笔记、动漫、页面…"
+              autocomplete="off"
+            >
+            <button id="search-clear" class="search-clear" style="display:none" type="button" title="清空">✕</button>
+          </div>
+          <button id="search-btn" class="search-btn" type="button">搜索</button>
+        </div>
+
+        <div class="theme-control">
+          <button id="theme-toggle">🎨</button>
+          <div class="theme-panel" id="theme-panel">
+            <label>主题颜色</label>
+            <div class="theme-preview"></div>
+            <input type="range" id="hue-slider" min="0" max="360" value="330">
+          </div>
         </div>
       </div>
     </header>
@@ -94,14 +112,17 @@
   <script defer src="js/animes.js"></script>
   <script defer src="js/gallery.js"></script>
   <script defer src="js/gallery-data.js"></script>
+  <script defer src="js/search.js"></script>
   <script defer src="js/notes.js"></script>
 
   <!-- KaTeX 和 p5.js：按需加载，只在笔记页面用到时才请求 -->
-  <!-- 如果你的 notes.js 里没有动态加载逻辑，可以把下面两行取消注释改为按需引入 -->
   <!-- <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script> -->
   <!-- <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script> -->
   <!-- <script defer src="https://cdn.bootcdn.net/ajax/libs/p5.js/1.11.3/p5.min.js"></script> -->
 
-  <button id="back-to-top">↑</button>
+  <div id="floating-btns">
+    <button id="back-to-prev" title="返回上一页">←</button>
+    <button id="back-to-top"  title="返回顶部">↑</button>
+  </div>
 </body>
 </html>

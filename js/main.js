@@ -125,6 +125,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
+  // 暴露给 search.js 使用
+  window._loadPage = loadPage;
+
   navLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
       const href = link.getAttribute("href");
@@ -138,6 +141,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("popstate", (e) => {
     const state = e.state || {};
+
+    // 搜索结果页回退
+    if (state.search) {
+      const kw = new URLSearchParams(window.location.search).get("search");
+      if (kw && typeof runSearch === "function") {
+        runSearch(kw).then(results => renderSearchResults(kw, results));
+        document.getElementById("search-input").value = kw;
+      }
+      return;
+    }
+
     const page = state.page || getCurrentPageFromUrl();
 
     // 如果 state 里有笔记详情信息，说明是从笔记详情回退/前进

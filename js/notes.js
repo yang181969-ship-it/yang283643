@@ -298,9 +298,6 @@ function renderDetailView(note, onBack) {
   wrapper.innerHTML = `
     <div class="notes-layout">
       <div class="notes-main">
-        <div class="note-detail-back">
-          <button class="note-back-btn" id="note-back-btn" type="button">← 返回笔记列表</button>
-        </div>
         <article class="note-detail-card" id="note-detail-card">
           <div class="note-detail-loading" id="note-detail-loading">
             <span class="note-loading-dot"></span>
@@ -361,20 +358,6 @@ function renderDetailView(note, onBack) {
     }
     attachToc();
   }).catch(() => attachToc());
-
-  /* 返回按钮 */
-  document.getElementById("note-back-btn").addEventListener("click", () => {
-    const toc = document.getElementById("note-toc-sidebar");
-    if (toc && toc._observer) toc._observer.disconnect();
-
-    main.innerHTML = savedContent;
-    const url = new URL(window.location.href);
-    url.searchParams.delete("note");
-    url.searchParams.delete("noteIndex");
-    history.pushState({ page: "notes" }, "", url.toString());
-    if (typeof onBack === "function") onBack();
-    if (scrollEl) scrollEl.scrollTo({ top: 0 });
-  });
 
   /* 更新 URL */
   const url = new URL(window.location.href);
