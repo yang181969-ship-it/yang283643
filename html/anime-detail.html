@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>动漫详情</title>
 
-  <link rel="stylesheet" href="../css/style-global.css">
-  <link rel="stylesheet" href="../css/style-theme.css">
-  <link rel="stylesheet" href="../css/style-animes.css">
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
   <div class="layout">
@@ -64,9 +62,7 @@
           <ul id="anime-links"></ul>
         </section>
 
-        <section>
-          <a href="../index.html?page=anime" class="back-link">← 返回动漫列表</a>
-        </section>
+
       </main>
 
       <!-- ✅ footer 也必须放进来 -->
@@ -82,9 +78,31 @@
       <img class="lightbox-image" id="lightbox-image" src="" alt="">
     </div>
 
-  </div>
+    <!-- 浮动按钮 -->
+    <div id="floating-btns">
+      <button id="back-to-prev" title="返回上一页">←</button>
+      <button id="back-to-top"  title="返回顶部">↑</button>
+    </div>
 
+  </div>
   <script src="../js/theme.js"></script>
   <script src="../js/anime-detail.js"></script>
+  <script>
+    // 浮动按钮：与主站保持一致
+    document.addEventListener("DOMContentLoaded", () => {
+      const group   = document.getElementById("floating-btns");
+      const btnTop  = document.getElementById("back-to-top");
+      const btnPrev = document.getElementById("back-to-prev");
+      const scroller = document.querySelector(".content-scroll");
+      if (!group || !scroller) return;
+
+      scroller.addEventListener("scroll", () => {
+        group.classList.toggle("show", scroller.scrollTop > 300);
+      });
+
+      btnTop?.addEventListener("click", () => scroller.scrollTo({ top: 0, behavior: "smooth" }));
+      btnPrev?.addEventListener("click", () => history.back());
+    });
+  </script>
 </body>
 </html>
