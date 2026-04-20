@@ -470,19 +470,11 @@ footer {
   align-items: center;
   gap: 14px;
   min-width: 0;
-  position: relative;
 }
 
 /* ===== 搜索框（桌面+手机统一折叠式）===== */
-.search-control {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex-direction: row-reverse;
-  min-width: 0;
-  z-index: 20;
-}
 
+/* 触发按钮：默认显示，圆形，和调色盘/明暗按钮尺寸统一（46x46） */
 .search-toggle {
   width: 46px;
   height: 46px;
@@ -495,15 +487,8 @@ footer {
   background: var(--bg-card);
   color: var(--primary);
   cursor: pointer;
-  box-shadow: none;
-  transition:
-    transform 0.2s ease,
-    color 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
-  position: relative;
-  z-index: 2;
-  flex-shrink: 0;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
 
 .search-toggle svg {
@@ -513,14 +498,16 @@ footer {
 
 .search-toggle:hover {
   transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
 }
 
+/* 展开态：按钮自身高亮 + 去掉左侧圆角，与输入框无缝拼接 */
 .search-toggle.is-open {
   background: var(--primary);
   color: #fff;
   border-color: var(--primary);
-  border-left: none;
   border-radius: 0 999px 999px 0;
+  /* 展开态不要上移的 hover 效果，因为它是搜索框的一部分 */
   box-shadow: none;
 }
 
@@ -529,7 +516,7 @@ footer {
   background: var(--primary-dark);
 }
 
-/* 搜索框容器：纯布局层，不承担视觉边框 */
+/* 搜索框容器：默认宽度 0，JS 加 .is-open 后平滑展开 */
 .search-bar {
   display: flex;
   align-items: center;
@@ -537,36 +524,52 @@ footer {
   width: 0;
   max-width: 0;
   opacity: 0;
-  margin-right: 0;
+  margin-right: -1px;
   padding: 0;
-  background: transparent !important;
+  background: transparent;
   border: none !important;
-  border-radius: 0 !important;
+  outline: none;
+  border-radius: 0;
   box-shadow: none !important;
-  outline: none !important;
   pointer-events: none;
   transition:
     max-width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.24s ease;
+    opacity 0.28s ease,
+    margin-right 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-bar.is-open {
   max-width: 300px;
   width: auto;
   opacity: 1;
+  margin-right: -1px;
   pointer-events: auto;
 }
 
 .search-input-wrap {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.search-bar.is-open {
+  max-width: 300px;
+  width: auto;
+  opacity: 1;
+  /* -1px 让按钮边框和输入框边框重合，视觉上合为一体 */
+  margin-right: -1px;
+  pointer-events: auto;
+}
+
+/* 输入框包裹 */
+.search-input-wrap {
   position: relative;
   display: flex;
   align-items: center;
-  flex-shrink: 0;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  flex-shrink: 0; /* 防止宽度过渡时被 flex 压缩导致内容跳动 */
 }
 
+/* 左侧放大镜图标 */
 .search-icon {
   position: absolute;
   left: 12px;
@@ -576,7 +579,6 @@ footer {
   align-items: center;
   justify-content: center;
   color: var(--primary);
-  z-index: 2;
 }
 
 .search-icon svg {
@@ -585,33 +587,39 @@ footer {
   display: block;
 }
 
+/* 输入框 */
 .search-input {
   width: 280px;
-  height: 46px;
-  padding: 0 40px 0 36px;
+  height: 46px;  /* 跟 .search-toggle 同高，形成一条药丸 */
+  padding: 0 40px 0 36px; /* 右侧给 clear 按钮留位置 */
   border: 1px solid var(--border-soft);
-  border-right: none;
-  border-radius: 999px 0 0 999px;
+  border-right: none;        /* 右边由 .search-toggle 提供 */
+  border-radius: 999px 0 0 999px; /* 右端不要圆角 */
   background: var(--bg-card);
   color: var(--text-main);
   font-size: 14px;
   outline: none;
-  box-shadow: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .search-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px hsla(var(--primary-hue), 80%, 68%, 0.16);
+  box-shadow: 0 0 0 3px hsla(var(--primary-hue), 80%, 68%, 0.18);
+}
+
+/* clear 按钮靠在输入框右端（因为内嵌按钮已移除，位置要调） */
+.search-clear {
+  right: 12px !important;
 }
 
 .search-input::placeholder {
   color: var(--text-muted);
 }
 
+/* 清除按钮 */
 .search-clear {
   position: absolute;
-  right: 12px;
+  right: 44px;
   width: 18px;
   height: 18px;
   border: none;
@@ -626,16 +634,25 @@ footer {
   padding: 0;
   line-height: 1;
   opacity: 0.7;
-  transition: opacity 0.2s ease;
-  z-index: 2;
+  transition: opacity 0.2s;
 }
 
 .search-clear:hover {
   opacity: 1;
 }
 
+/* 嵌入式搜索按钮：改用外层 .search-toggle，这里隐藏 */
 .search-btn {
-  display: none !important;
+  display: none;
+}
+
+/* search-toggle 的容器：横向排列，按钮在右，搜索框在左
+   移动端改为 position: relative 以便搜索框做 fixed 定位 */
+.search-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse; /* 按钮固定在右端，搜索框从左侧伸出 */
 }
 
 /* ===== 搜索结果页 ===== */
@@ -700,77 +717,96 @@ footer {
   display: block;
 }
 
-/* 手机端：搜索展开后覆盖整个 header 区块并居中 */
+/* 手机端：搜索展开时变成屏幕顶部的 fixed 浮层（桌面端那套横向生长过渡在窄屏不合适） */
 @media (max-width: 600px) {
+  /* header 作为覆盖层基准 */
   .layout > header {
     position: relative;
-    overflow: visible;
+    overflow: hidden;
   }
 
+  /* 右侧控件本身保持原布局 */
   .header-right {
     position: relative;
     min-width: 0;
-    gap: 10px;
   }
 
+  /* 搜索控件容器 */
   .search-control {
     position: relative;
     display: flex;
     align-items: center;
     flex-direction: row-reverse;
-    z-index: 20;
+    z-index: 80;
   }
 
-  .search-control.is-open,
-  .search-control:has(.search-bar.is-open) {
-    position: absolute;
-    left: 14px;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    justify-content: flex-end;
-    z-index: 240;
-  }
-
+  /* 默认收起 */
   .search-bar {
-    position: static;
-    transform: none;
+    position: absolute;
+    top: 50%;
+    right: 46px; /* 紧贴原搜索按钮左边 */
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+
     width: 0;
     max-width: 0;
     opacity: 0;
-    margin-right: 0;
+    margin-right: -1px;
     padding: 0;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
     pointer-events: none;
+
+    transition:
+      max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.22s ease;
   }
 
+  /* 展开后直接覆盖整个 header 内部可视区域 */
   .search-bar.is-open {
-    width: auto;
     max-width: calc(100vw - 28px - 46px);
     opacity: 1;
     pointer-events: auto;
   }
 
+  /* 输入框包裹层不再出现任何额外边框/背景 */
   .search-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
     width: calc(100vw - 28px - 46px);
-    max-width: calc(100vw - 28px - 46px);
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
 
+  /* 手机端展开后的真正搜索框 */
   .search-input {
     width: 100%;
-    max-width: 100%;
     height: 46px;
     padding: 0 40px 0 42px;
     border: 1px solid var(--border-soft);
     border-right: none;
     border-radius: 999px 0 0 999px;
     background: var(--bg-card);
+    color: var(--text-main);
+    font-size: 14px;
+    outline: none;
     box-shadow: none;
+  }
+
+  .search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px hsla(var(--primary-hue), 80%, 68%, 0.16);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+    font-size: 14px;
   }
 
   .search-icon {
@@ -778,37 +814,40 @@ footer {
   }
 
   .search-clear {
-    right: 12px;
+    right: 12px !important;
   }
 
+  /* 手机端不再启用内嵌按钮 */
+  .search-btn {
+    display: none !important;
+  }
+
+  /* 原来的圆形按钮就是展开后的右端按钮 */
   .search-toggle {
-    flex-shrink: 0;
     position: relative;
-    z-index: 2;
+    z-index: 81;
+    flex-shrink: 0;
   }
 
   .search-toggle.is-open {
-    border-left: none;
     border-radius: 0 999px 999px 0;
+    box-shadow: none;
   }
 
-  /* 搜索展开时，先盖住 header 其余内容；点主题按钮时主题面板仍可压到更上层 */
-  .search-control.is-open ~ .theme-control,
-  .search-control:has(.search-bar.is-open) ~ .theme-control,
-  .search-control.is-open ~ .mode-toggle,
-  .search-control:has(.search-bar.is-open) ~ .mode-toggle {
-    pointer-events: none;
+  /* 展开时让搜索层盖住 header 其他内容 */
+  .search-control.is-open,
+  .search-control:has(.search-bar.is-open) {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    z-index: 120;
   }
 
-  .theme-control {
-    position: relative;
-    z-index: 260;
-  }
-
+  /* 调色盘面板仍可正常显示 */
   .theme-panel {
     right: 0;
     width: min(260px, calc(100vw - 28px));
-    z-index: 300;
   }
 }
 
