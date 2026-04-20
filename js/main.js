@@ -260,39 +260,66 @@ function initNavAutoCenter() {
 
 document.addEventListener("DOMContentLoaded", initNavAutoCenter);
 
-/* ===== 手机端搜索浮层 ===== */
+/* ===== 搜索框折叠/展开（桌面端+手机端统一）===== */
 function initMobileSearch() {
-  const toggleBtn = document.getElementById("search-mobile-toggle");
+  const toggleBtn = document.getElementById("search-toggle");
   const searchBar = document.querySelector(".search-bar");
   const backdrop  = document.getElementById("search-backdrop");
   const input     = document.getElementById("search-input");
-  if (!toggleBtn || !searchBar || !backdrop) return;
+  if (!toggleBtn || !searchBar) return;
 
   function open() {
     searchBar.classList.add("is-open");
-    backdrop.classList.add("is-open");
-    // 让输入框获得焦点，方便直接打字
+    toggleBtn.classList.add("is-open");
+    backdrop?.classList.add("is-open");
     setTimeout(() => input?.focus(), 50);
   }
 
   function close() {
     searchBar.classList.remove("is-open");
-    backdrop.classList.remove("is-open");
+    toggleBtn.classList.remove("is-open");
+    backdrop?.classList.remove("is-open");
   }
 
+  // 点击触发按钮：
+  // - 未展开：展开
+  // - 已展开 + 输入框有内容：触发搜索（模拟点击已有的 #search-btn，复用 search.js 的搜索逻辑）
+  // - 已展开 + 输入框为空：关闭
   toggleBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    searchBar.classList.contains("is-open") ? close() : open();
+    const isOpen = searchBar.classList.contains("is-open");
+    if (!isOpen) {
+      open();
+      return;
+    }
+    const kw = (input?.value || "").trim();
+    if (kw) {
+      // 复用 search.js 绑定在 #search-btn 上的逻辑
+      document.getElementById("search-btn")?.click();
+      // 搜索完成后自动关闭
+      setTimeout(close, 0);
+    } else {
+      close();
+    }
   });
 
-  backdrop.addEventListener("click", close);
+  // 点击搜索框内部不关闭
+  searchBar.addEventListener("click", (e) => e.stopPropagation());
+
+  // 点击页面其他区域关闭
+  document.addEventListener("click", () => {
+    if (searchBar.classList.contains("is-open")) close();
+  });
+
+  // 遮罩点击关闭（手机端）
+  backdrop?.addEventListener("click", close);
 
   // ESC 关闭
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") close();
   });
 
-  // 搜索完成后关闭浮层（点击搜索按钮或回车）
+  // 点击搜索按钮 / 回车后关闭
   document.getElementById("search-btn")?.addEventListener("click", () => {
     if (searchBar.classList.contains("is-open")) close();
   });
