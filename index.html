@@ -11,6 +11,9 @@
   <!-- CSS：合并为单个文件，减少请求数 -->
   <link rel="stylesheet" href="css/style.css">
 
+  <!-- 主题初始化：同步加载，避免刷新时从明亮闪到黑暗 -->
+  <script src="js/theme.js"></script>
+
   <!-- KaTeX CSS：非阻塞加载，只在需要时生效 -->
   <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css"></noscript>
@@ -43,13 +46,96 @@
         </div>
 
         <div class="theme-control">
-          <button id="theme-toggle">🎨</button>
+          <button id="theme-toggle" aria-label="打开主题面板" title="主题">
+            <!-- 调色盘图标（轮廓风，跟随主题色） -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22a10 10 0 1 1 10-10c0 2.5-2 4-4 4h-2a2 2 0 0 0-1 3.7A2 2 0 0 1 12 22z"></path>
+              <circle cx="6.5"  cy="12.5" r="1.2" fill="currentColor" stroke="none"></circle>
+              <circle cx="9"    cy="7.5"  r="1.2" fill="currentColor" stroke="none"></circle>
+              <circle cx="14.5" cy="7.5"  r="1.2" fill="currentColor" stroke="none"></circle>
+              <circle cx="17.5" cy="11.5" r="1.2" fill="currentColor" stroke="none"></circle>
+            </svg>
+          </button>
           <div class="theme-panel" id="theme-panel">
-            <label>主题颜色</label>
+
+            <!-- 模式：明亮 / 黑暗 / 随系统 -->
+            <label>模式</label>
+            <div class="theme-mode-group" role="radiogroup" aria-label="主题模式">
+              <button type="button" class="theme-mode-btn" data-mode="light"  title="明亮模式">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <line x1="12" y1="2"  x2="12" y2="4"></line>
+                  <line x1="12" y1="20" x2="12" y2="22"></line>
+                  <line x1="2"  y1="12" x2="4"  y2="12"></line>
+                  <line x1="20" y1="12" x2="22" y2="12"></line>
+                  <line x1="4.9" y1="4.9" x2="6.3" y2="6.3"></line>
+                  <line x1="17.7" y1="17.7" x2="19.1" y2="19.1"></line>
+                  <line x1="4.9" y1="19.1" x2="6.3" y2="17.7"></line>
+                  <line x1="17.7" y1="6.3" x2="19.1" y2="4.9"></line>
+                </svg>
+                <span>明亮</span>
+              </button>
+              <button type="button" class="theme-mode-btn" data-mode="dark" title="黑暗模式">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+                </svg>
+                <span>黑暗</span>
+              </button>
+              <button type="button" class="theme-mode-btn" data-mode="auto" title="跟随系统">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="13" rx="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                <span>跟随</span>
+              </button>
+            </div>
+
+            <!-- 预设主题色 -->
+            <label>预设颜色</label>
+            <div class="theme-presets" role="radiogroup" aria-label="预设主题色">
+              <button type="button" class="theme-preset" data-hue="0"   style="--preset: hsl(0, 80%, 62%);"   title="红"></button>
+              <button type="button" class="theme-preset" data-hue="20"  style="--preset: hsl(20, 85%, 60%);"  title="橙"></button>
+              <button type="button" class="theme-preset" data-hue="45"  style="--preset: hsl(45, 90%, 55%);"  title="金"></button>
+              <button type="button" class="theme-preset" data-hue="145" style="--preset: hsl(145, 55%, 48%);" title="翠"></button>
+              <button type="button" class="theme-preset" data-hue="180" style="--preset: hsl(180, 60%, 48%);" title="青"></button>
+              <button type="button" class="theme-preset" data-hue="210" style="--preset: hsl(210, 80%, 60%);" title="蓝"></button>
+              <button type="button" class="theme-preset" data-hue="260" style="--preset: hsl(260, 70%, 65%);" title="紫"></button>
+              <button type="button" class="theme-preset" data-hue="330" style="--preset: hsl(330, 80%, 68%);" title="粉"></button>
+            </div>
+
+            <!-- 色相滑块（微调） -->
+            <label>自定义色相</label>
             <div class="theme-preview"></div>
             <input type="range" id="hue-slider" min="0" max="360" value="330">
           </div>
         </div>
+
+        <!-- 明暗快捷切换按钮（调色盘右边） -->
+        <button id="mode-toggle" class="mode-toggle" aria-label="切换明暗模式" title="切换明暗">
+          <!-- 太阳（明亮模式显示） -->
+          <svg class="mode-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <line x1="12" y1="2"  x2="12" y2="4"></line>
+            <line x1="12" y1="20" x2="12" y2="22"></line>
+            <line x1="2"  y1="12" x2="4"  y2="12"></line>
+            <line x1="20" y1="12" x2="22" y2="12"></line>
+            <line x1="4.9" y1="4.9" x2="6.3" y2="6.3"></line>
+            <line x1="17.7" y1="17.7" x2="19.1" y2="19.1"></line>
+            <line x1="4.9" y1="19.1" x2="6.3" y2="17.7"></line>
+            <line x1="17.7" y1="6.3" x2="19.1" y2="4.9"></line>
+          </svg>
+          <!-- 月亮（黑暗模式显示） -->
+          <svg class="mode-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+          </svg>
+          <!-- 显示器（跟随系统） -->
+          <svg class="mode-icon-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="13" rx="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -106,7 +192,6 @@
   </div>
 
   <!-- JS：全部加 defer，不阻塞页面渲染 -->
-  <script defer src="js/theme.js"></script>
   <script defer src="js/main.js"></script>
   <script defer src="js/comment.js"></script>
   <script defer src="js/animes.js"></script>
