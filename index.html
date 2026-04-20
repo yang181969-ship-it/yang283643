@@ -29,6 +29,14 @@
       </a>
 
       <div class="header-right">
+        <!-- 手机端搜索触发按钮（≤600px 显示） -->
+        <button id="search-mobile-toggle" class="search-mobile-toggle" type="button" aria-label="打开搜索" title="搜索">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+          </svg>
+        </button>
+
         <!-- 搜索框 -->
         <div class="search-bar">
           <div class="search-input-wrap">
@@ -222,5 +230,8 @@
       </svg>
     </button>
   </div>
+
+  <!-- 手机搜索浮层遮罩 -->
+  <div id="search-backdrop" class="search-backdrop"></div>
 </body>
 </html>
