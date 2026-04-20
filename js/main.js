@@ -189,19 +189,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-/* ===== 返回顶部按钮 ===== */
-function initBackToTop() {
-  const btn = document.getElementById("back-to-top");
+/* ===== 浮动按钮：返回顶部 + 返回上一页 ===== */
+function initFloatingBtns() {
+  const topBtn  = document.getElementById("back-to-top");
+  const prevBtn = document.getElementById("back-to-prev");
   const scrollContainer = document.querySelector(".content-scroll");
-  if (!btn || !scrollContainer) return;
+  if (!scrollContainer) return;
 
+  // 滚动时同时控制两个按钮的显隐
   scrollContainer.addEventListener("scroll", () => {
-    btn.classList.toggle("show", scrollContainer.scrollTop > 300);
+    const show = scrollContainer.scrollTop > 300;
+    topBtn?.classList.toggle("show", show);
+    prevBtn?.classList.toggle("show", show);
   });
 
-  btn.addEventListener("click", () => {
+  // 返回顶部
+  topBtn?.addEventListener("click", () => {
     scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  // 返回上一页：走浏览器历史
+  prevBtn?.addEventListener("click", () => {
+    history.back();
   });
 }
 
-document.addEventListener("DOMContentLoaded", initBackToTop);
+document.addEventListener("DOMContentLoaded", initFloatingBtns);
