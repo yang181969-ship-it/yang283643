@@ -633,10 +633,87 @@ footer {
   }
 }
 
+/* 手机端：搜索栏变成点击展开的浮层 */
 @media (max-width: 600px) {
+  /* 默认收起搜索栏 */
   .search-bar {
     display: none;
+    position: fixed;
+    top: 72px;
+    left: 14px;
+    right: 14px;
+    z-index: 200;
+    padding: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
   }
+
+  /* 展开态：由 JS 加 .is-open */
+  .search-bar.is-open {
+    display: flex;
+  }
+
+  .search-input {
+    width: 100%;
+    flex: 1;
+  }
+
+  .search-input:focus {
+    width: 100%;
+  }
+
+  /* 展开态时显示搜索按钮 */
+  .search-bar.is-open .search-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 遮罩层 */
+  .search-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 150;
+  }
+  .search-backdrop.is-open {
+    display: block;
+  }
+
+  /* 手机搜索触发按钮（默认隐藏，小屏显示） */
+  .search-mobile-toggle {
+    display: inline-flex;
+  }
+}
+
+/* 默认隐藏手机搜索触发按钮（桌面端不需要） */
+.search-mobile-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.search-mobile-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.search-mobile-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
 }
 
 .theme-control {
@@ -2586,8 +2663,26 @@ body.vpn-modal-open {
   padding: 24px 18px;
   border-radius: 16px;
   border: 1px solid var(--border-soft);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--bg-panel);
   overflow-x: auto;
+  /* 防止 overflow 裁切外边距 */
+  overflow-y: hidden;
+}
+
+/* 让 KaTeX display 块贴合实际内容宽度，
+   这样 \tag 的 absolute 定位就贴在"内容右边"而不是"视口右边"，
+   横向滑动时 tag 会跟着公式一起走 */
+.note-formula .katex-display {
+  min-width: max-content;
+  margin: 0; /* 抹掉 KaTeX 默认上下边距，避免和容器 padding 叠加 */
+}
+.note-formula .katex-display > .katex {
+  padding-right: 2.5em; /* 给 \tag 腾出空间，避免公式尾部和编号贴太近 */
+}
+
+/* 深色模式下公式背景略亮一点，避免和卡片完全融合 */
+[data-theme="dark"] .note-formula {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .notes-empty {
@@ -2618,9 +2713,19 @@ body.vpn-modal-open {
     gap: 18px;
   }
 
+  /* 移动端显式控制顺序：标题在最前 → 分类卡片 → 笔记列表 */
+  .notes-main {
+    display: contents; /* 让子元素参与 notes-layout 的 grid 排序 */
+  }
+  .notes-page-header {
+    order: 1;
+  }
   .notes-sidebar {
     position: static;
-    order: -1;
+    order: 2;
+  }
+  .notes-content {
+    order: 3;
   }
 
   .notes-sidebar-card,
@@ -2949,6 +3054,15 @@ body.vpn-modal-open {
 
   .note-markdown-full {
     font-size: 14px;
+  }
+
+  /* 小屏公式卡片：缩小内边距给横向空间 */
+  .note-formula {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+  .note-formula .katex-display > .katex {
+    padding-right: 2em;
   }
 
   .note-back-btn {

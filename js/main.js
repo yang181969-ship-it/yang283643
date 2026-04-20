@@ -215,3 +215,92 @@ function initFloatingBtns() {
 }
 
 document.addEventListener("DOMContentLoaded", initFloatingBtns);
+
+/* ===== 导航按钮自动居中（移动端横向滚动时）===== */
+function initNavAutoCenter() {
+  const nav = document.querySelector("nav");
+  if (!nav) return;
+
+  function centerActive() {
+    // 仅在 nav 确实可横向滚动时执行（桌面端 flex-direction: column 不会触发）
+    if (nav.scrollWidth <= nav.clientWidth + 1) return;
+
+    const active = nav.querySelector("a.active");
+    if (!active) return;
+
+    // 计算目标滚动位置：让 active 按钮水平居中
+    const navRect    = nav.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    const offset     = (activeRect.left - navRect.left) + activeRect.width / 2 - nav.clientWidth / 2;
+    const target     = nav.scrollLeft + offset;
+
+    nav.scrollTo({ left: target, behavior: "smooth" });
+    // 浏览器会自动把 target 夹到 [0, scrollWidth-clientWidth]，
+    // 所以靠边缘的按钮不会强行居中，符合需求。
+  }
+
+  // 监听 class 变化：active 切换时重新居中
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.type === "attributes" && m.attributeName === "class") {
+        centerActive();
+        return;
+      }
+    }
+  });
+  nav.querySelectorAll("a").forEach(a => {
+    observer.observe(a, { attributes: true, attributeFilter: ["class"] });
+  });
+
+  // 首次加载也执行一次（等布局稳定）
+  requestAnimationFrame(() => setTimeout(centerActive, 60));
+  // 窗口尺寸变化时也重新居中
+  window.addEventListener("resize", () => setTimeout(centerActive, 60));
+}
+
+document.addEventListener("DOMContentLoaded", initNavAutoCenter);
+
+/* ===== 手机端搜索浮层 ===== */
+function initMobileSearch() {
+  const toggleBtn = document.getElementById("search-mobile-toggle");
+  const searchBar = document.querySelector(".search-bar");
+  const backdrop  = document.getElementById("search-backdrop");
+  const input     = document.getElementById("search-input");
+  if (!toggleBtn || !searchBar || !backdrop) return;
+
+  function open() {
+    searchBar.classList.add("is-open");
+    backdrop.classList.add("is-open");
+    // 让输入框获得焦点，方便直接打字
+    setTimeout(() => input?.focus(), 50);
+  }
+
+  function close() {
+    searchBar.classList.remove("is-open");
+    backdrop.classList.remove("is-open");
+  }
+
+  toggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    searchBar.classList.contains("is-open") ? close() : open();
+  });
+
+  backdrop.addEventListener("click", close);
+
+  // ESC 关闭
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+
+  // 搜索完成后关闭浮层（点击搜索按钮或回车）
+  document.getElementById("search-btn")?.addEventListener("click", () => {
+    if (searchBar.classList.contains("is-open")) close();
+  });
+  input?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && searchBar.classList.contains("is-open")) {
+      setTimeout(close, 0);
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initMobileSearch);
