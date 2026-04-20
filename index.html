@@ -29,33 +29,35 @@
       </a>
 
       <div class="header-right">
-        <!-- 手机端搜索触发按钮（≤600px 显示） -->
-        <button id="search-mobile-toggle" class="search-mobile-toggle" type="button" aria-label="打开搜索" title="搜索">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="7"></circle>
-            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-          </svg>
-        </button>
+        <!-- 搜索控件：默认只显示放大镜圆形按钮，点击展开搜索框 -->
+        <div class="search-control">
+          <button id="search-toggle" class="search-toggle" type="button" aria-label="打开搜索" title="搜索">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+            </svg>
+          </button>
 
-        <!-- 搜索框 -->
-        <div class="search-bar">
-          <div class="search-input-wrap">
-            <span class="search-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="7"></circle>
-                <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-              </svg>
-            </span>
-            <input
-              type="text"
-              id="search-input"
-              class="search-input"
-              placeholder="搜索笔记、动漫、页面…"
-              autocomplete="off"
-            >
-            <button id="search-clear" class="search-clear" style="display:none" type="button" title="清空">✕</button>
+          <!-- 搜索框：默认隐藏，JS 加 .is-open 展开 -->
+          <div class="search-bar">
+            <div class="search-input-wrap">
+              <span class="search-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                </svg>
+              </span>
+              <input
+                type="text"
+                id="search-input"
+                class="search-input"
+                placeholder="搜索笔记、动漫、页面…"
+                autocomplete="off"
+              >
+              <button id="search-clear" class="search-clear" style="display:none" type="button" title="清空">✕</button>
+              <button id="search-btn" class="search-btn" type="button" aria-label="搜索">搜索</button>
+            </div>
           </div>
-          <button id="search-btn" class="search-btn" type="button">搜索</button>
         </div>
 
         <div class="theme-control">
