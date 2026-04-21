@@ -936,25 +936,87 @@ footer {
   box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 3px var(--text-main);
 }
 
-.theme-preview {
-  height: 14px;
-  border-radius: 999px;
-  margin-bottom: 10px;
-  background: linear-gradient(
-    90deg,
-    hsl(0, 80%, 68%),
-    hsl(60, 80%, 68%),
-    hsl(120, 80%, 68%),
-    hsl(180, 80%, 68%),
-    hsl(240, 80%, 68%),
-    hsl(300, 80%, 68%),
-    hsl(360, 80%, 68%)
-  );
+/* ===== 主题色相选择器：可拖动色条（替代旧的 range 滑块）=====
+   结构：
+   .hue-picker              外层容器（相对定位，里面放色条 + 气泡）
+     .hue-picker-track      彩色渐变色条（全宽）
+       .hue-picker-thumb    细长竖条滑块
+     .hue-picker-value      右侧数值气泡
+*/
+.hue-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
-#hue-slider {
-  width: 100%;
+.hue-picker-track {
+  position: relative;
+  flex: 1;
+  height: 16px;
+  border-radius: 999px;
   cursor: pointer;
+  background: linear-gradient(
+    90deg,
+    hsl(0, 80%, 62%),
+    hsl(60, 80%, 58%),
+    hsl(120, 60%, 52%),
+    hsl(180, 65%, 52%),
+    hsl(240, 75%, 65%),
+    hsl(300, 70%, 65%),
+    hsl(360, 80%, 62%)
+  );
+  /* 禁用触摸时的蓝色高亮和文本选择 */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: none;
+}
+
+/* 细长竖条滑块：白色（暗色模式下也是白色，跟壁纸模式按钮气质一致）
+   高度略高于色条，两端圆头 */
+.hue-picker-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 4px;
+  height: 26px;
+  border-radius: 999px;
+  background: #fff;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+  pointer-events: none; /* 拖动逻辑挂在 track 上，thumb 不挡事件 */
+  transition: box-shadow 0.18s ease;
+}
+
+/* 暗色模式：滑块换成深色，在浅色区域才能看清 */
+[data-theme="dark"] .hue-picker-thumb {
+  background: #1a1a1a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* 拖动/聚焦时：滑块阴影加深 */
+.hue-picker-track:active .hue-picker-thumb,
+.hue-picker-track:focus-within .hue-picker-thumb {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.5);
+}
+
+/* 右侧数值气泡：显示当前色相数字 */
+.hue-picker-value {
+  min-width: 48px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--bg-panel, rgba(0, 0, 0, 0.08));
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums; /* 数字等宽，跳动不抖 */
+  user-select: none;
+}
+
+/* 隐藏原来的 range 滑块（保留在 DOM 里给 theme.js 使用）*/
+#hue-slider {
+  display: none !important;
 }
 
 /* ===== 快捷明暗切换按钮（调色盘右边） ===== */
