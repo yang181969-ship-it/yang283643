@@ -1,0 +1,59 @@
+// ============================================================
+// 数学公式块（笔记列表 + 笔记详情共用）
+// ============================================================
+
+@use '../abstracts/mixins' as *;
+
+.note-formula {
+  margin: 16px 0;
+  padding: 24px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-panel);
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  // 让 KaTeX display 块贴合实际内容宽度，避免 \tag 错位
+  .katex-display {
+    min-width: max-content;
+    margin: 0;
+
+    > .katex {
+      padding-right: 2.5em;
+    }
+  }
+
+  // ----- 滚动条美化（明暗双适配）-----
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
+
+  // Chromium / Safari
+  &::-webkit-scrollbar {
+    height: 6px;
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.35);
+    border-radius: 999px;
+
+    &:hover {
+      background: rgba(128, 128, 128, 0.55);
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  // ----- 小屏适配 -----
+  @include small {
+    padding: 16px 12px;
+    border-radius: 12px;
+
+    .katex-display > .katex {
+      padding-right: 3em;  // 小屏给 \tag 更多空间避免重叠
+    }
+  }
+}
