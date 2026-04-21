@@ -698,17 +698,10 @@ footer {
   line-height: 1.8;
 }
 
-/* 遮罩层：点击外部关闭 */
-.search-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.25);
-  z-index: 150;
-}
-
+/* 遮罩层：已废弃。展开搜索框时不变暗、不阻塞页面其他元素的点击 */
+.search-backdrop,
 .search-backdrop.is-open {
-  display: block;
+  display: none !important;
 }
 
 /* ===== 手机端搜索：fixed 横贯式浮层（类似 YouTube/Twitter） ===== */
@@ -719,29 +712,29 @@ footer {
     position: relative;
   }
 
-  /* 搜索框：fixed 横贯 header，从右向左生长 */
+  /* 搜索框：fixed 横贯 header，从右向左生长
+     右端贴到按钮左侧，按钮和搜索框拼接成药丸（跟桌面端一致） */
   .search-bar {
     position: fixed;
     top: 0;
-    right: 0;
+    right: 60px; /* 给搜索按钮让位（按钮 46px + 右边距 14px = 60px） */
     left: auto;
     height: auto;
-    z-index: 100; /* 顶层 */
+    z-index: 100;
     margin: 0;
-    padding: 12px 14px;
+    padding: 12px 0 12px 14px; /* 右 padding 为 0，紧贴按钮无缝拼接 */
     background: var(--bg-card);
     border: none;
     border-bottom: 1px solid var(--border-soft);
     border-radius: 0;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
-    /* 横向生长动画 */
     transition:
       max-width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
       opacity 0.28s ease;
   }
 
   .search-bar.is-open {
-    max-width: 100vw; /* 完全铺满屏幕 */
+    max-width: calc(100vw - 60px); /* 铺满到按钮左侧 */
   }
 
   /* 搜索框内包裹：宽度铺满 */
@@ -750,13 +743,14 @@ footer {
     flex: 1;
   }
 
-  /* 输入框：完整药丸（两端圆角） */
+  /* 输入框：左端圆、右端平（与按钮拼接成药丸） */
   .search-input {
     width: 100%;
     height: 44px;
-    padding: 0 44px 0 40px;
+    padding: 0 16px 0 40px;
     border: 1px solid var(--border-soft);
-    border-radius: 999px;
+    border-right: none;             /* 右边由按钮提供 */
+    border-radius: 999px 0 0 999px; /* 左圆右平 */
     background: var(--bg-panel);
   }
 
@@ -766,7 +760,7 @@ footer {
 
   /* clear 按钮贴右端 */
   .search-clear {
-    right: 16px !important;
+    right: 12px !important;
   }
 
   /* 内嵌搜索按钮：手机端不需要 */
@@ -775,24 +769,30 @@ footer {
   }
 
   /* === 手机端搜索按钮 ===
-     默认状态：在 header-right 里正常显示
-     展开状态：fixed 到右上角，浮在搜索框右端做功能键 */
+     默认：在 header-right 里圆形按钮
+     展开：fixed 到右上角，与搜索框拼接成药丸 */
   .search-toggle {
     position: relative;
     z-index: 101;
   }
 
-  /* 展开后按钮 fixed 到 header 右上角，作为搜索功能键
-     使用 fixed + top:14px 而不是 top:50%，避开了之前"按钮飘到屏幕中央"的坑 */
+  /* 展开后按钮 fixed 到右上角，作为药丸右端
+     高度 46px（默认），fixed 后通过 top + bottom 都不设让浏览器按 height 自然定位
+     用 top: 50% + transform 把按钮垂直居中在 header 行（44+24=68px 高度的中线） */
   .search-toggle.is-open {
     position: fixed;
-    top: 14px;          /* 跟 header padding 对齐，垂直居中在 header 里 */
+    top: 11px;                       /* (header高度 68 - 按钮高度 46) / 2 ≈ 11px */
     right: 14px;
     z-index: 101;
-    /* 展开态颜色高亮，提示这是"搜索"按钮 */
+    width: 46px;
+    height: 46px;
+    /* 展开后按钮：药丸右端样式（左端平、右端圆） */
+    border-radius: 0 999px 999px 0;
     background: var(--primary);
     color: #fff;
     border-color: var(--primary);
+    /* 取消默认的圆形阴影，因为现在是药丸的一部分 */
+    box-shadow: none;
   }
 
   /* 展开态：调色盘 + 明暗按钮 + logo 淡出（给搜索框让位） */
@@ -802,15 +802,6 @@ footer {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
-  }
-
-  /* 搜索框右侧给按钮预留 60px 空间，避免输入框被按钮盖住一半 */
-  .search-bar.is-open {
-    max-width: 100vw;
-  }
-
-  .search-bar {
-    padding-right: 70px; /* 输入框右端到按钮左端的间距 */
   }
 }
 
