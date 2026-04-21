@@ -713,12 +713,6 @@ footer {
 
 /* ===== 手机端搜索：fixed 横贯式浮层（类似 YouTube/Twitter） ===== */
 @media (max-width: 600px) {
-  /* ⚠️ 测试标记：如果看到 header 是亮红色，说明这段 CSS 生效了
-     看到了就告诉我，我立刻去掉这个红色 */
-  .layout > header {
-    background: #ff0000 !important;
-  }
-
   /* 关键：覆盖桌面端的 flex row-reverse，避免 .search-toggle 被错位 */
   .search-control {
     display: block !important;
