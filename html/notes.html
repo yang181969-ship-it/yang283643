@@ -39,8 +39,13 @@
 
         <!-- 右侧分类导航 -->
         <aside class="notes-sidebar">
-          <div class="notes-sidebar-card">
-            <h2>分类</h2>
+          <div class="notes-sidebar-card is-collapsible">
+            <button class="notes-card-collapse" type="button" aria-expanded="true" aria-label="折叠分类">
+              <h2>分类</h2>
+              <span class="notes-card-arrow">▾</span>
+            </button>
+
+            <div class="notes-card-body">
 
             <!-- 总览 -->
             <div class="notes-group is-open">
@@ -93,6 +98,7 @@
               </div>
             </div>
 
+            </div><!-- /.notes-card-body -->
           </div>
         </aside>
       </div>

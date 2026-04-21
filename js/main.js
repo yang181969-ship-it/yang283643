@@ -264,16 +264,13 @@ document.addEventListener("DOMContentLoaded", initNavAutoCenter);
 function initMobileSearch() {
   const toggleBtn = document.getElementById("search-toggle");
   const searchBar = document.querySelector(".search-bar");
-  const searchControl = document.querySelector(".search-control");
   const backdrop  = document.getElementById("search-backdrop");
   const input     = document.getElementById("search-input");
-  const themeToggle = document.getElementById("theme-toggle");
-  if (!toggleBtn || !searchBar || !searchControl) return;
+  if (!toggleBtn || !searchBar) return;
 
   function open() {
     searchBar.classList.add("is-open");
     toggleBtn.classList.add("is-open");
-    searchControl.classList.add("is-open");
     backdrop?.classList.add("is-open");
     setTimeout(() => input?.focus(), 50);
   }
@@ -281,56 +278,142 @@ function initMobileSearch() {
   function close() {
     searchBar.classList.remove("is-open");
     toggleBtn.classList.remove("is-open");
-    searchControl.classList.remove("is-open");
     backdrop?.classList.remove("is-open");
   }
 
+  // 点击触发按钮：
+  // - 未展开：展开
+  // - 已展开 + 输入框有内容：触发搜索（模拟点击已有的 #search-btn，复用 search.js 的搜索逻辑）
+  // - 已展开 + 输入框为空：关闭
   toggleBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-
     const isOpen = searchBar.classList.contains("is-open");
     if (!isOpen) {
       open();
       return;
     }
-
     const kw = (input?.value || "").trim();
     if (kw) {
+      // 复用 search.js 绑定在 #search-btn 上的逻辑
       document.getElementById("search-btn")?.click();
+      // 搜索完成后自动关闭
       setTimeout(close, 0);
     } else {
       close();
     }
   });
 
+  // 点击搜索框内部不关闭
   searchBar.addEventListener("click", (e) => e.stopPropagation());
 
+  // 点击页面其他区域关闭
   document.addEventListener("click", () => {
     if (searchBar.classList.contains("is-open")) close();
   });
 
+  // 遮罩点击关闭（手机端）
   backdrop?.addEventListener("click", close);
 
+  // ESC 关闭
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") close();
   });
 
+  // 点击搜索按钮 / 回车后关闭
   document.getElementById("search-btn")?.addEventListener("click", () => {
     if (searchBar.classList.contains("is-open")) close();
   });
-
   input?.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && searchBar.classList.contains("is-open")) {
       setTimeout(close, 0);
     }
   });
-
-  /* 打开主题面板前，先关闭搜索，避免层级冲突 */
-  themeToggle?.addEventListener("click", () => {
-    if (searchBar.classList.contains("is-open")) {
-      close();
-    }
-  });
 }
 
 document.addEventListener("DOMContentLoaded", initMobileSearch);
+
+/* ===== 侧边栏卡片折叠（分类卡 + TOC 卡） ===== */
+function initSidebarCollapse() {
+  // 1. 处理已有 .is-collapsible 结构的卡片（如笔记分类卡——在 notes.html 里直接写好）
+  function bindCollapseBtn(card) {
+    const btn = card.querySelector(".notes-card-collapse");
+    if (!btn || btn.dataset.collapseBound) return;
+    btn.dataset.collapseBound = "1";
+    btn.addEventListener("click", () => {
+      const collapsed = card.classList.toggle("is-collapsed");
+      btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    });
+  }
+
+  // 2. 自动把 .note-toc-card（JS 动态渲染出来的）包装成可折叠结构
+  //    不需要修改 notes.js，也不影响桌面端视觉
+  function wrapTocCard(card) {
+    if (card.dataset.wrapped) return;
+    card.dataset.wrapped = "1";
+
+    const h2 = card.querySelector("h2");
+    if (!h2) return;
+
+    // 创建折叠按钮，把 h2 移进去，加 ▾
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "notes-card-collapse";
+    btn.setAttribute("aria-label", "折叠目录");
+
+    const arrow = document.createElement("span");
+    arrow.className = "notes-card-arrow";
+    arrow.textContent = "▾";
+
+    // 把原 h2 包进 btn
+    h2.parentNode.insertBefore(btn, h2);
+    btn.appendChild(h2);
+    btn.appendChild(arrow);
+
+    // 剩下的所有内容塞进 .notes-card-body
+    const body = document.createElement("div");
+    body.className = "notes-card-body";
+    while (btn.nextSibling) body.appendChild(btn.nextSibling);
+    card.appendChild(body);
+
+    card.classList.add("is-collapsible");
+
+    // 手机端默认收起；桌面端默认展开
+    const isMobile = window.matchMedia("(max-width: 900px)").matches;
+    if (isMobile) {
+      card.classList.add("is-collapsed");
+      btn.setAttribute("aria-expanded", "false");
+    } else {
+      btn.setAttribute("aria-expanded", "true");
+    }
+
+    bindCollapseBtn(card);
+  }
+
+  // 初始绑定当前 DOM 里已有的卡片
+  function scan() {
+    document.querySelectorAll(".notes-sidebar-card.is-collapsible").forEach(bindCollapseBtn);
+    document.querySelectorAll(".note-toc-card").forEach(wrapTocCard);
+
+    // 手机端：笔记分类卡默认收起（notes.html 里没加 .is-collapsed，这里补上）
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      document.querySelectorAll(".notes-sidebar-card.is-collapsible").forEach(card => {
+        // 首次扫描时才自动收起；用户手动展开后不要覆盖
+        if (!card.dataset.autoCollapsed) {
+          card.classList.add("is-collapsed");
+          card.dataset.autoCollapsed = "1";
+          const btn = card.querySelector(".notes-card-collapse");
+          btn?.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
+  }
+
+  scan();
+
+  // 因为笔记详情页是动态渲染的，TOC 后出现——用 MutationObserver 监听
+  const mo = new MutationObserver(() => scan());
+  const root = document.getElementById("main-content");
+  if (root) mo.observe(root, { childList: true, subtree: true });
+}
+
+document.addEventListener("DOMContentLoaded", initSidebarCollapse);
