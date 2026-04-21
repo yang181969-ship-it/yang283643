@@ -769,22 +769,33 @@ footer {
     right: 16px !important;
   }
 
-  /* 内嵌搜索按钮：手机端不需要（用 Enter 触发搜索） */
+  /* 内嵌搜索按钮：手机端不需要 */
   .search-btn {
     display: none;
   }
 
-  /* === 关键修复：展开时外层放大镜按钮直接消失 ===
-     不再尝试让按钮拼接搜索框右端——手机屏幕太窄导致各种错位
-     展开后用户用键盘 Enter 搜索，或点输入框外部关闭 */
-  .search-bar.is-open ~ .search-toggle,
-  .search-toggle.is-open {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.18s ease;
+  /* === 手机端搜索按钮 ===
+     默认状态：在 header-right 里正常显示
+     展开状态：fixed 到右上角，浮在搜索框右端做功能键 */
+  .search-toggle {
+    position: relative;
+    z-index: 101;
   }
 
-  /* 展开态：其他 header 元素淡出 */
+  /* 展开后按钮 fixed 到 header 右上角，作为搜索功能键
+     使用 fixed + top:14px 而不是 top:50%，避开了之前"按钮飘到屏幕中央"的坑 */
+  .search-toggle.is-open {
+    position: fixed;
+    top: 14px;          /* 跟 header padding 对齐，垂直居中在 header 里 */
+    right: 14px;
+    z-index: 101;
+    /* 展开态颜色高亮，提示这是"搜索"按钮 */
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  /* 展开态：调色盘 + 明暗按钮 + logo 淡出（给搜索框让位） */
   header:has(.search-bar.is-open) .theme-control,
   header:has(.search-bar.is-open) .mode-toggle,
   header:has(.search-bar.is-open) .logo {
@@ -793,7 +804,14 @@ footer {
     transition: opacity 0.2s ease;
   }
 
-  /* 兜底：如果浏览器不支持 :has()，至少搜索框还能正常展开 */
+  /* 搜索框右侧给按钮预留 60px 空间，避免输入框被按钮盖住一半 */
+  .search-bar.is-open {
+    max-width: 100vw;
+  }
+
+  .search-bar {
+    padding-right: 70px; /* 输入框右端到按钮左端的间距 */
+  }
 }
 
 .theme-control {
