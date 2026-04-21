@@ -3500,3 +3500,46 @@ footer,
   height: 20px;
   display: block;
 }
+
+/* ============================================
+   手机端搜索展开态：去掉包裹药丸的白色外边框/阴影
+   追加到 css/style.css 最底部即可
+   ============================================ */
+
+@media (max-width: 900px) {
+
+  /* 1. 展开状态下，把搜索容器本身的背景/阴影/边框/内边距全部透明化
+        覆盖常见的几个容器类名，命中哪个就生效哪个 */
+  .site-header:has(.search-bar.is-open) .search-control,
+  .site-header:has(.search-bar.is-open) .search-bar-wrap,
+  .site-header:has(.search-bar.is-open) .search-bar-container,
+  .search-control:has(.search-bar.is-open),
+  .search-bar-wrap:has(.search-bar.is-open),
+  .search-bar.is-open {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* 2. 搜索 input 本体（药丸左半）只保留它自己的边框和背景，
+        不继承任何外层投影 */
+  .search-bar.is-open,
+  .search-bar.is-open .search-input,
+  .search-bar.is-open input[type="search"],
+  .search-bar.is-open input[type="text"] {
+    box-shadow: none !important;
+  }
+
+  /* 3. 以防万一：如果是 ::before / ::after 伪元素画的底，也干掉 */
+  .search-control::before,
+  .search-control::after,
+  .search-bar-wrap::before,
+  .search-bar-wrap::after {
+    display: none !important;
+    content: none !important;
+  }
+}
