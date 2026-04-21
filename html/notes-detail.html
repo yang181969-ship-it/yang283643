@@ -4,41 +4,221 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>笔记详情</title>
+
+  <link rel="shortcut icon" href="../assets/images/favicon.png" type="image/png">
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css">
+
+  <!-- 主题初始化：同步加载，避免刷新闪烁 -->
+  <script src="../js/theme.js"></script>
+
+  <!-- KaTeX CSS：非阻塞加载 -->
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css"></noscript>
 </head>
 <body>
-  <header>
-    <!-- 全局 header -->
-  </header>
+  <div class="layout">
 
-  <main id="main-content">
-    <section class="notes-page no-card">
-      <div class="note-detail-layout">
+    <!-- 头部 -->
+    <header>
+      <a href="../index.html" class="logo">
+        <img src="../assets/images/logo.png" alt="logo" width="52" height="52">
+        <span>Yang181969</span>
+      </a>
 
-        <div class="note-detail-back">
-          <button class="note-back-btn" id="note-back-btn" type="button">
-            ← 返回笔记列表
+      <div class="header-right">
+        <!-- 搜索 -->
+        <div class="search-control">
+          <button id="search-toggle" class="search-toggle" type="button" aria-label="打开搜索" title="搜索">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+            </svg>
           </button>
+
+          <div class="search-bar">
+            <div class="search-input-wrap">
+              <span class="search-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                </svg>
+              </span>
+              <input type="text" id="search-input" class="search-input" placeholder="搜索笔记、动漫、页面…" autocomplete="off">
+              <button id="search-clear" class="search-clear" style="display:none" type="button" title="清空">✕</button>
+              <button id="search-btn" class="search-btn" type="button" aria-label="搜索">搜索</button>
+            </div>
+          </div>
         </div>
 
-        <article class="note-detail-card" id="note-detail-card">
-          <div class="note-detail-loading" id="note-detail-loading">
-            <span class="note-loading-dot"></span>
-            <span class="note-loading-dot"></span>
-            <span class="note-loading-dot"></span>
+        <!-- 调色盘 -->
+        <div class="theme-control">
+          <button id="theme-toggle" aria-label="打开主题面板" title="主题">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22a10 10 0 1 1 10-10c0 2.5-2 4-4 4h-2a2 2 0 0 0-1 3.7A2 2 0 0 1 12 22z"></path>
+              <circle cx="6.5"  cy="12.5" r="1.2" fill="currentColor" stroke="none"></circle>
+              <circle cx="9"    cy="7.5"  r="1.2" fill="currentColor" stroke="none"></circle>
+              <circle cx="14.5" cy="7.5"  r="1.2" fill="currentColor" stroke="none"></circle>
+              <circle cx="17.5" cy="11.5" r="1.2" fill="currentColor" stroke="none"></circle>
+            </svg>
+          </button>
+          <div class="theme-panel" id="theme-panel">
+
+            <label>模式</label>
+            <div class="theme-mode-group" role="radiogroup" aria-label="主题模式">
+              <button type="button" class="theme-mode-btn" data-mode="light" title="明亮模式">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <line x1="12" y1="2"  x2="12" y2="4"></line>
+                  <line x1="12" y1="20" x2="12" y2="22"></line>
+                  <line x1="2"  y1="12" x2="4"  y2="12"></line>
+                  <line x1="20" y1="12" x2="22" y2="12"></line>
+                  <line x1="4.9" y1="4.9" x2="6.3" y2="6.3"></line>
+                  <line x1="17.7" y1="17.7" x2="19.1" y2="19.1"></line>
+                  <line x1="4.9" y1="19.1" x2="6.3" y2="17.7"></line>
+                  <line x1="17.7" y1="6.3" x2="19.1" y2="4.9"></line>
+                </svg>
+                <span>明亮</span>
+              </button>
+              <button type="button" class="theme-mode-btn" data-mode="dark" title="黑暗模式">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+                </svg>
+                <span>黑暗</span>
+              </button>
+              <button type="button" class="theme-mode-btn" data-mode="auto" title="跟随系统">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="13" rx="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                <span>跟随</span>
+              </button>
+            </div>
+
+            <label>预设颜色</label>
+            <div class="theme-presets" role="radiogroup" aria-label="预设主题色">
+              <button type="button" class="theme-preset" data-hue="0"   style="--preset: hsl(0, 80%, 62%);"   title="红"></button>
+              <button type="button" class="theme-preset" data-hue="20"  style="--preset: hsl(20, 85%, 60%);"  title="橙"></button>
+              <button type="button" class="theme-preset" data-hue="45"  style="--preset: hsl(45, 90%, 55%);"  title="金"></button>
+              <button type="button" class="theme-preset" data-hue="145" style="--preset: hsl(145, 55%, 48%);" title="翠"></button>
+              <button type="button" class="theme-preset" data-hue="180" style="--preset: hsl(180, 60%, 48%);" title="青"></button>
+              <button type="button" class="theme-preset" data-hue="210" style="--preset: hsl(210, 80%, 60%);" title="蓝"></button>
+              <button type="button" class="theme-preset" data-hue="260" style="--preset: hsl(260, 70%, 65%);" title="紫"></button>
+              <button type="button" class="theme-preset" data-hue="330" style="--preset: hsl(330, 80%, 68%);" title="粉"></button>
+            </div>
+
+            <label>自定义色相</label>
+            <div class="hue-picker">
+              <div class="hue-picker-track" id="hue-picker-track" role="slider" tabindex="0" aria-label="自定义色相" aria-valuemin="0" aria-valuemax="360" aria-valuenow="330">
+                <div class="hue-picker-thumb" id="hue-picker-thumb"></div>
+              </div>
+              <div class="hue-picker-value" id="hue-picker-value">330</div>
+            </div>
+            <input type="range" id="hue-slider" min="0" max="360" value="330" hidden>
           </div>
-        </article>
+        </div>
 
+        <!-- 明暗快捷切换 -->
+        <button id="mode-toggle" class="mode-toggle" aria-label="切换明暗模式" title="切换明暗">
+          <svg class="mode-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <line x1="12" y1="2"  x2="12" y2="4"></line>
+            <line x1="12" y1="20" x2="12" y2="22"></line>
+            <line x1="2"  y1="12" x2="4"  y2="12"></line>
+            <line x1="20" y1="12" x2="22" y2="12"></line>
+            <line x1="4.9" y1="4.9" x2="6.3" y2="6.3"></line>
+            <line x1="17.7" y1="17.7" x2="19.1" y2="19.1"></line>
+            <line x1="4.9" y1="19.1" x2="6.3" y2="17.7"></line>
+          </svg>
+          <svg class="mode-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+          </svg>
+          <svg class="mode-icon-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="13" rx="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </button>
       </div>
-    </section>
-  </main>
+    </header>
 
-  <footer>
-    <!-- 全局 footer -->
-  </footer>
+    <!-- 左侧导航 -->
+    <nav>
+      <a href="../index.html" class="nav-link">主页</a>
+      <a href="../index.html?page=gallery" class="nav-link">画廊</a>
+      <a href="../index.html?page=anime" class="nav-link">动漫</a>
+      <a href="../index.html?page=notes" class="nav-link active">笔记</a>
+      <a href="../index.html?page=comment" class="nav-link">留言</a>
+      <a href="../index.html?page=update" class="nav-link">更新</a>
+      <a href="../index.html?page=about" class="nav-link">关于</a>
+    </nav>
 
+    <!-- 主内容 -->
+    <div class="content-scroll">
+      <main id="main-content">
+        <section class="notes-page no-card">
+          <div class="note-detail-layout">
+
+            <div class="note-detail-back">
+              <button class="note-back-btn" id="note-back-btn" type="button">
+                ← 返回笔记列表
+              </button>
+            </div>
+
+            <article class="note-detail-card" id="note-detail-card">
+              <div class="note-detail-loading" id="note-detail-loading">
+                <span class="note-loading-dot"></span>
+                <span class="note-loading-dot"></span>
+                <span class="note-loading-dot"></span>
+              </div>
+            </article>
+
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <p>yang181969.com</p>
+      </footer>
+    </div>
+
+  </div>
+
+  <!-- 浮动按钮：始终显示 -->
+  <div id="floating-btns" class="show">
+    <button id="back-to-prev" title="返回上一页" aria-label="返回上一页">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 6 9 12 15 18"></polyline>
+      </svg>
+    </button>
+    <button id="back-to-top" title="返回顶部" aria-label="返回顶部">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="6 15 12 9 18 15"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <!-- 手机搜索浮层遮罩 -->
+  <div id="search-backdrop" class="search-backdrop"></div>
+
+  <!-- 业务 JS -->
+  <script defer src="../js/main.js"></script>
+  <script defer src="../js/search.js"></script>
+
+  <!-- 浮动按钮 + 笔记内容渲染 -->
   <script type="module">
+    /* ===== 浮动按钮：始终显示 + 点击跳转 ===== */
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnTop  = document.getElementById("back-to-top");
+      const btnPrev = document.getElementById("back-to-prev");
+      const scroller = document.querySelector(".content-scroll");
+
+      btnTop?.addEventListener("click", () => {
+        scroller?.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      btnPrev?.addEventListener("click", () => history.back());
+    });
+
     /* ===== 脚本动态加载 ===== */
     function loadScript(src) {
       return new Promise((resolve, reject) => {
@@ -206,7 +386,7 @@
       const card    = document.getElementById("note-detail-card");
       const loading = document.getElementById("note-detail-loading");
 
-      /* 返回按钮：优先回到 SPA 笔记列表，其次浏览器 back */
+      /* 返回按钮 */
       document.getElementById("note-back-btn").addEventListener("click", () => {
         const ref = document.referrer;
         if (ref && (ref.includes("index.html") || ref.includes("notes.html"))) {
@@ -241,10 +421,8 @@
           return;
         }
 
-        /* 更新页面标题 */
         document.title = `${note.title} · 笔记`;
 
-        /* 注入内容 */
         if (loading) loading.remove();
         renderNoteContent(card, note);
 

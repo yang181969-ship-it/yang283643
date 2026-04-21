@@ -269,14 +269,54 @@
   .note-formula {
     padding: 16px 12px;
     border-radius: 12px;
-
-    .katex-display > .katex {
-      padding-right: 2em;
-    }
   }
 
   .note-back-btn {
     font-size: 13px;
     padding: 8px 14px;
+  }
+}
+
+// ============================================================
+// 公式块全局增强（明暗双适配 + tag 防重合）
+// ============================================================
+.note-formula {
+
+  // ----- 1. 滚动条美化：换成细窄半透明 -----
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.35);
+    border-radius: 999px;
+
+    &:hover {
+      background: rgba(128, 128, 128, 0.55);
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  // ----- 2. KaTeX \tag 防重合修复（核心）-----
+  // KaTeX 默认把 .tag 用绝对定位贴到右边，公式宽时会与公式重合
+  // 解决方法：取消绝对定位，让 tag 作为 inline-block 跟在公式右边
+  .katex-display {
+    > .katex {
+      padding-right: 0.5em;
+    }
+
+    .tag {
+      position: static !important;
+      display: inline-block !important;
+      margin-left: 1.5em !important;
+      float: none !important;
+    }
   }
 }
