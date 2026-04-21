@@ -417,3 +417,118 @@ function initSidebarCollapse() {
 }
 
 document.addEventListener("DOMContentLoaded", initSidebarCollapse);
+
+/* =========================================================
+   可拖动色条 - 主题色相选择器
+   将 .hue-picker-track 上的点击/拖动/键盘 → 同步到隐藏的 #hue-slider
+   触发 'input' 事件，驱动 theme.js 原有逻辑（零侵入）
+   反向：监听 #hue-slider 变化（预设按钮等外部改值），同步新 UI
+   追加到 js/main.js 的末尾即可
+   ========================================================= */
+(function initHuePicker() {
+  function setup() {
+    var track = document.getElementById('hue-picker-track');
+    var thumb = document.getElementById('hue-picker-thumb');
+    var valueLabel = document.getElementById('hue-picker-value');
+    var slider = document.getElementById('hue-slider');
+    if (!track || !thumb || !valueLabel || !slider) return;
+
+    // ---- 更新新 UI（滑块位置 + 气泡数字 + aria）----
+    function render(hue) {
+      var h = Math.max(0, Math.min(360, Math.round(Number(hue) || 0)));
+      var percent = (h / 360) * 100;
+      thumb.style.left = percent + '%';
+      valueLabel.textContent = h;
+      track.setAttribute('aria-valuenow', h);
+    }
+
+    // ---- 把新值写回隐藏 range 并派发 input 事件 ----
+    function writeToSlider(hue) {
+      var h = Math.max(0, Math.min(360, Math.round(hue)));
+      if (Number(slider.value) === h) return; // 值没变就不派发，防递归
+      slider.value = h;
+      slider.dispatchEvent(new Event('input', { bubbles: true }));
+      slider.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // ---- 从坐标计算色相值 ----
+    function hueFromClientX(clientX) {
+      var rect = track.getBoundingClientRect();
+      var x = clientX - rect.left;
+      var ratio = Math.max(0, Math.min(1, x / rect.width));
+      return Math.round(ratio * 360);
+    }
+
+    // ---- 拖动逻辑（鼠标 + 触摸统一用 pointer events）----
+    var dragging = false;
+
+    function onPointerDown(e) {
+      dragging = true;
+      track.setPointerCapture && track.setPointerCapture(e.pointerId);
+      updateFromEvent(e);
+      e.preventDefault();
+    }
+    function onPointerMove(e) {
+      if (!dragging) return;
+      updateFromEvent(e);
+    }
+    function onPointerUp(e) {
+      if (!dragging) return;
+      dragging = false;
+      try { track.releasePointerCapture && track.releasePointerCapture(e.pointerId); } catch (_) {}
+    }
+    function updateFromEvent(e) {
+      var h = hueFromClientX(e.clientX);
+      render(h);
+      writeToSlider(h);
+    }
+
+    track.addEventListener('pointerdown', onPointerDown);
+    track.addEventListener('pointermove', onPointerMove);
+    track.addEventListener('pointerup', onPointerUp);
+    track.addEventListener('pointercancel', onPointerUp);
+
+    // ---- 键盘支持（← ↓ 减，→ ↑ 加，Home/End 两端，PageUp/PageDown ±10）----
+    track.addEventListener('keydown', function (e) {
+      var cur = Number(slider.value) || 0;
+      var next = cur;
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'ArrowDown': next = cur - 1; break;
+        case 'ArrowRight':
+        case 'ArrowUp':   next = cur + 1; break;
+        case 'PageDown':  next = cur - 10; break;
+        case 'PageUp':    next = cur + 10; break;
+        case 'Home':      next = 0; break;
+        case 'End':       next = 360; break;
+        default: return;
+      }
+      e.preventDefault();
+      next = Math.max(0, Math.min(360, next));
+      render(next);
+      writeToSlider(next);
+    });
+
+    // ---- 反向同步：外部（预设按钮、localStorage 恢复等）修改 #hue-slider 时更新 UI ----
+    slider.addEventListener('input', function () { render(slider.value); });
+    slider.addEventListener('change', function () { render(slider.value); });
+
+    // ---- 初始化：用 slider 当前值渲染一次 ----
+    render(slider.value);
+
+    // ---- 保险：主题面板打开时再刷一次（有些逻辑可能在面板打开时才读值）----
+    var themePanel = document.getElementById('theme-panel');
+    if (themePanel) {
+      var observer = new MutationObserver(function () {
+        if (themePanel.classList.contains('show')) render(slider.value);
+      });
+      observer.observe(themePanel, { attributes: true, attributeFilter: ['class'] });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
