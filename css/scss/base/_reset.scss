@@ -1,0 +1,56 @@
+// ============================================================
+// 基础重置
+// ============================================================
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+  margin-top: 0;
+}
+
+h2 {
+  color: var(--primary-dark);
+}
+
+p {
+  color: var(--text-main);
+}
+
+// 平滑过渡：模式切换时不闪
+html {
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+body,
+.card,
+.note-card,
+.notes-sidebar-card,
+header,
+nav,
+footer,
+.theme-panel,
+#theme-toggle,
+.mode-toggle {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}

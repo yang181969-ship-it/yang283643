@@ -1,0 +1,14 @@
+{
+  "name": "my-website",
+  "version": "1.0.0",
+  "description": "Yang181969 的个人网站",
+  "private": true,
+  "scripts": {
+    "dev": "sass --watch css/scss/main.scss:css/style.css --style=expanded --source-map",
+    "build": "sass css/scss/main.scss:css/style.css --style=compressed --no-source-map",
+    "build:dev": "sass css/scss/main.scss:css/style.css --style=expanded --source-map"
+  },
+  "devDependencies": {
+    "sass": "^1.77.0"
+  }
+}

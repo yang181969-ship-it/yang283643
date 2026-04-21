@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sass
+.sass-cache/
+*.css.map
+
+# 注意：css/style.css 要提交到仓库
+# 因为 GitHub Pages 需要编译后的产物
+# 每次部署前记得先执行 npm run build

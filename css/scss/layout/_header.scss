@@ -1,0 +1,89 @@
+// ============================================================
+// Header
+// ============================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// 只作用于站点顶部主头部（不影响 notes.html 里空 header）
+.layout > header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-panel) 100%);
+  border-bottom: 1px solid var(--border-soft);
+  z-index: $z-header;
+  min-width: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  min-width: 0;
+
+  img {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 14px var(--glow);
+    flex-shrink: 0;
+  }
+
+  span {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    min-width: 0;
+  }
+}
+
+// header 右侧区域：搜索 + 调色盘 + 明暗
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+// ----- 响应式 -----
+@include laptop {
+  .layout > header {
+    padding: 14px 16px;
+  }
+
+  .logo {
+    img {
+      width: 48px;
+      height: 48px;
+    }
+
+    span {
+      font-size: 22px;
+    }
+  }
+}
+
+@include small {
+  .layout > header {
+    padding: 12px 14px;
+  }
+
+  .logo {
+    gap: 10px;
+
+    img {
+      width: 44px;
+      height: 44px;
+    }
+
+    span {
+      font-size: 18px;
+    }
+  }
+}

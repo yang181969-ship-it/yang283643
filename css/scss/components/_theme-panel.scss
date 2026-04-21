@@ -1,0 +1,196 @@
+// ============================================================
+// 主题切换面板
+// 触发按钮 + 面板 + 模式切换 + 预设色 + 色相滑块
+// ============================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// ----- 按钮容器 -----
+.theme-control {
+  position: relative;
+}
+
+// ----- 调色盘触发按钮 -----
+#theme-toggle {
+  @include circle-icon-btn;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+// ----- 主题面板 -----
+.theme-panel {
+  position: absolute;
+  top: 58px;
+  right: 0;
+  width: 260px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
+  display: none;
+  z-index: $z-theme-panel;
+
+  &.show {
+    display: block;
+  }
+
+  label {
+    display: block;
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+
+    & + label {
+      margin-top: 14px;
+    }
+  }
+}
+
+// ============================================================
+// 模式按钮组（明亮 / 黑暗 / 跟随）
+// ============================================================
+.theme-mode-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.theme-mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--bg-main);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  &.active {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary-dark);
+    font-weight: 700;
+  }
+}
+
+// ============================================================
+// 预设颜色圆点
+// ============================================================
+.theme-presets {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.theme-preset {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: var(--preset);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.active {
+    border-color: var(--text-main);
+    box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 3px var(--text-main);
+  }
+}
+
+// ============================================================
+// 色相选择器（可拖动色条）
+// ============================================================
+.hue-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.hue-picker-track {
+  position: relative;
+  flex: 1;
+  height: 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: linear-gradient(
+    90deg,
+    hsl(0, 80%, 62%),
+    hsl(60, 80%, 58%),
+    hsl(120, 60%, 52%),
+    hsl(180, 65%, 52%),
+    hsl(240, 75%, 65%),
+    hsl(300, 70%, 65%),
+    hsl(360, 80%, 62%)
+  );
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: none;
+}
+
+// 细长竖条滑块（白色，亮色模式）
+.hue-picker-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 4px;
+  height: 26px;
+  border-radius: 999px;
+  background: #fff;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+  pointer-events: none;
+  transition: box-shadow 0.18s ease;
+}
+
+// 拖动/聚焦时：滑块阴影加深
+.hue-picker-track:active .hue-picker-thumb,
+.hue-picker-track:focus-within .hue-picker-thumb {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.5);
+}
+
+// 右侧数值气泡
+.hue-picker-value {
+  min-width: 48px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--bg-panel, rgba(0, 0, 0, 0.08));
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+// 隐藏原生 range 滑块（保留在 DOM 里给 theme.js 使用）
+#hue-slider {
+  display: none !important;
+}

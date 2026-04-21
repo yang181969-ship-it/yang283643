@@ -1,0 +1,99 @@
+// ============================================================
+// 通用 Mixin
+// ============================================================
+
+@use 'variables' as *;
+
+// ----- 响应式断点 mixin -----
+@mixin small {
+  @media (max-width: $bp-small) { @content; }
+}
+
+@mixin mobile {
+  @media (max-width: $bp-mobile) { @content; }
+}
+
+@mixin tablet {
+  @media (max-width: $bp-tablet) { @content; }
+}
+
+@mixin laptop {
+  @media (max-width: $bp-laptop) { @content; }
+}
+
+@mixin desktop {
+  @media (max-width: $bp-desktop) { @content; }
+}
+
+@mixin wide {
+  @media (max-width: $bp-wide) { @content; }
+}
+
+@mixin xwide {
+  @media (max-width: $bp-xwide) { @content; }
+}
+
+// ----- 特定断点 -----
+@mixin from-tablet {
+  @media (min-width: $bp-tablet) { @content; }
+}
+
+// ----- 通用卡片外观 -----
+@mixin card-surface {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+}
+
+// ----- 卡片悬浮效果 -----
+@mixin card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  }
+}
+
+// ----- hero 标题区（主页/动漫/画廊等页面顶部）通用重置 -----
+@mixin hero-reset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+// ----- 透明容器（覆盖默认 section 卡片外观）-----
+@mixin transparent-container {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+// ----- 圆形图标按钮（header 右上角那一排 46x46 按钮）-----
+@mixin circle-icon-btn {
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--border-soft);
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  }
+}

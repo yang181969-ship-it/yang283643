@@ -1,0 +1,56 @@
+// ============================================================
+// Yang181969 个人网站 - 样式入口
+//
+// 加载顺序（按 ITCSS 架构，从通用到具体）：
+//   1. abstracts   抽象层（变量、mixin）—— 不产出 CSS
+//   2. base        基础层（CSS 变量、重置、全局样式）
+//   3. layout      布局层（grid、header、nav）
+//   4. components  组件层（卡片、按钮、搜索、主题面板 ...）
+//   5. pages       页面层（各页面的专属样式）
+//   6. vendor      第三方集成（Waline、VPN 弹窗）
+//   7. themes      主题层（必须最后加载，才能覆盖前面的样式）
+//
+// 修改样式时：
+//   - 改主题色/尺寸 → base/_theme-vars.scss
+//   - 改断点/z-index → abstracts/_variables.scss
+//   - 改通用效果 → abstracts/_mixins.scss
+//   - 改某页面 → pages/_<页面名>.scss
+//   - 改暗色模式 → themes/_dark.scss
+// ============================================================
+
+// ---------- 1. 基础层 ----------
+@use 'base/theme-vars';
+@use 'base/reset';
+
+// ---------- 2. 布局层 ----------
+@use 'layout/layout';
+@use 'layout/header';
+@use 'layout/nav';
+
+// ---------- 3. 组件层 ----------
+@use 'components/card';
+@use 'components/hero';
+@use 'components/search';
+@use 'components/theme-panel';
+@use 'components/mode-toggle';
+@use 'components/floating-btns';
+@use 'components/lightbox';
+@use 'components/dropdown';
+
+// ---------- 4. 页面层 ----------
+@use 'pages/search-page';
+@use 'pages/anime';
+@use 'pages/anime-detail';
+@use 'pages/gallery';
+@use 'pages/notes';
+@use 'pages/note-detail';
+@use 'pages/about';
+@use 'pages/comment';
+@use 'pages/update';
+
+// ---------- 5. 第三方集成 ----------
+@use 'vendor/waline';
+@use 'vendor/vpn-modal';
+
+// ---------- 6. 主题层（最后加载）----------
+@use 'themes/dark';

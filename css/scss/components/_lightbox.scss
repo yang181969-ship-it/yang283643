@@ -1,0 +1,80 @@
+// ============================================================
+// 图片放大弹窗
+// 站内有两种灯箱：
+// - .image-lightbox  动漫详情页（带关闭按钮、缩放动画）
+// - .lightbox        画廊页（更简单，点击背景关闭）
+// ============================================================
+
+@use '../abstracts/variables' as *;
+
+// ============================================================
+// 一、动漫详情页灯箱
+// ============================================================
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  z-index: $z-image-lightbox;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+
+    .lightbox-image {
+      transform: scale(1);
+    }
+  }
+}
+
+.lightbox-image {
+  max-width: min(1000px, 90vw);
+  max-height: 85vh;
+  border-radius: 12px;
+  transform: scale(0.85);
+  transition: transform 0.25s ease;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 26px;
+  font-size: 42px;
+  line-height: 1;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+// ============================================================
+// 二、画廊页灯箱
+// ============================================================
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: $z-gallery-lightbox;
+  padding: 24px;
+
+  img {
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 12px;
+  }
+}

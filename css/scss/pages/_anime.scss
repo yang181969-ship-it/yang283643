@@ -1,0 +1,154 @@
+// ============================================================
+// 动漫列表页
+// ============================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.anime-section {
+  display: none;
+  scroll-margin-top: 70px;
+
+  &.active {
+    display: block;
+  }
+}
+
+// ----- 顶部切换栏 -----
+.anime-tabs {
+  position: sticky;
+  top: 0;
+  z-index: $z-nav;
+  display: flex;
+  gap: 10px;
+  padding: 6px 0 14px;
+  margin: 0 0 10px;
+  background: var(--bg-main);
+
+  button {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border-soft);
+    cursor: pointer;
+    background: var(--bg-card);
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    &.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+  }
+}
+
+// ----- 动漫网格 -----
+.anime-gallery {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.anime-item {
+  width: 100%;
+  min-width: 0;
+}
+
+// ----- 卡片 -----
+.anime-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-decoration: none;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  p {
+    margin: 8px 0 0;
+    text-align: center;
+    font-size: 14px;
+    color: #333;
+  }
+}
+
+// ----- 图片容器 / 状态角标 -----
+.anime-image-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.anime-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 600;
+  z-index: 2;
+
+  &.finished { background: #22c55e; }
+  &.ongoing  { background: #f59e0b; }
+  &.upcoming { background: #3b82f6; }
+}
+
+// ============================================================
+// 响应式
+// ============================================================
+@include desktop {
+  .anime-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@include mobile {
+  .anime-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .anime-tabs {
+    padding: 4px 0 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    button {
+      padding: 12px 18px;
+      font-size: 15px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: #e5e7eb;
+      color: #333;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+  }
+
+  .anime-card img {
+    height: 220px;
+  }
+}

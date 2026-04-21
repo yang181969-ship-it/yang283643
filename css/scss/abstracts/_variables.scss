@@ -1,0 +1,26 @@
+// ============================================================
+// 全局变量（Sass 编译时常量）
+// 运行时主题变量请看 base/_theme-vars.scss（CSS 变量）
+// ============================================================
+
+// ----- 响应式断点 -----
+// 保持与原 CSS 一致，不要改数值
+$bp-small: 480px;     // 极小屏
+$bp-mobile: 600px;    // 手机
+$bp-tablet: 768px;    // 平板 / 大手机
+$bp-laptop: 900px;    // 小笔记本
+$bp-desktop: 1000px;  // 标准桌面
+$bp-wide: 1100px;     // 宽屏
+$bp-xwide: 1200px;    // 超宽屏
+
+// ----- z-index 层级 -----
+$z-nav: 5;
+$z-header: 50;
+$z-dropdown: 20;
+$z-search-mobile: 100;
+$z-search-toggle: 101;
+$z-floating-btns: 999;
+$z-theme-panel: 1000;
+$z-image-lightbox: 2000;
+$z-gallery-lightbox: 3000;
+$z-vpn-modal: 9999;
