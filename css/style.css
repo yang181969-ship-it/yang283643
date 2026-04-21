@@ -713,24 +713,27 @@ footer {
   }
 
   /* 搜索框：fixed 横贯 header，从右向左生长
-     右端贴到按钮左侧，按钮和搜索框拼接成药丸（跟桌面端一致） */
+     右端贴到按钮左侧，按钮和搜索框拼接成药丸（跟桌面端一致）
+     这里是"定位容器"，所有视觉样式（背景/圆角/阴影）都交给里面的 .search-input 画，
+     这样药丸外面不会有多余的白色外框 */
   .search-bar {
     position: fixed;
-    top: 0;
+    top: 11px; /* 跟按钮 top 对齐，让 input 和按钮水平对齐 */
     right: 60px; /* 给搜索按钮让位（按钮 46px + 右边距 14px = 60px） */
     left: auto;
-    height: auto;
+    height: 46px;
     z-index: 100;
     margin: 0;
-    padding: 12px 0 12px 14px; /* 右 padding 为 0，紧贴按钮无缝拼接 */
-    background: var(--bg-card);
+    padding: 0 0 0 14px; /* 只保留左边一点距离，避免完全贴边 */
+    /* 本体透明：不画背景、不画阴影、不画边框，视觉完全由内部 input 决定 */
+    background: transparent;
     border: none;
-    border-bottom: 1px solid var(--border-soft);
     border-radius: 0;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+    box-shadow: none;
     transition:
       max-width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
       opacity 0.28s ease;
+    overflow: hidden; /* 收起时干净利落 */
   }
 
   .search-bar.is-open {
@@ -3499,47 +3502,4 @@ footer,
   width: 20px;
   height: 20px;
   display: block;
-}
-
-/* ============================================
-   手机端搜索展开态：去掉包裹药丸的白色外边框/阴影
-   追加到 css/style.css 最底部即可
-   ============================================ */
-
-@media (max-width: 900px) {
-
-  /* 1. 展开状态下，把搜索容器本身的背景/阴影/边框/内边距全部透明化
-        覆盖常见的几个容器类名，命中哪个就生效哪个 */
-  .site-header:has(.search-bar.is-open) .search-control,
-  .site-header:has(.search-bar.is-open) .search-bar-wrap,
-  .site-header:has(.search-bar.is-open) .search-bar-container,
-  .search-control:has(.search-bar.is-open),
-  .search-bar-wrap:has(.search-bar.is-open),
-  .search-bar.is-open {
-    background: transparent !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  /* 2. 搜索 input 本体（药丸左半）只保留它自己的边框和背景，
-        不继承任何外层投影 */
-  .search-bar.is-open,
-  .search-bar.is-open .search-input,
-  .search-bar.is-open input[type="search"],
-  .search-bar.is-open input[type="text"] {
-    box-shadow: none !important;
-  }
-
-  /* 3. 以防万一：如果是 ::before / ::after 伪元素画的底，也干掉 */
-  .search-control::before,
-  .search-control::after,
-  .search-bar-wrap::before,
-  .search-bar-wrap::after {
-    display: none !important;
-    content: none !important;
-  }
 }
