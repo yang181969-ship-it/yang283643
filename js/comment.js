@@ -474,10 +474,48 @@ function decorateReplyThreads() {
   const root = document.getElementById("waline");
   if (!root) return;
 
+  // 兼容老的 .wl-replies（如果 Waline 版本用这个类名也处理一下）
   root.querySelectorAll(".wl-replies").forEach((item) => {
     if (item.dataset.replyEnhanced === "true") return;
     item.dataset.replyEnhanced = "true";
     item.classList.add("reply-thread-enhanced");
+  });
+
+  // 新：给每个 .wl-quote 嵌套回复容器加 YouTube 式「查看 N 条回复 ▾」
+  root.querySelectorAll(".wl-quote").forEach((quote) => {
+    if (quote.dataset.replyToggleBound === "true") return;
+
+    // 只处理直接装着回复 card-item 的 quote；空 quote 跳过
+    const replyItems = quote.querySelectorAll(":scope > .wl-card-item");
+    if (replyItems.length === 0) return;
+
+    quote.dataset.replyToggleBound = "true";
+    quote.classList.add("is-collapsed");
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "reply-toggle";
+    toggle.setAttribute("aria-expanded", "false");
+
+    const count = replyItems.length;
+    const label = document.createElement("span");
+    label.className = "reply-toggle-label";
+    label.textContent = `查看 ${count} 条回复`;
+
+    const icon = document.createElement("span");
+    icon.className = "reply-toggle-icon";
+    icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>`;
+
+    toggle.append(icon, label);
+
+    toggle.addEventListener("click", () => {
+      const nowOpen = quote.classList.toggle("is-collapsed") === false;
+      toggle.classList.toggle("is-open", nowOpen);
+      toggle.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+      label.textContent = nowOpen ? `收起回复` : `查看 ${count} 条回复`;
+    });
+
+    quote.insertBefore(toggle, quote.firstChild);
   });
 }
 

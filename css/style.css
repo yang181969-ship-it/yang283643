@@ -3617,3 +3617,253 @@ footer,
   height: 20px;
   display: block;
 }
+
+/* ============================================================
+   评论区 v2 —— YouTube 风格折叠回复
+   覆盖上面「===== 回复层级 =====」段落里所有 .wl-quote 相关规则
+   ============================================================ */
+
+/* --- 1. 主评论列表贴左，不再被 Waline 默认样式挤偏 --- */
+#waline .wl-cards {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#waline .wl-cards > .wl-card-item {
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+}
+
+/* --- 2. 嵌套回复容器：不再是独立卡片，而是主卡片内的 reply-block --- */
+#waline .wl-quote {
+  margin: 16px 0 0 !important;
+  padding: 14px 0 0 !important;
+  border: none !important;
+  border-top: 1px solid var(--border-soft) !important;
+  border-left: none !important;
+  background: transparent !important;
+}
+
+/* 折叠状态：隐藏所有子回复 */
+#waline .wl-quote.is-collapsed > .wl-card-item {
+  display: none !important;
+}
+
+/* --- 3. 展开/折叠切换按钮 --- */
+.reply-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 6px 14px 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: var(--primary-dark);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.reply-toggle:hover {
+  background: var(--primary-soft);
+}
+
+.reply-toggle .reply-toggle-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.22s ease;
+  flex: 0 0 18px;
+}
+
+.reply-toggle.is-open .reply-toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* 折叠按钮放在 .wl-quote 里当第一个子元素时，吃掉顶部分割线的间距 */
+#waline .wl-quote .reply-toggle {
+  margin-top: -2px;
+}
+
+/* --- 4. 嵌套 card-item 恢复默认块级行为（上面老规则用 display: none 隐藏了 .wl-user，仍保留） --- */
+#waline .wl-quote > .wl-card-item {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#waline .wl-quote > .wl-card-item + .wl-card-item {
+  margin-top: 10px !important;
+}
+
+/* --- 5. 回复卡片本身：去掉卡片外观，变成紧凑的 reply-block --- */
+#waline .wl-quote .wl-card {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 10px 0 0 14px !important;
+  background: transparent !important;
+  border: none !important;
+  border-left: 2px solid var(--border-soft) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+#waline .wl-quote .wl-card:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* 回复里的头像/名字稍小一点 */
+#waline .wl-quote .custom-avatar-slot,
+#waline .wl-quote .custom-letter-avatar {
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px !important;
+  font-size: 0.85rem !important;
+}
+
+#waline .wl-quote .wl-nick {
+  font-size: 0.94rem !important;
+}
+
+#waline .wl-quote .wl-time {
+  font-size: 0.82rem !important;
+}
+
+#waline .wl-quote .wl-content {
+  line-height: 1.75 !important;
+  font-size: 0.92rem !important;
+  margin-top: 6px !important;
+}
+
+/* 多级嵌套（回复的回复）竖线颜色再淡一点 */
+#waline .wl-quote .wl-quote .wl-card {
+  border-left-color: color-mix(in srgb, var(--border-soft) 70%, transparent) !important;
+}
+
+/* --- 6. 手机端：缩进更紧凑 --- */
+@media (max-width: 600px) {
+  #waline .wl-quote .wl-card {
+    padding-left: 10px !important;
+  }
+
+  #waline .wl-quote .custom-avatar-slot,
+  #waline .wl-quote .custom-letter-avatar {
+    width: 28px !important;
+    height: 28px !important;
+    flex: 0 0 28px !important;
+  }
+
+  .reply-toggle {
+    font-size: 0.84rem;
+    padding: 6px 12px 6px 8px;
+  }
+}
+
+/* --- 7. 深色模式下竖线颜色 --- */
+[data-theme="dark"] #waline .wl-quote .wl-card {
+  border-left-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] #waline .wl-quote .wl-quote .wl-card {
+  border-left-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+
+
+/* ============================================================
+   评论区 v3 —— 精准修正：让卡片左右视觉居中
+   核心思路：加大 .wl-cards 左右 padding，让卡片内缩但保留宽度感
+   不动任何伪元素，避免误伤 Vue 渲染节点
+   ============================================================ */
+
+/* 让评论列表整体左右对称内缩（左边多出来的视觉"偏移"直接用 padding 消掉） */
+#waline .wl-cards {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+
+/* 评论卡片：左右 padding 对称，视觉正中 */
+#waline .wl-card {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+/* 保险：如果某些 Waline 版本的 .wl-card-item 上有额外 margin-left（就是那根小横杠的根源），统一清零 */
+#waline .wl-cards > .wl-card-item {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+
+
+/* ============================================================
+   评论区 v4 —— 清掉 .wl-cards 上方那条短横杠
+   来源：.wl-meta-head 或 .wl-comment 容器被压成了一条短线
+   ============================================================ */
+
+/* 1. wl-comment 和 wl-meta-head：如果里面没内容，直接隐藏整个容器 */
+#waline .wl-comment:empty,
+#waline .wl-meta-head:empty {
+  display: none !important;
+}
+
+/* 2. 即使不为空，也清掉它们可能的边框/背景/最小高度（防止还是渲染成一条线） */
+#waline .wl-comment,
+#waline .wl-meta-head {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* 3. 保险：它俩里面如果有 ::before/::after 伪装饰，也清掉（但不碰 .wl-card-item 里面的伪元素，避免误伤 Vue） */
+#waline .wl-comment::before,
+#waline .wl-comment::after,
+#waline .wl-meta-head::before,
+#waline .wl-meta-head::after {
+  display: none !important;
+  content: none !important;
+}
+
+
+
+/* ============================================================
+   评论区 v5 —— 让 .wl-card-item 和 .wl-card 完全重合
+   青框（card-item）比橙框（card）宽 → 左边露出那根横杠
+   解决：强制 card-item 不超出 card
+   ============================================================ */
+
+/* 1. .wl-card-item 改成和 .wl-card 一样的块：不加任何宽度扩张 */
+#waline .wl-cards > .wl-card-item,
+#waline .wl-cards > .wl-card-item.avatar-inside-card {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+
+/* 2. .wl-card 严格贴齐 .wl-card-item，不允许收缩或偏移 */
+#waline .wl-cards > .wl-card-item > .wl-card {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 3. 彻底清掉 Waline 默认 SCSS 里可能给 .wl-card-item 设置的左边头像区 */
+#waline .wl-card-item {
+  padding-left: 0 !important;
+  text-indent: 0 !important;
+}
