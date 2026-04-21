@@ -1,0 +1,49 @@
+// ============================================================
+// 页面标题（hero）系统
+// 所有页面顶部"标题 + 描述"的通用样式
+// ============================================================
+
+@use '../abstracts/mixins' as *;
+
+.page-title {
+  margin: 0 0 6px;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.page-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+// 所有 hero 块统一为纵向结构
+.notes-hero,
+.about-hero,
+.update-hero,
+.comment-hero,
+.gallery-hero,
+.anime-hero,
+.home-hero {
+  @include hero-reset;
+}
+
+// ----- 响应式 -----
+@include laptop {
+  .page-title {
+    font-size: 26px;
+  }
+}
+
+@include small {
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-desc {
+    font-size: 13px;
+  }
+}

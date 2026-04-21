@@ -1,0 +1,21 @@
+// ============================================================
+// 明暗快捷切换按钮（调色盘右边）
+// 三个图标：太阳 / 月亮 / 显示器，根据当前模式显示一个
+// ============================================================
+
+@use '../abstracts/mixins' as *;
+
+.mode-toggle {
+  @include circle-icon-btn;
+
+  svg {
+    width: 22px;
+    height: 22px;
+    display: none;
+  }
+}
+
+// 根据当前模式显示对应图标
+[data-theme-mode="light"] .mode-toggle .mode-icon-sun  { display: block; }
+[data-theme-mode="dark"]  .mode-toggle .mode-icon-moon { display: block; }
+[data-theme-mode="auto"]  .mode-toggle .mode-icon-auto { display: block; }

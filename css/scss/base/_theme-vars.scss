@@ -1,0 +1,52 @@
+// ============================================================
+// 主题 CSS 变量
+// 这些是"运行时"变量（浏览器里可以通过 JS 动态改）
+// 所以必须用 CSS 自定义属性，不能用 Sass 变量
+// ============================================================
+
+:root {
+  // 页面尺寸
+  --page-max-width: 1320px;
+  --page-pad-top: 16px;
+  --page-pad-x: 40px;
+  --page-pad-bottom: 40px;
+  --page-gap: 20px;
+
+  // 主题色相（由 theme.js 控制）
+  --primary-hue: 330;
+
+  --primary: hsl(var(--primary-hue), 80%, 68%);
+  --primary-dark: hsl(var(--primary-hue), 55%, 40%);
+  --primary-soft: hsl(var(--primary-hue), 85%, 92%);
+  --glow: hsla(var(--primary-hue), 80%, 68%, 0.35);
+
+  // 明亮模式默认值（被 [data-theme="dark"] 覆盖）
+  --bg-main: #f6f8fc;
+  --bg-panel: #eef2f8;
+  --bg-card: #ffffff;
+
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+
+  --border-soft: #d9e2ef;
+  --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+// ----- 响应式下的页面边距调整 -----
+@media (max-width: 900px) {
+  :root {
+    --page-pad-top: 16px;
+    --page-pad-x: 18px;
+    --page-pad-bottom: 32px;
+    --page-gap: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --page-pad-top: 14px;
+    --page-pad-x: 14px;
+    --page-pad-bottom: 28px;
+    --page-gap: 16px;
+  }
+}

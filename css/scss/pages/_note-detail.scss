@@ -1,0 +1,282 @@
+// ============================================================
+// 笔记详情页
+// ============================================================
+
+@use '../abstracts/mixins' as *;
+
+// ============================================================
+// TOC 侧边栏（复用 notes-sidebar 的 sticky）
+// ============================================================
+.note-toc-sidebar {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+}
+
+.note-toc-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 24px 20px;
+  box-shadow: var(--shadow-soft);
+
+  h2 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+}
+
+// ----- 目录列表 -----
+.note-toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+// 各级缩进
+.note-toc-level-1 { padding-left: 0; }
+.note-toc-level-2 { padding-left: 12px; }
+.note-toc-level-3 { padding-left: 24px; }
+
+// ----- TOC 链接 -----
+.note-toc-link {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  border-left: 2px solid transparent;
+  word-break: break-all;
+
+  &:hover {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    border-left-color: var(--primary);
+  }
+
+  &.is-active {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    font-weight: 700;
+    border-left-color: var(--primary);
+  }
+}
+
+.note-toc-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+// ============================================================
+// 返回按钮
+// ============================================================
+.note-detail-back {
+  margin-bottom: 16px;
+}
+
+.note-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 1.5px solid var(--border-soft);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px var(--glow);
+  }
+}
+
+// ============================================================
+// 详情卡片主体
+// ============================================================
+.note-detail-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 36px 40px;
+  box-shadow: var(--shadow-soft);
+  min-height: 200px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  overflow-x: hidden;
+}
+
+.note-detail-title {
+  margin: 14px 0 24px;
+  font-size: 32px;
+  line-height: 1.25;
+  color: var(--primary-dark);
+}
+
+// ============================================================
+// Markdown 正文（完整展示）
+// ============================================================
+.note-markdown-full {
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--text-main);
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  // 段落和长 URL 不要撑破容器
+  p, li {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    min-width: 0;
+  }
+
+  // 代码块与公式：超长时横向滚动
+  pre,
+  .note-formula {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  p  { margin: 0 0 16px; }
+  h1 { font-size: 26px; margin: 28px 0 14px; color: var(--primary-dark); }
+  h2 { font-size: 22px; margin: 24px 0 12px; color: var(--primary-dark); }
+  h3 { font-size: 18px; margin: 20px 0 10px; color: var(--primary-dark); }
+
+  ul {
+    margin: 0 0 16px;
+    padding-left: 1.5em;
+  }
+
+  li {
+    margin-bottom: 6px;
+    line-height: 1.8;
+  }
+
+  pre {
+    margin: 16px 0;
+    padding: 18px 20px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  .note-formula {
+    margin: 20px 0;
+  }
+}
+
+// ============================================================
+// 加载动画（三点闪烁）
+// ============================================================
+.note-detail-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 60px 0;
+}
+
+.note-loading-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.3;
+  animation: note-dot-bounce 1.2s infinite ease-in-out;
+
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
+}
+
+@keyframes note-dot-bounce {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40%            { opacity: 1;   transform: scale(1.2); }
+}
+
+// ============================================================
+// 响应式
+// ============================================================
+@include laptop {
+  // TOC 取消 sticky，跟文档流
+  .note-toc-sidebar {
+    position: static;
+  }
+
+  .note-toc-card {
+    padding: 14px 18px;
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  .note-detail-card {
+    padding: 24px 22px;
+    border-radius: 16px;
+  }
+
+  .note-detail-title {
+    font-size: 26px;
+  }
+}
+
+@include small {
+  .note-detail-card {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+
+  .note-detail-title {
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+
+  .note-markdown-full {
+    font-size: 14px;
+  }
+
+  // 小屏公式卡片：缩小内边距
+  .note-formula {
+    padding: 16px 12px;
+    border-radius: 12px;
+
+    .katex-display > .katex {
+      padding-right: 2em;
+    }
+  }
+
+  .note-back-btn {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+}

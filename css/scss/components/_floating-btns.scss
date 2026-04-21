@@ -1,0 +1,91 @@
+// ============================================================
+// 右下角浮动按钮组（返回顶部 + 返回上一页）
+// ============================================================
+
+@use '../abstracts/variables' as *;
+
+#floating-btns {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: $z-floating-btns;
+  pointer-events: none;
+
+  button svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+}
+
+// ----- 返回上一页按钮 -----
+#back-to-prev {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  &.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+// ----- 返回顶部按钮 -----
+// 独立存在时 fixed；在 #floating-btns 内时被统一管理
+#back-to-top {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: $z-floating-btns;
+
+  &.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+// 在 #floating-btns 内时由父容器统一管理定位
+#floating-btns #back-to-top {
+  position: static;
+  bottom: auto;
+  right: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}

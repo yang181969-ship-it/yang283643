@@ -1,0 +1,37 @@
+// ============================================================
+// 通用卡片
+// ============================================================
+
+@use '../abstracts/mixins' as *;
+
+.card {
+  @include card-surface;
+  padding: 24px;
+  @include card-hover;
+}
+
+// 默认 section 卡片规则：section 如果没有任何"no-card/hero"类，就自动套卡片
+section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero) {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow-soft);
+}
+
+// ----- 响应式 -----
+@include laptop {
+  .card,
+  section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero) {
+    padding: 20px;
+    border-radius: 16px;
+  }
+}
+
+@include small {
+  .card,
+  section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero) {
+    padding: 18px;
+    border-radius: 14px;
+  }
+}

@@ -1,0 +1,198 @@
+// ============================================================
+// 深色模式
+// 所有 [data-theme="dark"] 覆盖集中在这里
+// 这个文件必须在所有页面/组件样式之后 @use，才能覆盖得到
+// ============================================================
+
+// ============================================================
+// 一、核心变量覆盖
+// ============================================================
+[data-theme="dark"] {
+  --primary-dark: hsl(var(--primary-hue), 85%, 78%);   // 深色背景上调亮，保证可读性
+  --primary-soft: hsla(var(--primary-hue), 70%, 55%, 0.22);
+  --glow: hsla(var(--primary-hue), 80%, 68%, 0.45);
+
+  --bg-main: #0f1419;
+  --bg-panel: #161b22;
+  --bg-card: #1c2230;
+
+  --text-main: #e6e8ee;
+  --text-muted: #9ba3af;
+
+  --border-soft: #2a3140;
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+// ============================================================
+// 二、色相选择器滑块（亮色模式白色 → 暗色模式深色）
+// ============================================================
+[data-theme="dark"] .hue-picker-thumb {
+  background: #1a1a1a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+// ============================================================
+// 三、笔记公式块：深色下背景略亮避免融进卡片
+// ============================================================
+[data-theme="dark"] .note-formula {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+// ============================================================
+// 四、代码块
+// ============================================================
+[data-theme="dark"] .note-markdown-full {
+  pre {
+    background: #0d1117;
+    border-color: #2a3140;
+  }
+
+  code {
+    color: #e6e8ee;
+  }
+}
+
+// 行内代码
+[data-theme="dark"] code {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+// ============================================================
+// 五、KaTeX 公式文字
+// ============================================================
+[data-theme="dark"] .katex {
+  color: var(--text-main);
+}
+
+// ============================================================
+// 六、搜索结果高亮
+// ============================================================
+[data-theme="dark"] mark,
+[data-theme="dark"] .search-result-title mark,
+[data-theme="dark"] .search-result-desc mark {
+  background: hsla(var(--primary-hue), 75%, 55%, 0.35);
+  color: var(--text-main);
+}
+
+// ============================================================
+// 七、滚动条（Chromium）
+// ============================================================
+[data-theme="dark"] {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-main);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2a3140;
+    border-radius: 5px;
+
+    &:hover {
+      background: #3a4050;
+    }
+  }
+}
+
+// ============================================================
+// 八、Waline 留言板
+// ============================================================
+[data-theme="dark"] {
+  .wl-panel,
+  #waline {
+    --waline-bg-color: #1c2230;
+    --waline-color: #e6e8ee;
+    --waline-border-color: #2a3140;
+    --waline-info-color: #9ba3af;
+    --waline-text-color: #e6e8ee;
+  }
+
+  // Waline 卡片悬浮阴影加深
+  #waline .wl-card:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  // 管理员头像：金色压暗
+  #waline .custom-letter-avatar.is-admin {
+    background: linear-gradient(135deg, #b58a2a, #8a6516);
+    color: #fef3c7;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  // 管理员标签：金色压暗
+  #waline .custom-role-badge.is-admin {
+    background: linear-gradient(135deg, rgba(252, 211, 77, 0.18), rgba(252, 211, 77, 0.10));
+    color: #fcd34d;
+    border: 1px solid rgba(252, 211, 77, 0.35);
+  }
+
+  // 嵌套回复竖线
+  #waline .wl-quote .wl-card {
+    border-left-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  #waline .wl-quote .wl-quote .wl-card {
+    border-left-color: rgba(255, 255, 255, 0.07) !important;
+  }
+}
+
+// ============================================================
+// 九、输入框
+// ============================================================
+[data-theme="dark"] {
+  input[type="text"],
+  input[type="email"],
+  input[type="url"],
+  textarea,
+  .search-input {
+    background: var(--bg-main);
+    color: var(--text-main);
+    border-color: var(--border-soft);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-muted);
+  }
+}
+
+// ============================================================
+// 十、笔记卡片与搜索结果卡片悬浮阴影
+// ============================================================
+[data-theme="dark"] .note-card:hover,
+[data-theme="dark"] .search-result-card:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+}
+
+// ============================================================
+// 十一、图片降低亮度，避免刺眼
+// ============================================================
+[data-theme="dark"] .logo img,
+[data-theme="dark"] .gallery-item img {
+  filter: brightness(0.92);
+}
+
+// ============================================================
+// 十二、留言页状态提示卡片（加载 / 警告 / 错误）
+// ============================================================
+[data-theme="dark"] {
+  .comment-status-card.is-loading {
+    border-color: hsla(210, 80%, 60%, 0.35);
+    background: linear-gradient(180deg, var(--bg-card) 0%, hsla(210, 80%, 60%, 0.06) 100%);
+  }
+
+  .comment-status-card.is-warning {
+    border-color: hsla(45, 90%, 55%, 0.35);
+    background: linear-gradient(180deg, var(--bg-card) 0%, hsla(45, 90%, 55%, 0.06) 100%);
+  }
+
+  .comment-status-card.is-error {
+    border-color: hsla(0, 80%, 62%, 0.35);
+    background: linear-gradient(180deg, var(--bg-card) 0%, hsla(0, 80%, 62%, 0.06) 100%);
+  }
+}

@@ -1,0 +1,78 @@
+// ============================================================
+// 动漫详情页
+// ============================================================
+
+@use '../abstracts/mixins' as *;
+
+.anime-detail-cover {
+  max-width: 320px;
+  margin: 0 0 20px 0;
+
+  img {
+    display: block;
+    width: 100%;
+    border-radius: 10px;
+  }
+}
+
+#anime-links a {
+  color: var(--primary-dark);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.back-link {
+  color: var(--primary-dark);
+  text-decoration: none;
+  font-weight: bold;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ----- 额外图片展示 -----
+.anime-extra-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+}
+
+// ----- 详情页图片悬浮动画（封面 + 额外图） -----
+.anime-detail-cover img,
+.anime-extra-gallery img {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: zoom-in;
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  }
+}
+
+// ============================================================
+// 响应式
+// ============================================================
+@include desktop {
+  .anime-extra-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@include mobile {
+  .anime-extra-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
