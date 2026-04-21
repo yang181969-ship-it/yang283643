@@ -86,6 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const hue = btn.dataset.hue;
       root.style.setProperty("--primary-hue", hue);
       hueSlider.value = hue;
+      // 派发 input 事件，让 main.js 里 hue-picker 的反向同步逻辑更新色条 thumb 位置
+      hueSlider.dispatchEvent(new Event("input", { bubbles: true }));
       localStorage.setItem("primary-hue", hue);
       syncPresetActive();
     });
