@@ -711,46 +711,46 @@ footer {
   display: block;
 }
 
-/* 手机端：搜索展开时变成屏幕顶部的 fixed 浮层（桌面端那套横向生长过渡在窄屏不合适） */
+/* ===== 手机端搜索：fixed 横贯式浮层（类似 YouTube/Twitter） ===== */
 @media (max-width: 600px) {
-  /* 手机端 search-control 保持 flex row-reverse（继承桌面端），只调整个别属性 */
+  /* 关键：覆盖桌面端的 flex row-reverse，避免 .search-toggle 被错位 */
   .search-control {
-    /* 保留 position: relative（桌面端设定）—— 供搜索按钮使用 */
+    display: block !important;
     position: relative;
   }
 
-  /* 搜索框：fixed 定位在 header 条带，从右向左生长
-     右端贴到搜索按钮左侧（按钮宽 46px + 右 padding 14px = 60px） */
+  /* 搜索框：fixed 横贯 header，从右向左生长 */
   .search-bar {
     position: fixed;
     top: 0;
-    right: 60px; /* 给搜索按钮让位 */
+    right: 0;
+    left: auto;
     height: auto;
-    z-index: 60;
-    margin-right: 0;
-    padding: 12px 8px 12px 14px; /* 右侧 8px 给按钮一点呼吸空间 */
+    z-index: 100; /* 顶层 */
+    margin: 0;
+    padding: 12px 14px;
     background: var(--bg-card);
     border: none;
     border-bottom: 1px solid var(--border-soft);
     border-radius: 0;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+    /* 横向生长动画 */
     transition:
       max-width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
       opacity 0.28s ease;
   }
 
   .search-bar.is-open {
-    max-width: calc(100vw - 60px); /* 铺满到按钮左侧 */
-    margin-right: 0;
+    max-width: 100vw; /* 完全铺满屏幕 */
   }
 
-  /* 搜索框内包裹：手机端宽度铺满 */
+  /* 搜索框内包裹：宽度铺满 */
   .search-input-wrap {
     width: 100%;
     flex: 1;
   }
 
-  /* 输入框：手机端完整药丸（两端都圆，因为按钮在外面独立悬浮） */
+  /* 输入框：完整药丸（两端圆角） */
   .search-input {
     width: 100%;
     height: 44px;
@@ -769,24 +769,22 @@ footer {
     right: 16px !important;
   }
 
-  /* 手机端：内嵌搜索按钮继续隐藏 */
+  /* 内嵌搜索按钮：手机端不需要（用 Enter 触发搜索） */
   .search-btn {
     display: none;
   }
 
-  /* 外层搜索按钮：保持原位（在 header-right 里）独立悬浮在右上角
-     不与搜索框拼接——展开时仍是圆形按钮，作为"搜索/关闭"功能键 */
-  .search-toggle {
-    position: relative;
-    z-index: 61; /* 比搜索框 (60) 高，永远可见可点 */
-  }
-
-  /* 展开态：按钮高亮成主题色实心圆，提示当前已展开 */
+  /* === 关键修复：展开时外层放大镜按钮直接消失 ===
+     不再尝试让按钮拼接搜索框右端——手机屏幕太窄导致各种错位
+     展开后用户用键盘 Enter 搜索，或点输入框外部关闭 */
+  .search-bar.is-open ~ .search-toggle,
   .search-toggle.is-open {
-    border-radius: 50%; /* 保持圆形，不再拼接成药丸 */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
   }
 
-  /* 展开态：其他 header 按钮（调色盘 + 明暗 + logo）淡出 */
+  /* 展开态：其他 header 元素淡出 */
   header:has(.search-bar.is-open) .theme-control,
   header:has(.search-bar.is-open) .mode-toggle,
   header:has(.search-bar.is-open) .logo {
@@ -794,6 +792,8 @@ footer {
     pointer-events: none;
     transition: opacity 0.2s ease;
   }
+
+  /* 兜底：如果浏览器不支持 :has()，至少搜索框还能正常展开 */
 }
 
 .theme-control {
