@@ -3,6 +3,13 @@ const WALINE_SERVER_URL = "https://yang283643-waline.vercel.app";
 const WALINE_CSS_URL = "https://unpkg.com/@waline/client@v3/dist/waline.css";
 const WALINE_JS_URL = "https://unpkg.com/@waline/client@v3/dist/waline.js";
 
+/**
+ * 管理员昵称白名单（不区分大小写，前后空格自动忽略）
+ * Waline 不会在前端 DOM 上暴露用户角色，所以靠昵称识别管理员。
+ * 要新增管理员，只需在这里加一行即可。
+ */
+const ADMIN_NICKNAMES = ["admin"];
+
 let walineInstance = null;
 let walineModulePromise = null;
 let walineObserver = null;
@@ -333,14 +340,27 @@ function createLetterAvatar(letter, isAdmin) {
 
 function isAdminComment(cardItem) {
   if (!cardItem) return false;
+
+  // 1. Waline 早期版本：通过 wl-admin class 标记
   if (cardItem.classList.contains("wl-admin")) return true;
   if (cardItem.querySelector(".wl-admin")) return true;
 
   const nick = cardItem.querySelector(".wl-card .wl-head .wl-nick");
   if (nick?.classList.contains("wl-admin")) return true;
 
+  // 2. Waline 新版：通过徽章文字判断
   const badge = cardItem.querySelector(".wl-badge");
-  return !!(badge && /admin|管理员/i.test(badge.textContent.trim()));
+  if (badge && /admin|管理员/i.test(badge.textContent.trim())) return true;
+
+  // 3. 兜底：按昵称白名单匹配（Waline 不在 DOM 暴露 user.type，只能这样）
+  if (nick) {
+    const nickText = nick.textContent.trim().toLowerCase();
+    if (ADMIN_NICKNAMES.some(name => name.trim().toLowerCase() === nickText)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function ensureRoleBadge(head, isAdmin) {
@@ -410,6 +430,8 @@ function rebuildCommentHead(cardItem) {
   if (!card || !head || !nick) return;
 
   const isAdmin = isAdminComment(cardItem);
+  // 把识别结果记到 dataset 上，方便从 DevTools 直接排查
+  cardItem.dataset.role = isAdmin ? "admin" : "visitor";
   const avatar = ensureAvatar(head, nick.textContent.trim(), isAdmin);
   const badge = ensureRoleBadge(head, isAdmin);
   const actions = ensureActionSlot(head);

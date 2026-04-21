@@ -1078,22 +1078,25 @@ footer {
 .anime-tabs button {
   padding: 8px 16px;
   border-radius: 999px;
-  border: none;
+  border: 1px solid var(--border-soft);
   cursor: pointer;
-  background: #e5e7eb;
-  color: #333;
+  background: var(--bg-card);
+  color: var(--text-main);
   font-size: 14px;
   font-weight: 600;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .anime-tabs button:hover {
   transform: translateY(-1px);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .anime-tabs button.active {
   background: var(--primary);
   color: #fff;
+  border-color: var(--primary);
 }
 
 /* ===== 动漫网格 ===== */
@@ -1399,7 +1402,7 @@ footer {
 #waline {
   width: 100%;
   box-sizing: border-box;
-  background: #ffffff !important;
+  background: var(--bg-card) !important;
   border: 1px solid var(--border-soft) !important;
   border-radius: 28px;
   box-shadow: var(--shadow-soft);
@@ -1509,7 +1512,7 @@ footer {
 #waline .rating-label {
   font-size: 0.96rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--text-main);
 }
 
 #waline .rating-stars {
@@ -1545,15 +1548,15 @@ footer {
 
 #waline .rating-text {
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 /* ===== 输入框 ===== */
 #waline .wl-input {
   height: 42px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb !important;
-  background: #fff !important;
+  border: 1px solid var(--border-soft) !important;
+  background: var(--bg-card) !important;
   padding: 0 12px;
   box-sizing: border-box;
   color: var(--text-main) !important;
@@ -1571,8 +1574,8 @@ footer {
   line-height: 1.75;
   padding: 14px 16px;
   border-radius: 16px;
-  border: 1px solid #e5e7eb !important;
-  background: #f8fafc !important;
+  border: 1px solid var(--border-soft) !important;
+  background: var(--bg-panel) !important;
   transition: all 0.22s ease;
   overflow: hidden;
   resize: none;
@@ -1583,7 +1586,7 @@ footer {
 #waline .wl-editor:focus {
   outline: none;
   border-color: var(--primary) !important;
-  background: #fff !important;
+  background: var(--bg-card) !important;
   box-shadow: 0 0 0 4px var(--glow) !important;
 }
 
@@ -1674,7 +1677,7 @@ footer {
 #waline .wl-panel + .wl-info {
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid #edf2f7;
+  border-top: 1px solid var(--border-soft);
 }
 
 #waline .wl-sort {
@@ -1686,7 +1689,7 @@ footer {
   width: 100%;
   margin: 24px 0 0;
   padding: 24px 0 0;
-  border-top: 1px solid #edf2f7;
+  border-top: 1px solid var(--border-soft);
   background: transparent !important;
   border-radius: 0;
   box-shadow: none;
@@ -1720,7 +1723,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: var(--text-muted);
   text-align: center;
   font-size: 1.05rem;
   padding: 10px 0 0;
@@ -1752,15 +1755,15 @@ footer {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
 /* ===== 隐藏原头像列 ===== */
 #waline .wl-card-item.avatar-inside-card {
   display: block;
-  margin-left: 0 !important;
-  padding-left: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 #waline .wl-card-item.avatar-inside-card > .wl-user {
@@ -1773,36 +1776,54 @@ footer {
   margin-left: 0 !important;
 }
 
-/* 覆盖Waline默认给所有card-item加的左边距（为头像列预留的空间） */
-#waline .wl-cards .wl-card-item {
+/* 覆盖Waline默认给所有card-item加的左边距/内边距（为头像列预留的空间） */
+#waline .wl-cards .wl-card-item,
+#waline .wl-quote .wl-card-item {
   display: block !important;
-  margin-left: 0 !important;
-  padding-left: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-#waline .wl-cards .wl-card-item > .wl-user {
+#waline .wl-cards .wl-card-item > .wl-user,
+#waline .wl-quote .wl-card-item > .wl-user {
   display: none !important;
 }
 
-#waline .wl-cards .wl-card-item > .wl-card {
+#waline .wl-cards .wl-card-item > .wl-card,
+#waline .wl-quote .wl-card-item > .wl-card {
   width: 100% !important;
   margin-left: 0 !important;
 }
 
+/* 嵌套回复容器：去掉 Waline 默认背景/边框，让外观由 .wl-card 自己掌控 */
+#waline .wl-quote {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* 多条回复之间的间距 */
+#waline .wl-quote > .wl-card-item + .wl-card-item {
+  margin-top: 12px !important;
+}
+
 /* ===== 评论卡片 ===== */
 #waline .wl-card {
-  border: 1px solid #edf2f7 !important;
+  border: 1px solid var(--border-soft) !important;
   border-radius: 20px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04) !important;
+  box-shadow: var(--shadow-soft) !important;
   padding: 18px 18px 16px;
   margin-bottom: 16px;
-  background: #fff !important;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  background: var(--bg-card) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.25s ease, border-color 0.25s ease;
 }
 
 #waline .wl-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="dark"] #waline .wl-card:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5) !important;
 }
 
 #waline .wl-card:last-child {
@@ -1870,7 +1891,7 @@ footer {
   color: #ffffff;
   /* 跟随调色盘主题色 */
   background: linear-gradient(135deg, var(--primary-soft), var(--primary));
-  border: 2px solid rgba(255, 255, 255, 0.96);
+  border: 2px solid var(--bg-card);
   box-shadow: 0 4px 12px var(--glow);
 }
 
@@ -1900,9 +1921,22 @@ footer {
 }
 
 #waline .custom-role-badge.is-visitor {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  border: 1px solid var(--border-soft);
+}
+
+/* 暗色模式：管理员金色压暗，避免在深色背景上过亮刺眼 */
+[data-theme="dark"] #waline .custom-letter-avatar.is-admin {
+  background: linear-gradient(135deg, #b58a2a, #8a6516);
+  color: #fef3c7;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] #waline .custom-role-badge.is-admin {
+  background: linear-gradient(135deg, rgba(252, 211, 77, 0.18), rgba(252, 211, 77, 0.10));
+  color: #fcd34d;
+  border: 1px solid rgba(252, 211, 77, 0.35);
 }
 
 /* ===== 昵称与时间 ===== */
@@ -1914,7 +1948,7 @@ footer {
 }
 
 #waline .wl-time {
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -1955,7 +1989,7 @@ footer {
 #waline .wl-content {
   line-height: 1.9;
   font-size: 0.96rem;
-  color: #334155;
+  color: var(--text-main);
   word-break: break-word;
   margin-top: 10px;
 }
@@ -1975,11 +2009,12 @@ footer {
 
 /* ===== 回复层级 ===== */
 #waline .wl-replies,
-#waline .reply-thread-enhanced {
-  margin-top: 14px;
-  margin-left: 24px;
-  padding-left: 16px;
-  border-left: 2px solid #f1f5f9;
+#waline .reply-thread-enhanced,
+#waline .wl-quote {
+  margin-top: 14px !important;
+  margin-left: 24px !important;
+  padding-left: 16px !important;
+  border-left: 2px solid var(--border-soft);
 }
 
 #waline .wl-reply {
@@ -1994,13 +2029,13 @@ footer {
   top: 22px;
   width: 12px;
   height: 2px;
-  background: #e5e7eb;
+  background: var(--border-soft);
   border-radius: 999px;
 }
 
 /* ===== 点赞 / 回复交互 ===== */
 #waline .wl-action {
-  color: #94a3b8;
+  color: var(--text-muted);
   transition: color 0.18s ease, transform 0.18s ease;
 }
 
@@ -2062,7 +2097,7 @@ footer {
 .comment-status-card {
   width: 100%;
   box-sizing: border-box;
-  background: #ffffff;
+  background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-radius: 24px;
   box-shadow: var(--shadow-soft);
@@ -2085,6 +2120,22 @@ footer {
   background: linear-gradient(180deg, #fffefe 0%, #fff7f7 100%);
 }
 
+/* 暗色模式：状态卡片用深色基底，三种状态只用颜色提示边框 */
+[data-theme="dark"] .comment-status-card.is-loading {
+  border-color: hsla(210, 80%, 60%, 0.35);
+  background: linear-gradient(180deg, var(--bg-card) 0%, hsla(210, 80%, 60%, 0.06) 100%);
+}
+
+[data-theme="dark"] .comment-status-card.is-warning {
+  border-color: hsla(45, 90%, 55%, 0.35);
+  background: linear-gradient(180deg, var(--bg-card) 0%, hsla(45, 90%, 55%, 0.06) 100%);
+}
+
+[data-theme="dark"] .comment-status-card.is-error {
+  border-color: hsla(0, 80%, 62%, 0.35);
+  background: linear-gradient(180deg, var(--bg-card) 0%, hsla(0, 80%, 62%, 0.06) 100%);
+}
+
 .comment-status-title {
   font-size: 1.55rem;
   font-weight: 800;
@@ -2096,7 +2147,7 @@ footer {
 .comment-status-text {
   font-size: 1rem;
   line-height: 1.9;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .comment-status-actions {
@@ -2231,7 +2282,8 @@ body.vpn-modal-open {
   bottom: 0;
   transform: translateX(-50%);
   width: min(560px, 100%);
-  background: linear-gradient(180deg, #ffffff 0%, #fff7fb 100%);
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-panel) 100%);
+  border: 1px solid var(--border-soft);
   border-radius: 28px 28px 0 0;
   padding: 26px 22px 24px;
   box-shadow: 0 -20px 60px rgba(15, 23, 42, 0.18);
@@ -2257,15 +2309,15 @@ body.vpn-modal-open {
   height: 36px;
   border: none;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: var(--bg-panel);
   font-size: 1.4rem;
-  color: #64748b;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .comment-vpn-close:hover {
-  background: #fce7f3;
+  background: var(--primary-soft);
   color: var(--primary-dark);
   transform: rotate(90deg);
 }
@@ -2282,11 +2334,11 @@ body.vpn-modal-open {
 .comment-vpn-content {
   font-size: 1rem;
   line-height: 1.9;
-  color: #475569;
-  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-main);
+  background: var(--bg-main);
   border-radius: 18px;
   padding: 14px 14px;
-  border: 1px solid rgba(244, 114, 182, 0.12);
+  border: 1px solid var(--border-soft);
 }
 
 /* 标签 */
@@ -2298,8 +2350,8 @@ body.vpn-modal-open {
 }
 
 .comment-vpn-tags span {
-  background: #fdf2f8;
-  border: 1px solid rgba(244, 114, 182, 0.15);
+  background: var(--primary-soft);
+  border: 1px solid var(--primary-soft);
   padding: 5px 10px;
   border-radius: 999px;
   font-size: 0.8rem;
