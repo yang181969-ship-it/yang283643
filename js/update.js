@@ -287,10 +287,14 @@ function renderUpdateDetailView(item, onBack) {
 
 /* =============================================================
  * 渲染列表:从 JSON 索引 → 一组卡片
+ * 用布尔锁避免 MutationObserver 和显式调用同时触发导致的双重渲染
  * ============================================================= */
+let _updateRendering = false;
 async function renderUpdatesFromJSON() {
   const listEl = document.getElementById("update-list");
   if (!listEl) return;
+  if (_updateRendering) return;
+  _updateRendering = true;
 
   try {
     const indexRes = await fetch("data/updates-index.json");
@@ -347,20 +351,32 @@ async function renderUpdatesFromJSON() {
         更新日志加载失败,请检查 <code>data/updates-index.json</code> 路径及各 md 文件路径,或查看控制台报错。
       </p>
     `;
+  } finally {
+    _updateRendering = false;
   }
 }
 
 /* =============================================================
  * 页面初始化
- * 1. 如果 #main-content 里没有 .update-list(从详情页返回时),重建列表骨架
- * 2. 调 renderUpdatesFromJSON 重新渲染;它会根据 URL 里的 ?update= 自动决定
- *    是停在列表还是进入详情
+ *
+ * 守卫规则:只有当前真的在"更新页"上下文下才执行,否则立即退出。
+ * 判断依据:
+ *   (a) 页面里存在 .update-page 容器(SPA 加载 update.html 片段后就会有)
+ *   (b) 或 URL 里 ?page=update(用于 popstate 和直接访问场景)
+ * 缺一不可——如果用户现在在主页,#main-content 里只有主页内容,
+ * 这里绝不能主动插入更新页骨架,否则会把主页内容冲掉。
  * ============================================================= */
 async function initUpdatePage() {
   const main = document.getElementById("main-content");
   if (!main) return;
 
-  // 仅当当前容器不是更新页时重建骨架(从详情视图返回、或 SPA 重新挂载)
+  const urlParams = new URL(window.location.href).searchParams;
+  const onUpdatePage =
+    document.querySelector(".update-page") !== null ||
+    urlParams.get("page") === "update";
+  if (!onUpdatePage) return;
+
+  // 如果骨架已被详情视图替换(返回时会遇到),重建列表骨架
   if (!document.getElementById("update-list")) {
     main.innerHTML = `
       <section class="update-page no-card">
@@ -389,5 +405,45 @@ window.addEventListener("popstate", () => {
   initUpdatePage();
 });
 
-document.addEventListener("DOMContentLoaded", initUpdatePage);
+/* =============================================================
+ * SPA 切页自动响应
+ *
+ * main.js 切换到更新页时,会把 update.html 片段塞进 #main-content——
+ * 此时 DOM 里会出现 .update-page 容器,但 main.js 未必主动调用 initUpdatePage。
+ * 为了不依赖 main.js 的配合,这里用 MutationObserver 观察 #main-content:
+ * 一旦发现 .update-page 出现且还没渲染过(#update-list 是空的),就自动初始化。
+ *
+ * 用 dataset.updateInitialized 做去重,避免重复渲染。
+ * ============================================================= */
+function watchForUpdatePage() {
+  const main = document.getElementById("main-content");
+  if (!main) return;
+
+  const check = () => {
+    const page = main.querySelector(".update-page");
+    if (!page) return;
+    // 已经初始化过、或当前是详情视图,都不要再跑
+    if (page.dataset.updateInitialized === "1") return;
+    if (page.classList.contains("update-detail-page")) return;
+    const list = main.querySelector("#update-list");
+    // 列表容器存在且为空时才初始化
+    if (list && !list.children.length) {
+      page.dataset.updateInitialized = "1";
+      initUpdatePage();
+    }
+  };
+
+  // 初次检查(DOMContentLoaded 时片段可能已经在了)
+  check();
+
+  const mo = new MutationObserver(check);
+  mo.observe(main, { childList: true, subtree: true });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  watchForUpdatePage();
+  // 保留原来的 init 调用:处理直接打开 ?page=update 的场景
+  initUpdatePage();
+});
+
 window.initUpdatePage = initUpdatePage;

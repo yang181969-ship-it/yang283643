@@ -164,36 +164,35 @@ function simpleMarkdownToHtml(md, withIds = false) {
   return html.join("\n");
 }
 
-/* ===== 将 Markdown 拆成多篇笔记 ===== */
-function parseMarkdownToNotes(md, fallback = {}) {
-  const raw = normalizeLineEndings(md);
-  const blocks = raw.split(/\n---+\n/g).map(s => s.trim()).filter(Boolean);
+/* ===== 解析 Markdown 为单篇笔记(不再分篇) ===== */
+function parseMarkdownToNote(md, fallback = {}) {
+  const raw = normalizeLineEndings(md).trim();
+  const lines = raw.split("\n");
 
-  return blocks.map((block, index) => {
-    const lines = block.split("\n");
-    let title = "", category = fallback.category || "", meta = fallback.meta || "", date = fallback.date || "";
-    const contentLines = [];
+  let title = "";
+  let category = fallback.category || "";
+  let meta = fallback.meta || "";
+  let date = fallback.date || "";
+  const contentLines = [];
 
-    for (const rawLine of lines) {
-      const line = rawLine.trim();
-      if (!title && line.startsWith("# ")) { title = line.replace(/^#\s+/, "").trim(); continue; }
-      if (line.startsWith("@category:")) { category = line.replace("@category:", "").trim(); continue; }
-      if (line.startsWith("@meta:"))     { meta = line.replace("@meta:", "").trim(); continue; }
-      if (line.startsWith("@date:"))     { date = line.replace("@date:", "").trim(); continue; }
-      contentLines.push(rawLine);
-    }
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!title && line.startsWith("# ")) { title = line.replace(/^#\s+/, "").trim(); continue; }
+    if (line.startsWith("@category:")) { category = line.replace("@category:", "").trim(); continue; }
+    if (line.startsWith("@meta:"))     { meta = line.replace("@meta:", "").trim(); continue; }
+    if (line.startsWith("@date:"))     { date = line.replace("@date:", "").trim(); continue; }
+    contentLines.push(rawLine);
+  }
 
-    return {
-      id: `${fallback.file || "note"}-${index}`,
-      title: title || fallback.title || "未命名笔记",
-      category: category || "未分类",
-      meta: meta || "",
-      date: date || "",
-      content: contentLines.join("\n").trim(),
-      file: fallback.file || "",
-      blockIndex: index
-    };
-  });
+  return {
+    id: fallback.file || "note",
+    title: title || fallback.title || "未命名笔记",
+    category: category || "未分类",
+    meta: meta || "",
+    date: date || "",
+    content: contentLines.join("\n").trim(),
+    file: fallback.file || "",
+  };
 }
 
 /* ===== 加载单个 Markdown 文件 ===== */
@@ -362,8 +361,8 @@ function renderDetailView(note, onBack) {
   /* 更新 URL */
   const url = new URL(window.location.href);
   url.searchParams.set("note", encodeURIComponent(note.file));
-  url.searchParams.set("noteIndex", note.blockIndex);
-  history.pushState({ page: "notes", note: note.file, noteIndex: note.blockIndex }, "", url.toString());
+  url.searchParams.delete("noteIndex"); // 清掉旧参数(如果是老链接带进来的)
+  history.pushState({ page: "notes", note: note.file }, "", url.toString());
 }
 
 /* ===== 从 JSON 索引渲染所有笔记卡片 ===== */
@@ -389,40 +388,43 @@ async function renderNotesFromJSON(allNotesCache) {
 
     const allCards = [];
 
-    for (const item of notesIndex) {
-      const mdText = await loadNoteMarkdown(item.file);
-      const notes  = parseMarkdownToNotes(mdText, item);
+    // 并发加载所有 md,提速
+    const notes = await Promise.all(
+      notesIndex.map(async (item) => {
+        const mdText = await loadNoteMarkdown(item.file);
+        return parseMarkdownToNote(mdText, item);
+      })
+    );
 
-      notes.forEach((note) => {
-        const article = document.createElement("article");
-        article.className = "note-card";
-        article.dataset.category = note.category;
-        article.dataset.date     = note.date || "";
-        article.dataset.noteId   = note.id;
+    notes.forEach((note) => {
+      const article = document.createElement("article");
+      article.className = "note-card";
+      article.dataset.category = note.category;
+      article.dataset.date     = note.date || "";
+      article.dataset.noteId   = note.id;
 
-        const dateDisplay = note.date
-          ? `<span class="note-date">${formatDate(note.date)}</span>` : "";
+      const dateDisplay = note.date
+        ? `<span class="note-date">${formatDate(note.date)}</span>` : "";
 
-        article.innerHTML = `
-          <div class="note-card-top">
-            <span class="note-tag">${escapeHtml(note.category)}</span>
-            ${dateDisplay}
-          </div>
-          <h2>${escapeHtml(note.title)}</h2>
-          <div class="note-markdown">
-            ${simpleMarkdownToHtml(note.content)}
-          </div>
-          <span class="note-read-more">阅读全文 →</span>
-        `;
+      article.innerHTML = `
+        <div class="note-card-top">
+          <span class="note-tag">${escapeHtml(note.category)}</span>
+          ${dateDisplay}
+        </div>
+        <h2>${escapeHtml(note.title)}</h2>
+        <div class="note-markdown">
+          ${simpleMarkdownToHtml(note.content)}
+        </div>
+        <span class="note-read-more">阅读全文 →</span>
+      `;
 
-        article.addEventListener("click", () => {
-          renderDetailView(note, () => initNotesPage());
-        });
-
-        container.insertBefore(article, emptyState || null);
-        allCards.push(article);
+      article.addEventListener("click", () => {
+        renderDetailView(note, () => initNotesPage());
       });
-    }
+
+      container.insertBefore(article, emptyState || null);
+      allCards.push(article);
+    });
 
     renderMathInCards(allCards);
 
