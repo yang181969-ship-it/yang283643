@@ -6,9 +6,14 @@
   "scripts": {
     "dev": "sass --watch css/scss/main.scss:css/style.css --style=expanded --source-map",
     "build": "sass css/scss/main.scss:css/style.css --style=compressed --no-source-map",
-    "build:dev": "sass css/scss/main.scss:css/style.css --style=expanded --source-map"
+    "build:dev": "sass css/scss/main.scss:css/style.css --style=expanded --source-map",
+    "optimize:animes": "node scripts/1-rename-anime-images.js",
+    "optimize:gallery": "node scripts/2-optimize-gallery.js",
+    "update:refs": "node scripts/3-update-html-references.js"
   },
   "devDependencies": {
-    "sass": "^1.77.0"
+    "glob": "^13.0.6",
+    "sass": "^1.77.0",
+    "sharp": "^0.34.5"
   }
 }

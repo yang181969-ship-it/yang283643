@@ -21,3 +21,6 @@ Thumbs.db
 # 注意：css/style.css 要提交到仓库
 # 因为 GitHub Pages 需要编译后的产物
 # 每次部署前记得先执行 npm run build
+
+# 图片优化前的原图备份，不上传
+assets/_originals/

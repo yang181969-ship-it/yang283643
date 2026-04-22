@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const main = document.getElementById("main-content");
   const navLinks = document.querySelectorAll("nav a");
 
+  // 独立详情页（如 anime-detail.html、notes-detail.html）跳过 SPA 路由逻辑
+  if (document.body.dataset.standalone === "true") return;
+
   if (!main) return;
 
   const homeContent = main.innerHTML;
