@@ -4,16 +4,21 @@
   "description": "Yang181969 的个人网站",
   "private": true,
   "scripts": {
-    "dev": "sass --watch css/scss/main.scss:css/style.css --style=expanded --source-map",
+    "dev": "sass css/scss/main.scss:css/style.css --watch",
     "build": "sass css/scss/main.scss:css/style.css --style=compressed --no-source-map",
-
-    "build:dev": "sass css/scss/main.scss:css/style.css --style=expanded --source-map",
+  
+    "build:critical": "sass css/scss/critical.scss:css/critical.css --style=compressed --no-source-map",
+    "inline:critical": "node scripts/5-inline-critical.mjs",
+  
     "optimize:animes": "node scripts/1-rename-anime-images.js",
     "optimize:gallery": "node scripts/2-optimize-gallery.js",
     "update:refs": "node scripts/3-update-html-references.js",
-    
-    "purgecss": "node scripts/4-purgecss.mjs"
+  
+    "purgecss": "node scripts/4-purgecss.mjs",
+
+    "build:all": "npm run build && npm run build:critical && npm run inline:critical"
   },
+ 
   "devDependencies": {
     "glob": "^13.0.6",
     "purgecss": "^8.0.0",

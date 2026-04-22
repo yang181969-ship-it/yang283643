@@ -1,0 +1,25 @@
+// ========================================================
+// Critical CSS - 首屏关键样式
+// 目标:内联进 <head>,避免白屏,消除闪烁
+// 原则:只包含 index.html 首屏可见元素的样式
+// ========================================================
+
+// 1. 基础层(变量 + 重置)
+@use 'base/theme-vars';
+@use 'base/reset';
+
+// 2. 布局层(整体栅格 + 头部 + 导航)
+@use 'layout/layout';
+@use 'layout/header';
+@use 'layout/nav';
+
+// 3. 首屏组件
+@use 'components/hero';          // .home-hero(主页欢迎区)
+@use 'components/card';          // .card(卡片,首屏第一张可见)
+@use 'components/search';        // 搜索按钮
+@use 'components/theme-panel';   // 色板按钮
+@use 'components/mode-toggle';   // 深浅切换
+@use 'components/floating-btns'; // 右下浮动按钮
+
+// 4. 暗色主题(必须最后,防闪烁的核心)
+@use 'themes/dark';

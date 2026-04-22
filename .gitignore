@@ -27,3 +27,6 @@ assets/_originals/
 
 # PurgeCSS 诊断产物(非生产文件)
 css/purged/
+
+# HTML 备份文件(inline:critical 自动生成)
+*.bak
