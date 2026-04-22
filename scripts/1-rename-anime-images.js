@@ -38,7 +38,15 @@ const ANIME_RENAME_MAP = {
   datebattle: {
     cover: '约会大作战.jpg',
     gallery: ['约会大作战.jpg', '约会大作战1.jpg', '约会大作战2.jpg', '约会大作战3.jpg']
-  }
+  },
+  suzuya: {
+    cover: '铃芽之旅.jpg',
+    gallery: ['铃芽之旅.jpg', '铃芽之旅1.jpg', '铃芽之旅2.jpg', '铃芽之旅3.jpg']
+  },
+  xiaoyuan: {
+    cover: '魔法少女小圆1.jpg',
+    gallery: ['魔法少女小圆.jpg', '魔法少女小圆1.jpg', '魔法少女小圆2.jpg', '魔法少女小圆3.jpg']
+  },
 };
 
 const MAX_WIDTH = 1920;
