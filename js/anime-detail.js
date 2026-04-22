@@ -129,6 +129,44 @@ const animeData = {
       { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E7%BA%A6%E4%BC%9A%E5%A4%A7%E4%BD%9C%E6%88%98&submit=" },
     ]
   },
+
+  suzuya: {
+    title:"铃芽之旅",
+    image:"../assets/animes/suzuya-cover.jpg",
+    description:"17岁的少女岩户铃芽与“闭门师”宗像草太相遇，两人一起去关闭灾难源头之“门”的冒险故事",
+    info:[
+      "题材：青春/ 恋爱/ 治愈",
+      "主角：岩户铃芽",
+    ],
+    gallery:[
+      "../assets/animes/suzuya-cover.jpg",
+      "../assets/animes/suzuya-2.jpg",
+      "../assets/animes/suzuya-3.webp",
+      "../assets/animes/suzuya-4.webp"
+    ],
+    links:[
+      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E9%93%83%E8%8A%BD%E4%B9%8B%E6%97%85&submit="},
+    ]
+  },
+
+  xiaoyuan: {
+    title:"魔法少女小圆",
+    image:"../assets/animes/xiaoyuan-cover.jpg",
+    description:"平凡的中学生鹿目圆有一个美满的家庭，在生活中她是个性格温顺又有爱心的好孩子。转学生晓美焰的出现打破了小圆平静的生活，这个性格酷酷又体弱多病的黑长直少女似乎对小圆有着什么难言之隐。命运中的相遇出现了，小圆在路边救下了一只浑身是伤的奇怪动物 ，没想到这只动物居然会说人类的语言。它告诉小圆它的名字叫丘比，并且提出了一个特殊的要求，它希望小圆能够和它签订契约成为魔法少女。魔法少女是这个世界中一种特殊的存在，她们肩负着和魔女战斗的使命，作为报酬，丘比可以实现她们任意的一个愿望。在战斗的过程中，小圆发现魔法少女这个职业并非故事里所描绘的那么美好，随时有着牺牲的可能。并且，随着战斗的升级，一个关乎于她自己的残酷真相正在逐步的浮出水面。",
+    info:[
+      "题材：奇幻/ 战斗/ 百合",
+      "主角：鹿目圆",
+    ],
+    gallery:[
+      "../assets/animes/xiaoyuan-1.jpg",
+      "../assets/animes/xiaoyuan-cover.jpg",
+      "../assets/animes/xiaoyuan-3.jpg",
+      "../assets/animes/xiaoyuan-4.webp"
+    ],
+    links:[
+      { text: "观影链接", url: "https://yhdm6.top/v/2132.html"},
+    ]
+  },
 };
 
 function getAnimeId() {
