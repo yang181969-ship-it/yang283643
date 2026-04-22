@@ -24,3 +24,6 @@ Thumbs.db
 
 # 图片优化前的原图备份，不上传
 assets/_originals/
+
+# PurgeCSS 诊断产物(非生产文件)
+css/purged/
