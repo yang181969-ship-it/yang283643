@@ -28,6 +28,30 @@ def estimate_render_height(item, column_width=BASE_COLUMN_WIDTH):
     return column_width * height / width
 
 
+def get_image_key(src: str) -> str:
+    """
+    从路径中提取"图片身份标识"，忽略扩展名差异
+    例如：assets/gallery/real/001.jpg 和 assets/gallery/real/001.webp
+    都会得到同一个 key："real/001"
+    """
+    path = Path(src)
+    # 相对于 gallery 目录的路径（去掉 assets/gallery/ 前缀）
+    # 再去掉扩展名
+    parts = path.parts
+    # 找到 gallery 所在的位置
+    try:
+        gallery_index = parts.index("gallery")
+        relative_parts = parts[gallery_index + 1:]
+    except ValueError:
+        relative_parts = parts
+    # 拼接成 "real/001" 这样的 key（去掉扩展名）
+    if not relative_parts:
+        return path.stem
+    *dirs, filename = relative_parts
+    stem = Path(filename).stem
+    return "/".join([*dirs, stem])
+
+
 def collect_images():
     items = []
 
@@ -61,15 +85,14 @@ def collect_images():
                 "filename": file.name,
             })
 
-    # 这里只做稳定收集顺序，便于新图排序时可预测
     items.sort(key=lambda x: (x["category"], natural_sort_key(x["filename"])))
     return items
 
 
 def parse_existing_gallery_data():
     """
-    从旧的 gallery-data.js 中尽量提取已有图片的 src 和 order
-    只做轻量解析，够当前场景使用
+    从旧的 gallery-data.js 中提取"图片身份标识 → order"的映射
+    用 key（类似 real/001）而不是完整 src,这样格式变化（jpg→webp）不会破坏映射
     """
     if not OUTPUT_FILE.exists():
         return {}
@@ -85,7 +108,8 @@ def parse_existing_gallery_data():
     for match in pattern.finditer(text):
         src = match.group(1)
         order = int(match.group(2))
-        existing[src] = order
+        key = get_image_key(src)
+        existing[key] = order
 
     return existing
 
@@ -93,7 +117,7 @@ def parse_existing_gallery_data():
 def distribute_existing_items(existing_items, column_count=COLUMN_COUNT):
     """
     旧图：尽量按原 order 保持稳定
-    用“轮转列分配”近似恢复原布局节奏
+    用"轮转列分配"近似恢复原布局节奏
     """
     existing_items = sorted(existing_items, key=lambda x: x["old_order"])
 
@@ -145,8 +169,10 @@ def build_arrangement(all_items, existing_order_map):
     new_items = []
 
     for item in all_items:
-        if item["src"] in existing_order_map:
-            item["old_order"] = existing_order_map[item["src"]]
+        # 用 key 匹配（real/001 这种），不再用完整 src
+        key = get_image_key(item["src"])
+        if key in existing_order_map:
+            item["old_order"] = existing_order_map[key]
             existing_items.append(item)
         else:
             new_items.append(item)
@@ -168,15 +194,15 @@ def generate_js(items):
     lines.append("const galleryData = [")
 
     for item in items:
-      lines.append(
-          "  { "
-          f'src: "{item["src"]}", '
-          f'category: "{item["category"]}", '
-          f'width: {item["width"]}, '
-          f'height: {item["height"]}, '
-          f'order: {item["order"]} '
-          "},"
-      )
+        lines.append(
+            "  { "
+            f'src: "{item["src"]}", '
+            f'category: "{item["category"]}", '
+            f'width: {item["width"]}, '
+            f'height: {item["height"]}, '
+            f'order: {item["order"]} '
+            "},"
+        )
 
     lines.append("];")
     lines.append("")
@@ -202,13 +228,15 @@ def main():
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_FILE.write_text(js_content, encoding="utf-8")
 
-    old_count = len(existing_order_map)
-    new_count = sum(1 for item in all_items if item["src"] not in existing_order_map)
+    # 基于 key 统计（和 build_arrangement 里的判断一致）
+    all_keys = {get_image_key(item["src"]) for item in all_items}
+    existing_count = sum(1 for key in all_keys if key in existing_order_map)
+    new_count = len(all_keys) - existing_count
 
     print(f"已生成: {OUTPUT_FILE}")
     print(f"共写入 {len(arranged_items)} 张图片")
-    print(f"旧图数量: {old_count}")
-    print(f"新图数量: {new_count}")
+    print(f"保留布局的旧图: {existing_count} 张")
+    print(f"新增图片: {new_count} 张")
     print(f"基准列数: {COLUMN_COUNT}")
 
 
