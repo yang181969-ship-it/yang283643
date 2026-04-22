@@ -1,30 +1,50 @@
 [
   {
-    "title": "微积分笔记合集",
+    "title": "傅里叶级数的基本形式",
     "category": "微积分",
-    "file": "content/math/calculus.md"
+    "file": "content/math/calculus/傅里叶级数的基本形式.md",
+    "date": "2025-02-03"
   },
   {
-    "title": "线性代数笔记合集",
+    "title": "收敛性问题",
+    "category": "微积分",
+    "file": "content/math/calculus/收敛性问题.md",
+    "date": "2025-02-03"
+  },
+  {
+    "title": "矩阵的特征值与迹",
     "category": "线性代数",
-    "file": "content/math/linear-algebra.md"
+    "file": "content/math/linear-algebra/矩阵的特征值与迹.md",
+    "date": "2025-10-21"
   },
-
   {
-    "title": "组合数学笔记合集",
+    "title": "对角化与相似变换",
+    "category": "线性代数",
+    "file": "content/math/linear-algebra/对角化与相似变换.md",
+    "date": "20205-03-16"
+  },
+  {
+    "title": "Gosper 算法",
     "category": "组合数学",
-    "file":"content/math/combinatorics.md"
+    "file": "content/math/combinatorics/Gosper 算法.md",
+    "date": "2026-04-19"
   },
-
   {
-    "title": "电磁学笔记合集",
+    "title": "高斯定律的积分形式",
     "category": "电磁学",
-    "file": "content/physics/electromagnetism.md"
+    "file": "content/physics/electromagnetism/高斯定律的积分形式.md",
+    "date": "2020-01-05"
   },
-
   {
-  "title": "公式书写语法说明",
-  "category": "公式渲染",
-  "file": "content/tools/formula-syntax.md"
+    "title": "电场线与通量",
+    "category": "电磁学",
+    "file": "content/physics/electromagnetism/电场线与通量.md",
+    "date": "2026-03-23"
+  },
+  {
+    "title": "网站公式书写语法说明",
+    "category": "公式渲染",
+    "file": "content/tools/formula-syntax/网站公式书写语法说明.md",
+    "date": "2026-04-19"
   }
 ]
