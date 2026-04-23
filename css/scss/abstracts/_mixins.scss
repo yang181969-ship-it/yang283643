@@ -38,21 +38,58 @@
   @media (min-width: $bp-tablet) { @content; }
 }
 
-// ----- 通用卡片外观 -----
+// ============================================================
+// 毛玻璃卡片系统（Phase 2）
+// ============================================================
+
+// ----- 通用卡片外观（毛玻璃化）-----
+// 所有使用此 mixin 的元素会自动获得：
+//   - 半透明玻璃底（--glass-bg-weak，柔和不抢焦点）
+//   - backdrop-filter 虚化（移动端会在 _theme-vars 自动降档）
+//   - 顶部内发光（--glass-highlight，模拟玻璃边缘反射）
+//   - 三态阴影的 rest 态
+// @supports 降级由 --glass-bg-weak 自动兜底（_theme-vars 里已定义）
 @mixin card-surface {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: 18px;
-  box-shadow: var(--shadow-soft);
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: var(--glass-border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow:
+    var(--glass-shadow-rest),
+    var(--glass-highlight);
 }
 
-// ----- 卡片悬浮效果 -----
+// ----- 卡片悬浮效果（Phase 2 中等强度）-----
+// hover: translateY(-4px) + 更强分层阴影 + 彩色辉光（glow 开启时）
+// active: 快速回弹（--dur-glass-quick）模拟按下
+// 彩色辉光通过 --glow-card 自动跟 --glow-intensity 联动：
+//   - glow 开启 → 有淡淡的主色光晕
+//   - glow 关闭 → 光晕归零，只剩中性阴影
+// 不用手动写 [data-glow="off"] 判断，Phase 1 的 calc 联动会兜底
 @mixin card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform var(--dur-glass) var(--ease-glass),
+    box-shadow var(--dur-glass) var(--ease-glass),
+    background var(--dur-glass) var(--ease-glass);
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+    transform: translateY(-4px);
+    background: var(--glass-bg);           // 悬停时略微提亮（weak → 标准）
+    box-shadow:
+      var(--glass-shadow-hover),
+      var(--glow-card),
+      var(--glass-highlight);
+  }
+
+  &:active {
+    transform: translateY(-1px);
+    transition:
+      transform var(--dur-glass-quick) var(--ease-glass-quick),
+      box-shadow var(--dur-glass-quick) var(--ease-glass-quick);
+    box-shadow:
+      var(--glass-shadow-active),
+      var(--glass-highlight);
   }
 }
 
@@ -67,6 +104,8 @@
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 // ----- 透明容器（覆盖默认 section 卡片外观）-----
@@ -74,26 +113,48 @@
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 // ----- 圆形图标按钮（header 右上角那一排 46x46 按钮）-----
+// Phase 2: 同步毛玻璃化，视觉上和卡片属于同一套语言
 @mixin circle-icon-btn {
   width: 46px;
   height: 46px;
-  border: 1px solid var(--border-soft);
+  border: var(--glass-border-subtle);
   border-radius: 50%;
-  background: var(--bg-card);
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
   color: var(--primary);
   cursor: pointer;
-  box-shadow: var(--shadow-soft);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+  box-shadow:
+    var(--glass-shadow-rest),
+    var(--glass-highlight);
+  transition:
+    transform var(--dur-glass-quick) var(--ease-glass-quick),
+    box-shadow var(--dur-glass-quick) var(--ease-glass-quick),
+    background var(--dur-glass-quick) var(--ease-glass-quick),
+    color var(--dur-glass-quick) var(--ease-glass-quick);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
 
   &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    transform: translateY(-2px);
+    background: var(--glass-bg);
+    box-shadow:
+      var(--glass-shadow-hover),
+      var(--glow-card),
+      var(--glass-highlight);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow:
+      var(--glass-shadow-active),
+      var(--glass-highlight);
   }
 }
