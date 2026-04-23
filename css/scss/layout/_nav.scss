@@ -4,15 +4,24 @@
 
 @use '../abstracts/mixins' as *;
 
+// Nav 毛玻璃化：保留"独立面板"视觉但不挡 ambient
+// 右边框换成柔和高光，视觉上仍有区隔感
 nav {
   grid-area: nav;
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border-soft);
   padding: 22px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   overflow: hidden;
+
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+
+  transition:
+    background var(--dur-glass) var(--ease-glass),
+    border-color var(--dur-glass) var(--ease-glass);
 
   a {
     text-decoration: none;
@@ -34,8 +43,15 @@ nav {
       color: #fff;
       font-weight: 700;
       transform: translateX(4px);
+      // active 项带一圈主色辉光，跟随 glow 开关
+      box-shadow: 0 4px 16px hsla(var(--primary-hue), 80%, 60%, calc(0.35 * var(--glow-intensity)));
     }
   }
+}
+
+// 亮色模式下右边框换成原有的 border-soft（白色高光在亮底上看不见）
+[data-theme="light"] nav {
+  border-right-color: var(--border-soft);
 }
 
 // ----- 响应式：平板及以下改成横向滑动条 -----
@@ -47,7 +63,7 @@ nav {
     gap: 12px;
     padding: 12px 16px;
     border-right: none;
-    border-bottom: 1px solid var(--border-soft);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
@@ -68,6 +84,11 @@ nav {
         transform: none;
       }
     }
+  }
+
+  // 亮色下移动端 nav 的 border-bottom 也用 border-soft
+  [data-theme="light"] nav {
+    border-bottom-color: var(--border-soft);
   }
 }
 

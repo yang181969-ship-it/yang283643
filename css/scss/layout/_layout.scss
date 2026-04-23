@@ -16,6 +16,7 @@
 }
 
 // 右侧滚动容器：只有这里滚动
+// 背景改为透明，让 body::before 的 ambient 层透上来
 .content-scroll {
   grid-area: content;
   display: flex;
@@ -24,10 +25,11 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--bg-main);
+  background: transparent;
 }
 
 // Main：统一版心和留白
+// 背景同样透明，色斑透过来
 main {
   flex: 1 0 auto;
   width: 100%;
@@ -37,7 +39,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: var(--page-gap);
-  background: var(--bg-main);
+  background: transparent;
   min-width: 0;
 }
 
@@ -53,13 +55,21 @@ main {
 }
 
 // Footer 跟 main 一起放进右侧滚动区
+// 毛玻璃化：和 header 呼应，形成"夹心"视觉
 footer {
   flex-shrink: 0;
-  background: var(--bg-panel);
-  border-top: 1px solid var(--border-soft);
   padding: 18px;
   text-align: center;
   color: var(--text-muted);
+
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="light"] footer {
+  border-top-color: var(--border-soft);
 }
 
 // ----- 响应式：平板及以下，改成竖向布局 -----

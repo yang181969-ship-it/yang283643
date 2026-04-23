@@ -1,0 +1,100 @@
+// ============================================================
+// Ambient Background（氛围背景层）
+// 为毛玻璃效果提供可虚化的彩色底，也是 ambient glow 的视觉载体
+//
+// 挂在 body::before 上，用 fixed 定位锁在视口，不跟内容滚动
+// 颜色由 --primary-hue 驱动，强度由 --glow-intensity 控制
+// ============================================================
+
+body {
+  // 确保 ::before 能正确定位
+  position: relative;
+  // 保留原有的 --bg-main 作为底色兜底
+  background: var(--bg-main);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;              // top/right/bottom/left: 0
+  z-index: -1;           // 沉到所有内容底下
+  pointer-events: none;  // 不拦鼠标
+
+  // 三个巨大的径向渐变色斑，模拟自然光晕
+  // 位置错开（左上 / 右上 / 底部中央），大小各异
+  // 每个色斑的透明度 × --glow-intensity，实现辉光全局开关
+  background:
+    // 左上：主色
+    radial-gradient(
+      ellipse 80% 60% at 15% 20%,
+      hsla(var(--primary-hue), 75%, 60%, calc(0.22 * var(--glow-intensity))),
+      transparent 60%
+    ),
+    // 右上：主色偏移 +60 度（互补感）
+    radial-gradient(
+      ellipse 70% 50% at 85% 10%,
+      hsla(calc(var(--primary-hue) + 60), 70%, 65%, calc(0.18 * var(--glow-intensity))),
+      transparent 55%
+    ),
+    // 底部中央：主色偏移 -40 度
+    radial-gradient(
+      ellipse 90% 55% at 50% 100%,
+      hsla(calc(var(--primary-hue) - 40), 80%, 55%, calc(0.2 * var(--glow-intensity))),
+      transparent 60%
+    );
+
+  // 主题或辉光切换时平滑过渡
+  transition: opacity var(--dur-glass) var(--ease-glass);
+}
+
+// ----- 暗色模式：色斑饱和度和透明度提高 -----
+// 暗底下需要更鲜艳的色斑才看得见（但还是要克制，避免花哨）
+[data-theme="dark"] body::before {
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 15% 20%,
+      hsla(var(--primary-hue), 80%, 55%, calc(0.28 * var(--glow-intensity))),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 85% 10%,
+      hsla(calc(var(--primary-hue) + 60), 75%, 55%, calc(0.22 * var(--glow-intensity))),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 90% 55% at 50% 100%,
+      hsla(calc(var(--primary-hue) - 40), 85%, 50%, calc(0.25 * var(--glow-intensity))),
+      transparent 60%
+    );
+}
+
+// ----- 移动端：色斑简化为两个，降低渲染成本 -----
+@media (max-width: 600px) {
+  body::before {
+    background:
+      radial-gradient(
+        ellipse 100% 50% at 50% 0%,
+        hsla(var(--primary-hue), 75%, 60%, calc(0.22 * var(--glow-intensity))),
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 100% 50% at 50% 100%,
+        hsla(calc(var(--primary-hue) - 40), 80%, 55%, calc(0.2 * var(--glow-intensity))),
+        transparent 60%
+      );
+  }
+
+  [data-theme="dark"] body::before {
+    background:
+      radial-gradient(
+        ellipse 100% 50% at 50% 0%,
+        hsla(var(--primary-hue), 80%, 55%, calc(0.28 * var(--glow-intensity))),
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 100% 50% at 50% 100%,
+        hsla(calc(var(--primary-hue) - 40), 85%, 50%, calc(0.25 * var(--glow-intensity))),
+        transparent 60%
+      );
+  }
+}
