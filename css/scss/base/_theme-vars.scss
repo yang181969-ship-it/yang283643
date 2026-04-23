@@ -5,22 +5,21 @@
 // ============================================================
 
 :root {
-  // 页面尺寸
+  // ----- 页面尺寸 -----
   --page-max-width: 1320px;
   --page-pad-top: 16px;
   --page-pad-x: 40px;
   --page-pad-bottom: 40px;
   --page-gap: 20px;
 
-  // 主题色相（由 theme.js 控制）
+  // ----- 主题色相（由 theme.js 控制）-----
   --primary-hue: 330;
 
   --primary: hsl(var(--primary-hue), 80%, 68%);
   --primary-dark: hsl(var(--primary-hue), 55%, 40%);
   --primary-soft: hsl(var(--primary-hue), 85%, 92%);
-  --glow: hsla(var(--primary-hue), 80%, 68%, 0.35);
 
-  // 明亮模式默认值（被 [data-theme="dark"] 覆盖）
+  // ----- 明亮模式默认值（被 [data-theme="dark"] 覆盖）-----
   --bg-main: #f6f8fc;
   --bg-panel: #eef2f8;
   --bg-card: #ffffff;
@@ -30,6 +29,82 @@
 
   --border-soft: #d9e2ef;
   --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.08);
+
+  // ============================================================
+  // 毛玻璃悬浮卡片系统（Phase 1 新增）
+  // ============================================================
+
+  // ----- 毛玻璃 blur 半径（移动端会降档）-----
+  --glass-blur: 18px;
+  --glass-blur-strong: 28px;   // 用于 header、modal 等需要更重虚化的场景
+  --glass-blur-weak: 10px;     // 用于 dropdown、小面板
+
+  // ----- 毛玻璃背景色（亮色模式）-----
+  // 用 rgba 而非 hsla，保证 @supports 降级时也能读懂
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.72);   // header 用
+  --glass-bg-weak: rgba(255, 255, 255, 0.38);     // hover / 次级面板
+
+  // 降级兜底（不支持 backdrop-filter 时使用，透明度更低避免看穿）
+  --glass-bg-fallback: rgba(255, 255, 255, 0.92);
+
+  // ----- 毛玻璃边框与高光 -----
+  --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+  --glass-border-subtle: 1px solid rgba(255, 255, 255, 0.35);
+
+  // 顶部高光（内发光，模拟玻璃边缘反射）
+  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+
+  // ----- 毛玻璃阴影分层（悬浮感的核心）-----
+  // rest: 卡片静止状态；hover: 悬停上浮；active: 按下回弹
+  --glass-shadow-rest:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 12px 32px rgba(15, 23, 42, 0.08);
+
+  --glass-shadow-hover:
+    0 8px 24px rgba(15, 23, 42, 0.10),
+    0 20px 48px rgba(15, 23, 42, 0.12);
+
+  --glass-shadow-active:
+    0 2px 8px rgba(15, 23, 42, 0.08),
+    0 6px 16px rgba(15, 23, 42, 0.10);
+
+  // ----- 圆角体系 -----
+  --radius-card: 20px;
+  --radius-card-lg: 28px;   // 大卡片 / hero
+  --radius-chip: 999px;     // tag、pill
+
+  // ----- 悬浮动效曲线 -----
+  --ease-glass: cubic-bezier(0.22, 1, 0.36, 1);        // 出场/上浮（ease-out 偏慢）
+  --ease-glass-quick: cubic-bezier(0.4, 0, 0.2, 1);    // 快速反馈（按下、切换）
+
+  --dur-glass: 320ms;
+  --dur-glass-quick: 180ms;
+
+  // ============================================================
+  // Ambient Glow（环境辉光）系统
+  // 由 [data-glow] 属性开关，默认开启
+  // JS 写 document.documentElement.dataset.glow = 'on' | 'off'
+  // ============================================================
+
+  // 主辉光色（跟随 primary-hue 联动）
+  --glow: hsla(var(--primary-hue), 80%, 68%, 0.35);
+
+  // 辉光强度开关（默认开启 = 1，关闭时 JS 改 :root 的 --glow-intensity 为 0）
+  --glow-intensity: 1;
+
+  // 辉光半径分层
+  --glow-radius-sm: 60px;
+  --glow-radius-md: 160px;
+  --glow-radius-lg: 320px;
+
+  // 卡片上的微辉光（hover 时叠加在 --glass-shadow-hover 上）
+  --glow-card: 0 0 40px hsla(var(--primary-hue), 85%, 70%, calc(0.25 * var(--glow-intensity)));
+}
+
+// ----- 全局开关：关闭 ambient glow -----
+:root[data-glow="off"] {
+  --glow-intensity: 0;
 }
 
 // ----- 响应式下的页面边距调整 -----
@@ -39,6 +114,11 @@
     --page-pad-x: 18px;
     --page-pad-bottom: 32px;
     --page-gap: 18px;
+
+    // 移动端降低 blur 强度，避免卡顿
+    --glass-blur: 12px;
+    --glass-blur-strong: 18px;
+    --glass-blur-weak: 8px;
   }
 }
 
@@ -48,5 +128,21 @@
     --page-pad-x: 14px;
     --page-pad-bottom: 28px;
     --page-gap: 16px;
+
+    // 极小屏再降一档
+    --glass-blur: 10px;
+    --glass-blur-strong: 14px;
+  }
+}
+
+// ============================================================
+// @supports 降级：不支持 backdrop-filter 的浏览器
+// 用更不透明的背景色兜底，视觉上降级但不破碎
+// ============================================================
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --glass-bg: var(--glass-bg-fallback);
+    --glass-bg-strong: rgba(255, 255, 255, 0.96);
+    --glass-bg-weak: rgba(255, 255, 255, 0.88);
   }
 }

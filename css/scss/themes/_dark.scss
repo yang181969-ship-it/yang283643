@@ -10,7 +10,6 @@
 [data-theme="dark"] {
   --primary-dark: hsl(var(--primary-hue), 85%, 78%);   // 深色背景上调亮，保证可读性
   --primary-soft: hsla(var(--primary-hue), 70%, 55%, 0.22);
-  --glow: hsla(var(--primary-hue), 80%, 68%, 0.45);
 
   --bg-main: #0f1419;
   --bg-panel: #161b22;
@@ -21,6 +20,40 @@
 
   --border-soft: #2a3140;
   --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  // ----- 毛玻璃（暗色模式）-----
+  // 暗色下用深色半透明，不能用白色 rgba（会糊成灰雾）
+  --glass-bg: rgba(28, 34, 48, 0.55);            // 基于 --bg-card 的 rgb
+  --glass-bg-strong: rgba(22, 27, 34, 0.72);     // header 用，更接近 --bg-panel
+  --glass-bg-weak: rgba(28, 34, 48, 0.38);
+
+  // 降级兜底（不支持 backdrop-filter）
+  --glass-bg-fallback: rgba(28, 34, 48, 0.94);
+
+  // 边框高光：暗色下改用白色低透明度模拟玻璃边缘反光
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --glass-border-subtle: 1px solid rgba(255, 255, 255, 0.05);
+
+  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+
+  // 阴影：暗色下要更深才看得出悬浮感
+  --glass-shadow-rest:
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 12px 32px rgba(0, 0, 0, 0.4);
+
+  --glass-shadow-hover:
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 20px 48px rgba(0, 0, 0, 0.5);
+
+  --glass-shadow-active:
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 6px 16px rgba(0, 0, 0, 0.45);
+
+  // ----- Ambient Glow（暗色）-----
+  // 暗色下辉光要更亮才明显，半径也可以稍大
+  --glow: hsla(var(--primary-hue), 80%, 68%, 0.5);
+
+  --glow-card: 0 0 48px hsla(var(--primary-hue), 90%, 72%, calc(0.35 * var(--glow-intensity)));
 }
 
 // ============================================================
