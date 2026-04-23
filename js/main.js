@@ -7,7 +7,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!main) return;
 
-  const homeContent = main.innerHTML;
+  /* -----------------------------------------------------------
+   * 主页骨架缓存（关键修复）
+   *
+   * 原先的写法 `const homeContent = main.innerHTML` 有竞态风险：
+   * 如果用户直接访问 ?page=xxx 链接，其他脚本（尤其 update.js）
+   * 的 DOMContentLoaded handler 可能先跑，把 #main-content 替换成
+   * 目标页骨架，这里就抓到了错误内容。
+   *
+   * 解决方案：首次进入时如果 URL 是主页，就抓当前 DOM（此时一定是原始主页）；
+   * 否则通过 fetch 重新请求 index.html 拿到真正的主页骨架，缓存下来。
+   * ----------------------------------------------------------- */
+  let homeContent = null;          // 主页骨架（字符串）
+  let homeContentPromise = null;   // 正在 fetch 的 Promise，避免重复请求
+
+  async function getHomeContent() {
+    if (homeContent !== null) return homeContent;
+    if (homeContentPromise) return homeContentPromise;
+
+    homeContentPromise = fetch("index.html")
+      .then(res => res.text())
+      .then(html => {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const originalMain = doc.querySelector("#main-content");
+        homeContent = originalMain ? originalMain.innerHTML : "";
+        return homeContent;
+      })
+      .catch(err => {
+        console.error("加载主页骨架失败：", err);
+        homeContent = "";
+        return "";
+      });
+
+    return homeContentPromise;
+  }
+
   const pageCache = new Map();
 
   const pageMap = {
@@ -68,6 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (page === "anime"   && typeof initAnimePage   === "function") initAnimePage();
     if (page === "gallery" && typeof initGalleryPage === "function") initGalleryPage();
     if (page === "notes"   && typeof window.initNotesPage === "function") window.initNotesPage();
+    if (page === "update"  && typeof window.initUpdatePage === "function") window.initUpdatePage();
   }
 
   function afterPageLoad(page, push) {
@@ -84,11 +119,12 @@ document.addEventListener("DOMContentLoaded", () => {
     main.style.pointerEvents = isLoading ? "none" : "";
   }
 
-  function loadPage(page, push = true) {
+  async function loadPage(page, push = true) {
     if (!Object.prototype.hasOwnProperty.call(pageMap, page)) return;
 
     if (page === "home") {
-      main.innerHTML = homeContent;
+      const html = await getHomeContent();
+      main.innerHTML = html;
       afterPageLoad("home", push);
       return;
     }
@@ -102,33 +138,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const file = pageMap[page];
     setLoading(true);
 
-    fetch(file)
-      .then((res) => {
-        if (!res.ok) throw new Error(`无法加载 ${file}`);
-        return res.text();
-      })
-      .then((html) => {
-        const doc = new DOMParser().parseFromString(html, "text/html");
-        const newMain = doc.querySelector("#main-content");
-        if (!newMain) throw new Error(`${file} 中没有找到 #main-content`);
+    try {
+      const res = await fetch(file);
+      if (!res.ok) throw new Error(`无法加载 ${file}`);
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const newMain = doc.querySelector("#main-content");
+      if (!newMain) throw new Error(`${file} 中没有找到 #main-content`);
 
-        const content = newMain.innerHTML;
-        pageCache.set(page, content);
-        main.innerHTML = content;
-        afterPageLoad(page, push);
-      })
-      .catch((err) => {
-        console.error("页面切换失败：", err);
-        main.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444;">
-          <p>页面加载失败，请刷新后重试。</p>
-        </div>`;
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      const content = newMain.innerHTML;
+      pageCache.set(page, content);
+      main.innerHTML = content;
+      afterPageLoad(page, push);
+    } catch (err) {
+      console.error("页面切换失败：", err);
+      main.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444;">
+        <p>页面加载失败，请刷新后重试。</p>
+      </div>`;
+    } finally {
+      setLoading(false);
+    }
   }
 
-  // 暴露给 search.js 使用
+  // 暴露给 search.js / update.js 等使用
   window._loadPage = loadPage;
 
   navLinks.forEach((link) => {
@@ -137,6 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const page = getPageFromHref(href);
       if (page && href.startsWith("index.html")) {
         e.preventDefault();
+        // 如果已经在目标页，不做任何操作（避免污染历史栈，
+        // 之前每点一次当前页 nav 都会多 push 一条历史）
+        if (page === getCurrentPageFromUrl()) return;
         loadPage(page, true);
       }
     });
@@ -157,13 +192,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const page = state.page || getCurrentPageFromUrl();
 
-    // 如果 state 里有笔记详情信息，说明是从笔记详情回退/前进
-    // notes.js 的 renderDetailView 已经通过 pushState 管理这段历史，
-    // 此处只需要在"回到列表"时重新渲染列表即可。
+    // 笔记详情回退：notes.js 通过 pushState 管理自身历史
     if (page === "notes" && !state.note) {
-      // 回到笔记列表：如果当前 DOM 不是列表（缺少 #notes-content），则重新加载
       if (!document.getElementById("notes-content")) {
-        // 优先从缓存还原，避免重复 fetch
         if (pageCache.has("notes")) {
           main.innerHTML = pageCache.get("notes");
           updateHighlight("notes");
@@ -178,6 +209,27 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // 更新详情回退：update.js 自己会响应 popstate，但如果 DOM 里已经
+    // 没有 .update-page（从别的页面回来），还是需要重新加载更新页。
+    if (page === "update" && !state.update) {
+      // 如果当前 DOM 里没有更新页骨架 / 有详情视图，需要重新加载列表骨架
+      const hasUpdateSkeleton = document.getElementById("update-list");
+      const isDetailView = document.querySelector(".update-detail-page");
+      if (!hasUpdateSkeleton || isDetailView) {
+        if (pageCache.has("update")) {
+          main.innerHTML = pageCache.get("update");
+          updateHighlight("update");
+          requestAnimationFrame(() => {
+            if (typeof window.initUpdatePage === "function") window.initUpdatePage();
+          });
+        } else {
+          loadPage("update", false);
+        }
+      }
+      updateHighlight("update");
+      return;
+    }
+
     loadPage(page, false);
   });
 
@@ -185,8 +237,22 @@ document.addEventListener("DOMContentLoaded", () => {
   updateHighlight(initialPage);
 
   if (initialPage !== "home") {
+    // 关键：在替换 DOM 之前先把原始主页 HTML 抓下来缓存
+    // 如果此刻 DOM 里的 #main-content 还没被其他脚本污染，直接用它
+    // （DOMContentLoaded 里几乎必然是原始 HTML，除非 update.js 那种无 defer 脚本抢跑）
+    if (homeContent === null) {
+      // 再保险一点：检测一下当前是不是像主页（有 .home-hero 或 .home-page）
+      if (main.querySelector(".home-page") || main.querySelector(".home-hero")) {
+        homeContent = main.innerHTML;
+      }
+      // 如果连这个都没有，getHomeContent() 会按需 fetch
+    }
     loadPage(initialPage, false);
   } else {
+    // 当前在主页，抓一份骨架缓存起来
+    if (homeContent === null) {
+      homeContent = main.innerHTML;
+    }
     history.replaceState({ page: "home" }, "", "index.html");
     requestAnimationFrame(() => runPageInit("home"));
   }
@@ -199,19 +265,23 @@ function initFloatingBtns() {
   const scrollContainer = document.querySelector(".content-scroll");
   if (!scrollContainer) return;
 
-  // 滚动时同时控制两个按钮的显隐
+  // 滚动时控制按钮显隐（所有页面都要，包括 standalone 详情页）
   scrollContainer.addEventListener("scroll", () => {
     const show = scrollContainer.scrollTop > 300;
     topBtn?.classList.toggle("show", show);
     prevBtn?.classList.toggle("show", show);
   });
 
-  // 返回顶部
+  // 返回顶部（所有页面都要）
   topBtn?.addEventListener("click", () => {
     scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
   });
 
-  // 返回上一页：走浏览器历史
+  // 返回上一页：独立详情页（anime-detail.html / notes-detail.html）
+  // 有自己的 inline script 绑定 history.back()，这里不重复绑定，
+  // 否则会双重触发导致 history.back() 执行两次，跳过中间一级。
+  if (document.body.dataset.standalone === "true") return;
+
   prevBtn?.addEventListener("click", () => {
     history.back();
   });
