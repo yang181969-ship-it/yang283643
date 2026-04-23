@@ -21,6 +21,7 @@
 // ---------- 1. 基础层 ----------
 @use 'base/theme-vars';
 @use 'base/reset';
+@use 'base/ambient';
 
 // ---------- 2. 布局层 ----------
 @use 'layout/layout';

@@ -12,10 +12,32 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-panel) 100%);
-  border-bottom: 1px solid var(--border-soft);
+
+  // 毛玻璃背景：半透明 + backdrop-filter
+  // sticky 定位让 header 滚动时保持虚化可见（而不是被内容顶走）
+  position: sticky;
+  top: 0;
+
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(140%);
+
+  // 顶部边缘高光 + 底边分隔线（比原来的 border-bottom 更轻）
+  box-shadow: var(--glass-highlight);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
   z-index: $z-header;
   min-width: 0;
+
+  // 过渡：主题切换 / glow 开关时平滑变化
+  transition:
+    background var(--dur-glass) var(--ease-glass),
+    border-color var(--dur-glass) var(--ease-glass);
+}
+
+// 暗色模式下底边分隔线换成浅色微光（亮色下它几乎看不见，用 border-soft 更稳）
+[data-theme="light"] .layout > header {
+  border-bottom-color: var(--border-soft);
 }
 
 .logo {
@@ -31,8 +53,10 @@
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--primary);
-    box-shadow: 0 0 14px var(--glow);
+    // 头像光晕跟随 glow 开关：关掉辉光时也跟着灭
+    box-shadow: 0 0 14px hsla(var(--primary-hue), 80%, 68%, calc(0.6 * var(--glow-intensity)));
     flex-shrink: 0;
+    transition: box-shadow var(--dur-glass) var(--ease-glass);
   }
 
   span {
