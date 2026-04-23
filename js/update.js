@@ -25,9 +25,7 @@ function formatUpdateDate(dateStr) {
 }
 
 /* =============================================================
- * 极简 Markdown 渲染
- * 支持:# ## ### 标题、- * 列表、``` 代码块、段落、行内 `code`、**bold**
- * 不支持:图片、表格(表格是今天 md 里唯一用到的进阶语法,加一个极简解析)
+ * 极简 Markdown 渲染（保持原样）
  * ============================================================= */
 function updateRenderMarkdown(md) {
   const text = updateNormalizeLineEndings(md).trim();
@@ -64,13 +62,11 @@ function updateRenderMarkdown(md) {
   }
   function flushTable() {
     if (!tableBuffer.length) return;
-    // 第一行表头,第二行分隔线(|---|---|),其余是数据
     const rows = tableBuffer
       .map((l) => l.trim().replace(/^\|/, "").replace(/\|$/, ""))
       .filter(Boolean);
     if (rows.length >= 2) {
       const headers = rows[0].split("|").map((c) => c.trim());
-      // rows[1] 是分隔线,跳过
       const bodyRows = rows.slice(2).map((r) => r.split("|").map((c) => c.trim()));
       const thead =
         "<thead><tr>" +
@@ -92,13 +88,9 @@ function updateRenderMarkdown(md) {
     tableBuffer = [];
   }
 
-  /** 行内格式:**bold**, `code` */
   function inlineFormat(raw) {
-    // 先 escape,再处理 `code` 和 **bold**(用占位符避免转义冲突)
     let s = updateEscapeHtml(raw);
-    // 行内代码
     s = s.replace(/`([^`]+)`/g, (_, code) => `<code>${code}</code>`);
-    // 粗体
     s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     return s;
   }
@@ -106,7 +98,6 @@ function updateRenderMarkdown(md) {
   for (const rawLine of lines) {
     const line = rawLine.trim();
 
-    // 代码块 ```
     if (line.startsWith("```")) {
       flushParagraph();
       flushList();
@@ -120,7 +111,6 @@ function updateRenderMarkdown(md) {
       continue;
     }
 
-    // 表格行:以 | 开头
     if (line.startsWith("|")) {
       if (!inTable) {
         flushParagraph();
@@ -134,33 +124,28 @@ function updateRenderMarkdown(md) {
       inTable = false;
     }
 
-    // 空行
     if (!line) {
       flushParagraph();
       flushList();
       continue;
     }
 
-    // 标题
     if (line.startsWith("### ")) { flushParagraph(); flushList(); html.push(`<h3>${inlineFormat(line.slice(4))}</h3>`); continue; }
     if (line.startsWith("## "))  { flushParagraph(); flushList(); html.push(`<h2>${inlineFormat(line.slice(3))}</h2>`); continue; }
     if (line.startsWith("# "))   { flushParagraph(); flushList(); html.push(`<h1>${inlineFormat(line.slice(2))}</h1>`); continue; }
 
-    // 水平分隔线
     if (line === "---" || line === "***") {
       flushParagraph(); flushList();
       html.push(`<hr>`);
       continue;
     }
 
-    // 列表
     if (line.startsWith("- ") || line.startsWith("* ")) {
       flushParagraph();
       listBuffer.push(line.slice(2));
       continue;
     }
 
-    // 普通段落
     paragraphBuffer.push(rawLine);
   }
 
@@ -173,13 +158,6 @@ function updateRenderMarkdown(md) {
 
 /* =============================================================
  * 解析单个 md 文件 → 一条更新条目
- * 格式:
- *   # 标题
- *   @category: 建站日志
- *   @meta: 可选关键词
- *   @date: 2026-04-22
- *
- *   正文...
  * ============================================================= */
 function parseUpdateMarkdown(md, fallback = {}) {
   const raw = updateNormalizeLineEndings(md).trim();
@@ -220,7 +198,32 @@ async function loadUpdateMarkdown(file) {
 }
 
 /* =============================================================
+ * 滚动位置保存：跳详情前存 scrollY，返回时恢复
+ * ============================================================= */
+let _updateListScrollY = 0;
+
+function saveUpdateListScroll() {
+  const scroller = document.querySelector(".content-scroll");
+  if (scroller) _updateListScrollY = scroller.scrollTop;
+}
+
+function restoreUpdateListScroll() {
+  const scroller = document.querySelector(".content-scroll");
+  if (!scroller) return;
+  // 在 DOM 渲染完成后恢复
+  requestAnimationFrame(() => {
+    scroller.scrollTop = _updateListScrollY;
+  });
+}
+
+/* =============================================================
  * 详情视图(SPA 内渲染,复用 #main-content)
+ *
+ * 关键修复：
+ *   - 返回按钮用 history.back() 而不是再 pushState 一条新历史
+ *     （原来的 pushState 会把历史栈搞成 [..., 列表, 详情, 列表(新)]，
+ *      用户再按浏览器后退会回到 [..., 列表, 详情]，又进了详情页）
+ *   - 返回时恢复列表滚动位置
  * ============================================================= */
 function renderUpdateDetailView(item, onBack) {
   const main = document.getElementById("main-content");
@@ -250,18 +253,15 @@ function renderUpdateDetailView(item, onBack) {
   main.innerHTML = "";
   main.appendChild(wrapper);
 
+  // 详情页滚到顶
   const scrollEl = document.querySelector(".content-scroll");
   if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
 
-  /* 返回按钮:恢复列表视图 */
+  /* 返回按钮：直接走浏览器历史 back，这样跟浏览器后退键行为一致 */
   const backBtn = wrapper.querySelector("#update-back-btn");
   if (backBtn) {
     backBtn.addEventListener("click", () => {
-      // 清除 URL 上的 update 参数,保留 page=update
-      const url = new URL(window.location.href);
-      url.searchParams.delete("update");
-      history.pushState({ page: "update" }, "", url.toString());
-      if (typeof onBack === "function") onBack();
+      history.back();
     });
   }
 
@@ -269,8 +269,9 @@ function renderUpdateDetailView(item, onBack) {
   const url = new URL(window.location.href);
   const currentUpdateParam = url.searchParams.get("update");
   url.searchParams.set("update", item.file);
-  // 如果当前 URL 已经匹配当前 item(例如从外部 URL 直接打开),用 replaceState 避免多推一条历史
+
   if (currentUpdateParam === item.file) {
+    // 当前 URL 已经是这个详情（例如从外部直接打开 ?update=xxx），用 replace 避免多推
     history.replaceState(
       { page: "update", update: item.file },
       "",
@@ -287,9 +288,10 @@ function renderUpdateDetailView(item, onBack) {
 
 /* =============================================================
  * 渲染列表:从 JSON 索引 → 一组卡片
- * 用布尔锁避免 MutationObserver 和显式调用同时触发导致的双重渲染
  * ============================================================= */
 let _updateRendering = false;
+let _updateItemsCache = null;  // 缓存所有条目，返回时不用重新 fetch 所有 md
+
 async function renderUpdatesFromJSON() {
   const listEl = document.getElementById("update-list");
   if (!listEl) return;
@@ -297,20 +299,23 @@ async function renderUpdatesFromJSON() {
   _updateRendering = true;
 
   try {
-    const indexRes = await fetch("data/updates-index.json");
-    if (!indexRes.ok) throw new Error("updates-index.json 加载失败");
-    const index = await indexRes.json();
+    let items = _updateItemsCache;
 
-    // 并发加载所有 md,提速
-    const items = await Promise.all(
-      index.map(async (entry) => {
-        const md = await loadUpdateMarkdown(entry.file);
-        return parseUpdateMarkdown(md, entry);
-      })
-    );
+    if (!items) {
+      const indexRes = await fetch("data/updates-index.json");
+      if (!indexRes.ok) throw new Error("updates-index.json 加载失败");
+      const index = await indexRes.json();
 
-    // 按日期倒序(最新在上),索引里顺序如果已排好也不会错
-    items.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      items = await Promise.all(
+        index.map(async (entry) => {
+          const md = await loadUpdateMarkdown(entry.file);
+          return parseUpdateMarkdown(md, entry);
+        })
+      );
+
+      items.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      _updateItemsCache = items;
+    }
 
     listEl.innerHTML = "";
 
@@ -329,19 +334,21 @@ async function renderUpdatesFromJSON() {
       `;
 
       card.addEventListener("click", () => {
-        renderUpdateDetailView(item, () => initUpdatePage());
+        // 跳详情前先存滚动位置
+        saveUpdateListScroll();
+        renderUpdateDetailView(item);
       });
 
       listEl.appendChild(card);
     });
 
-    // 若 URL 里带 ?update=xxx,自动进入对应详情
+    // 若 URL 里带 ?update=xxx,自动进入对应详情（直接打开链接的场景）
     const url = new URL(window.location.href);
     const targetFile = url.searchParams.get("update");
     if (targetFile) {
       const target = items.find((i) => i.file === targetFile);
       if (target) {
-        renderUpdateDetailView(target, () => initUpdatePage());
+        renderUpdateDetailView(target);
       }
     }
   } catch (err) {
@@ -359,12 +366,7 @@ async function renderUpdatesFromJSON() {
 /* =============================================================
  * 页面初始化
  *
- * 守卫规则:只有当前真的在"更新页"上下文下才执行,否则立即退出。
- * 判断依据:
- *   (a) 页面里存在 .update-page 容器(SPA 加载 update.html 片段后就会有)
- *   (b) 或 URL 里 ?page=update(用于 popstate 和直接访问场景)
- * 缺一不可——如果用户现在在主页,#main-content 里只有主页内容,
- * 这里绝不能主动插入更新页骨架,否则会把主页内容冲掉。
+ * 守卫规则:只有当前真的在"更新页"上下文下才执行。
  * ============================================================= */
 async function initUpdatePage() {
   const main = document.getElementById("main-content");
@@ -376,7 +378,7 @@ async function initUpdatePage() {
     urlParams.get("page") === "update";
   if (!onUpdatePage) return;
 
-  // 如果骨架已被详情视图替换(返回时会遇到),重建列表骨架
+  // 如果骨架已被详情视图替换（返回时会遇到），重建列表骨架
   if (!document.getElementById("update-list")) {
     main.innerHTML = `
       <section class="update-page no-card">
@@ -394,26 +396,45 @@ async function initUpdatePage() {
 
 /* =============================================================
  * 浏览器前进/后退
- * 用户在详情页按后退 → URL 变回 ?page=update(没有 update 参数) → 回到列表
+ *
+ * 场景处理：
+ *   1. 从详情页 back → URL 变成 ?page=update（无 update 参数）
+ *      → 重建列表 + 恢复滚动位置
+ *   2. 从列表页 back 到其他页 → URL 的 page 变成别的 → 不干预（main.js 处理）
+ *   3. 前进到详情 → 重新渲染详情视图
  * ============================================================= */
 window.addEventListener("popstate", () => {
   const url = new URL(window.location.href);
   const onUpdatePage = url.searchParams.get("page") === "update";
   if (!onUpdatePage) return; // 不在更新页就不干预,交给 main.js 的 SPA 路由
 
-  // 无论 update 参数在不在都重新走一遍 init:它会根据 URL 决定渲列表还是详情
-  initUpdatePage();
+  const targetFile = url.searchParams.get("update");
+
+  if (targetFile) {
+    // 前进到详情（或 forward 到详情）：如果当前不是对应详情视图，重新渲染
+    const currentDetailTitle = document
+      .querySelector(".update-detail-title")
+      ?.textContent?.trim();
+    if (_updateItemsCache) {
+      const target = _updateItemsCache.find((i) => i.file === targetFile);
+      if (target && target.title !== currentDetailTitle) {
+        renderUpdateDetailView(target);
+      }
+    } else {
+      // 没缓存就老老实实走 init
+      initUpdatePage();
+    }
+  } else {
+    // 回到列表：重建列表骨架 + 恢复滚动
+    (async () => {
+      await initUpdatePage();
+      restoreUpdateListScroll();
+    })();
+  }
 });
 
 /* =============================================================
  * SPA 切页自动响应
- *
- * main.js 切换到更新页时,会把 update.html 片段塞进 #main-content——
- * 此时 DOM 里会出现 .update-page 容器,但 main.js 未必主动调用 initUpdatePage。
- * 为了不依赖 main.js 的配合,这里用 MutationObserver 观察 #main-content:
- * 一旦发现 .update-page 出现且还没渲染过(#update-list 是空的),就自动初始化。
- *
- * 用 dataset.updateInitialized 做去重,避免重复渲染。
  * ============================================================= */
 function watchForUpdatePage() {
   const main = document.getElementById("main-content");
@@ -422,18 +443,15 @@ function watchForUpdatePage() {
   const check = () => {
     const page = main.querySelector(".update-page");
     if (!page) return;
-    // 已经初始化过、或当前是详情视图,都不要再跑
     if (page.dataset.updateInitialized === "1") return;
     if (page.classList.contains("update-detail-page")) return;
     const list = main.querySelector("#update-list");
-    // 列表容器存在且为空时才初始化
     if (list && !list.children.length) {
       page.dataset.updateInitialized = "1";
       initUpdatePage();
     }
   };
 
-  // 初次检查(DOMContentLoaded 时片段可能已经在了)
   check();
 
   const mo = new MutationObserver(check);
@@ -442,8 +460,14 @@ function watchForUpdatePage() {
 
 document.addEventListener("DOMContentLoaded", () => {
   watchForUpdatePage();
-  // 保留原来的 init 调用:处理直接打开 ?page=update 的场景
-  initUpdatePage();
+  // 注意：这里不再主动调 initUpdatePage()。
+  // 原因：main.js 是 defer，这个脚本可能先跑（index.html 里 update.js 没加 defer），
+  // 如果直接访问 ?page=update 时这里先把 #main-content 替换掉，
+  // main.js 抓 homeContent 就会抓到错误内容（问题 3 的根因）。
+  //
+  // 初始化交给两个路径来做：
+  //   (a) main.js 的 loadPage 会调用 runPageInit("update") → window.initUpdatePage()
+  //   (b) watchForUpdatePage 的 MutationObserver 会在骨架被塞进来时自动触发
 });
 
 window.initUpdatePage = initUpdatePage;
