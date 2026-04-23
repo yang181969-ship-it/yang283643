@@ -2,6 +2,7 @@
    主题系统
    - 色相：滑块 + 8 个预设
    - 模式：light / dark / auto（跟随系统）
+   - 辉光：on / off（ambient glow 开关）
    - 持久化：localStorage
    ============================================================ */
 
@@ -15,8 +16,13 @@
   const savedMode = localStorage.getItem("theme-mode") || "auto";
   applyMode(savedMode, root);
 
+  // 辉光开关：默认开启，只有显式存 "off" 才关
+  const savedGlow = localStorage.getItem("ambient-glow") === "off" ? "off" : "on";
+  root.setAttribute("data-glow", savedGlow);
+
   // 暴露给 DOMContentLoaded 后的代码复用
   window.__applyMode = applyMode;
+  window.__applyGlow = applyGlow;
 })();
 
 function applyMode(mode, root) {
@@ -31,6 +37,13 @@ function applyMode(mode, root) {
   }
 }
 
+function applyGlow(state, root) {
+  root = root || document.documentElement;
+  const normalized = state === "off" ? "off" : "on";
+  root.setAttribute("data-glow", normalized);
+  localStorage.setItem("ambient-glow", normalized);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const themeToggle  = document.getElementById("theme-toggle");
   const themePanel   = document.getElementById("theme-panel");
@@ -38,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modeToggle   = document.getElementById("mode-toggle");
   const modeBtns     = document.querySelectorAll(".theme-mode-btn");
   const presetBtns   = document.querySelectorAll(".theme-preset");
+  const glowToggle   = document.getElementById("glow-toggle");   // 面板内辉光开关（可选）
   const root         = document.documentElement;
 
   if (!themeToggle || !themePanel || !hueSlider) return;
@@ -59,6 +73,15 @@ document.addEventListener("DOMContentLoaded", () => {
     presetBtns.forEach(btn => btn.classList.toggle("active", btn.dataset.hue === hue));
   }
   syncPresetActive();
+
+  /* ===== 初始化辉光开关状态 ===== */
+  function syncGlowActive() {
+    if (!glowToggle) return;
+    const glow = root.getAttribute("data-glow") || "on";
+    glowToggle.classList.toggle("active", glow === "on");
+    glowToggle.setAttribute("aria-pressed", glow === "on" ? "true" : "false");
+  }
+  syncGlowActive();
 
   /* ===== 面板开关 ===== */
   themeToggle.addEventListener("click", (e) => {
@@ -113,6 +136,16 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("theme-mode", next);
       window.__applyMode(next);
       syncModeActive();
+    });
+  }
+
+  /* ===== 辉光开关（面板内，可选；HTML 里还没加） ===== */
+  if (glowToggle) {
+    glowToggle.addEventListener("click", () => {
+      const current = root.getAttribute("data-glow") || "on";
+      const next = current === "on" ? "off" : "on";
+      window.__applyGlow(next);
+      syncGlowActive();
     });
   }
 
