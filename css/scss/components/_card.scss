@@ -1,5 +1,5 @@
 // ============================================================
-// 通用卡片
+// 通用卡片（Phase 2 毛玻璃化）
 // ============================================================
 
 @use '../abstracts/mixins' as *;
@@ -10,28 +10,58 @@
   @include card-hover;
 }
 
-// 默认 section 卡片规则：section 如果没有任何"no-card/hero"类，就自动套卡片
-section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero) {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: 18px;
+// 默认 section 卡片规则：section 如果没有任何 "no-card/hero" 类,就自动套卡片
+// Phase 2: 复用 card-surface + card-hover,DRY 掉原来手写的三行
+//
+// 额外排除 :has(.gallery-controls), :has(.anime-tabs) —— 这些是工具栏容器,
+// 不该被渲染成卡片。用 :has() 做 CSS 层 opt-out,避免动 HTML。
+section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+  @include card-surface;
+  @include card-hover;
   padding: 24px;
-  box-shadow: var(--shadow-soft);
 }
+
+// ============================================================
+// Phase 2 补丁:升级历史遗留的显式 --bg-card 卡片
+// 这些卡片在 Phase 1 之前写的,硬编码了 --bg-card 背景,
+// Phase 2 下需要显式覆盖成毛玻璃。
+// ============================================================
+
+// 笔记页:侧边栏分类卡 + 笔记条目卡
+.notes-sidebar-card,
+.note-card {
+  @include card-surface;
+  @include card-hover;
+}
+
+// 更新页:更新条目卡(假设主类名是 .update-card)
+.update-card {
+  @include card-surface;
+  @include card-hover;
+}
+
+// 评论/状态提示卡 hero 区域里的信息卡(comment-status-card 保持 --bg-card
+// 因为它用渐变色做 is-loading/is-warning/is-error 状态色,不适合毛玻璃)
+// → 不改,维持原样
 
 // ----- 响应式 -----
 @include laptop {
   .card,
-  section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero) {
+  .notes-sidebar-card,
+  .note-card,
+  .update-card,
+  section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 20px;
-    border-radius: 16px;
+    border-radius: var(--radius-card);
   }
 }
 
 @include small {
   .card,
-  section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero) {
+  .notes-sidebar-card,
+  .note-card,
+  .update-card,
+  section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 18px;
-    border-radius: 14px;
   }
 }
