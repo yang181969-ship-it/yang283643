@@ -25,6 +25,10 @@ section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.c
 // Phase 2 补丁:升级历史遗留的显式 --bg-card 卡片
 // 这些卡片在 Phase 1 之前写的,硬编码了 --bg-card 背景,
 // Phase 2 下需要显式覆盖成毛玻璃。
+//
+// 维护约定:页面级 scss 只负责形状/间距(padding/border/radius/shadow),
+// 所有 background 统一交给这里的 card-surface 管,不要在页面级再写
+// `background: var(--bg-card)`,否则会覆盖毛玻璃。
 // ============================================================
 
 // 笔记页:侧边栏分类卡 + 笔记条目卡
@@ -34,8 +38,9 @@ section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.c
   @include card-hover;
 }
 
-// 更新页:更新条目卡(假设主类名是 .update-card)
-.update-card {
+// 更新页:列表卡 + 详情卡
+.update-card,
+.update-detail-card {
   @include card-surface;
   @include card-hover;
 }
@@ -50,6 +55,7 @@ section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.c
   .notes-sidebar-card,
   .note-card,
   .update-card,
+  .update-detail-card,
   section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 20px;
     border-radius: var(--radius-card);
@@ -61,6 +67,7 @@ section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.c
   .notes-sidebar-card,
   .note-card,
   .update-card,
+  .update-detail-card,
   section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 18px;
   }

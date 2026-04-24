@@ -49,8 +49,8 @@
   align-self: start;
 }
 
+// Phase 2: background 交给 _card.scss 的 card-surface 统一管(毛玻璃)
 .notes-sidebar-card {
-  background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-radius: 18px;
   padding: 24px 20px;
@@ -221,11 +221,12 @@
   padding-bottom: 2px;
 }
 
+// Phase 2: 小控件不走毛玻璃,用 --bg-panel 做实底次级面板
 .notes-sort {
   padding: 7px 14px;
   border: 1.5px solid var(--border-soft);
   border-radius: 999px;
-  background: var(--bg-card);
+  background: var(--bg-panel);
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
@@ -257,8 +258,8 @@
   min-width: 0;
 }
 
+// Phase 2: background 交给 _card.scss 的 card-surface 统一管(毛玻璃)
 .note-card {
-  background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-radius: 18px;
   padding: 24px;
@@ -389,12 +390,13 @@
 }
 
 // ----- 空状态 -----
+// Phase 2: 虚线框空态不走毛玻璃,用 --bg-panel
 .notes-empty {
   margin: 0;
   padding: 20px 22px;
   border: 1px dashed var(--border-soft);
   border-radius: 16px;
-  background: var(--bg-card);
+  background: var(--bg-panel);
   color: var(--text-muted);
   font-size: 15px;
   line-height: 1.8;
