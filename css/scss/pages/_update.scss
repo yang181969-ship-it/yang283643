@@ -30,9 +30,9 @@
 }
 
 // ----- 卡片 -----
+// Phase 2: background 交给 _card.scss 的 card-surface 统一管(毛玻璃)
 .update-card {
   width: 100%;
-  background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-radius: 20px;
   overflow: hidden;
@@ -90,6 +90,7 @@
   margin-bottom: 16px;
 }
 
+// Phase 2: 小控件不走毛玻璃,用 --bg-panel 做实底次级面板
 .update-back-btn {
   display: inline-flex;
   align-items: center;
@@ -97,7 +98,7 @@
   padding: 9px 18px;
   border: 1.5px solid var(--border-soft);
   border-radius: 999px;
-  background: var(--bg-card);
+  background: var(--bg-panel);
   color: var(--text-muted);
   font-size: 14px;
   font-weight: 600;
@@ -113,8 +114,8 @@
 }
 
 // ----- 详情卡片 -----
+// Phase 2: background 交给 _card.scss 的 card-surface 统一管(毛玻璃)
 .update-detail-card {
-  background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-radius: 18px;
   padding: 36px 40px;

@@ -1,113 +1,110 @@
 // ============================================================
-// Header
+// Header —— Phase 3.5 透明 + 窄化版 (v2)
+// 主控按钮已经移回 nav 卡片顶部,header 里只剩 logo
 // ============================================================
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
-// 只作用于站点顶部主头部（不影响 notes.html 里空 header）
 .layout > header {
   grid-area: header;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  height: 56px;
+  padding: 0 16px;
 
-  // 毛玻璃背景：半透明 + backdrop-filter
-  // sticky 定位让 header 滚动时保持虚化可见（而不是被内容顶走）
-  position: sticky;
-  top: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  border: none;
 
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(140%);
-
-  // 顶部边缘高光 + 底边分隔线（比原来的 border-bottom 更轻）
-  box-shadow: var(--glass-highlight);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-
+  position: relative;
   z-index: $z-header;
   min-width: 0;
-
-  // 过渡：主题切换 / glow 开关时平滑变化
-  transition:
-    background var(--dur-glass) var(--ease-glass),
-    border-color var(--dur-glass) var(--ease-glass);
 }
 
-// 暗色模式下底边分隔线换成浅色微光（亮色下它几乎看不见，用 border-soft 更稳）
-[data-theme="light"] .layout > header {
-  border-bottom-color: var(--border-soft);
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
   min-width: 0;
 
   img {
-    width: 52px;
-    height: 52px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--primary);
-    // 头像光晕跟随 glow 开关：关掉辉光时也跟着灭
     box-shadow: 0 0 14px hsla(var(--primary-hue), 80%, 68%, calc(0.6 * var(--glow-intensity)));
     flex-shrink: 0;
     transition: box-shadow var(--dur-glass) var(--ease-glass);
   }
 
   span {
-    font-size: 28px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--primary-dark);
     min-width: 0;
   }
 }
 
-// header 右侧区域：搜索 + 调色盘 + 明暗
 .header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
-// ----- 响应式 -----
+// ============================================================
+// 搜索框毛玻璃底:浅深色都加
+// ============================================================
+.search-toggle {
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  border: var(--glass-border-subtle);
+}
+
+.search-input {
+  background: var(--glass-bg-weak) !important;
+  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  border: var(--glass-border-subtle) !important;
+  border-right: none !important;
+}
+
+[data-theme="dark"] .search-input {
+  background: var(--glass-bg) !important;
+}
+
 @include laptop {
   .layout > header {
-    padding: 14px 16px;
+    height: 52px;
+    padding: 0 12px;
   }
 
   .logo {
-    img {
-      width: 48px;
-      height: 48px;
-    }
-
-    span {
-      font-size: 22px;
-    }
+    img { width: 32px; height: 32px; }
+    span { font-size: 16px; }
   }
 }
 
 @include small {
-  .layout > header {
-    padding: 12px 14px;
-  }
+  .layout > header { padding: 0 10px; }
 
   .logo {
-    gap: 10px;
-
-    img {
-      width: 44px;
-      height: 44px;
-    }
-
-    span {
-      font-size: 18px;
-    }
+    gap: 8px;
+    img { width: 30px; height: 30px; }
+    span { font-size: 15px; }
   }
 }

@@ -1,92 +1,316 @@
 // ============================================================
-// 侧边导航
+// 侧边导航 —— Phase 3.5 双列联动版 (v3.2)
+// 变更:
+//   ① nav 不再 absolute,改为参与 rail 列流式布局
+//   ② rail-toggle-card / nav 宽度改为 100%,跟随 rail 列联动
+//   ③ 折叠/展开切换由 _layout.scss 的 --rail-width 驱动
 // ============================================================
 
+@use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
-// Nav 毛玻璃化：保留"独立面板"视觉但不挡 ambient
-// 右边框换成柔和高光，视觉上仍有区隔感
-nav {
-  grid-area: nav;
-  padding: 22px 12px;
+// ============================================================
+// 主控按钮卡片 —— .rail-toggle-card
+// ============================================================
+.rail-toggle-card {
+  flex-shrink: 0;
+  width: 100%;
+  height: 44px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
 
   background: var(--glass-bg-weak);
   backdrop-filter: blur(var(--glass-blur)) saturate(130%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border: var(--glass-border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
 
   transition:
-    background var(--dur-glass) var(--ease-glass),
-    border-color var(--dur-glass) var(--ease-glass);
+    padding var(--dur-glass) var(--ease-glass),
+    background var(--dur-glass) var(--ease-glass);
 
-  a {
-    text-decoration: none;
-    color: var(--text-main);
-    padding: 12px 14px;
-    border-radius: 12px;
-    font-size: 18px;
-    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-    display: block;
+  z-index: 6;
+}
 
-    &:hover {
-      background: var(--primary-soft);
-      color: var(--primary-dark);
-      transform: translateX(4px);
-    }
+// ---------- 展开态:左侧文字标签 + 右侧按钮 ----------
+html[data-nav="expanded"] .rail-toggle-card {
+  justify-content: space-between;
+  padding: 0 14px 0 18px;
+}
 
-    &.active {
-      background: var(--primary);
-      color: #fff;
-      font-weight: 700;
-      transform: translateX(4px);
-      // active 项带一圈主色辉光，跟随 glow 开关
-      box-shadow: 0 4px 16px hsla(var(--primary-hue), 80%, 60%, calc(0.35 * var(--glow-intensity)));
-    }
+// 标签 —— 默认隐藏,仅展开态显示
+.rail-toggle-label {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transition:
+    max-width var(--dur-glass) var(--ease-glass),
+    opacity var(--dur-glass-quick) var(--ease-glass-quick);
+}
+
+html[data-nav="expanded"] .rail-toggle-label {
+  max-width: 120px;
+  opacity: 1;
+}
+
+.rail-toggle {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 8px;
+
+  transition:
+    background var(--dur-glass-quick) var(--ease-glass-quick),
+    color var(--dur-glass-quick) var(--ease-glass-quick);
+
+  svg { width: 18px; height: 18px; }
+
+  &:hover {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
   }
 }
 
-// 亮色模式下右边框换成原有的 border-soft（白色高光在亮底上看不见）
-[data-theme="light"] nav {
-  border-right-color: var(--border-soft);
+html[data-nav="collapsed"] .rail-toggle {
+  opacity: 0.55;
+  &:hover { opacity: 1; }
 }
 
-// ----- 响应式：平板及以下改成横向滑动条 -----
+.nav-toggle-row { display: none; }
+
+// ============================================================
+// nav 卡片本体 —— 参与 rail 列流式布局
+// ============================================================
+nav {
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: var(--glass-border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+
+  overflow: hidden;
+
+  transition:
+    background var(--dur-glass) var(--ease-glass),
+    box-shadow var(--dur-glass) var(--ease-glass);
+
+  z-index: 5;
+}
+
+// ============================================================
+// nav 链接
+// ============================================================
+nav a {
+  position: relative;
+  text-decoration: none;
+  color: var(--text-main);
+  margin: 2px 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+  }
+
+  .nav-label {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    transition:
+      opacity var(--dur-glass-quick) var(--ease-glass-quick),
+      max-width var(--dur-glass) var(--ease-glass);
+    max-width: 160px;
+    opacity: 1;
+  }
+
+  &:hover {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+  }
+
+  &.active {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 2px 10px hsla(var(--primary-hue), 80%, 60%, calc(0.12 * var(--glow-intensity)));
+  }
+
+  &.active svg { color: #fff; }
+}
+
+nav a:first-of-type { margin-top: 4px; }
+nav a:last-of-type { margin-bottom: 8px; }
+
+// ---------- 折叠态:label 完全移除占位,svg 真正居中 ----------
+html[data-nav="collapsed"] nav {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+html[data-nav="collapsed"] nav a {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+  margin: 2px 0;
+  align-self: stretch;
+
+  .nav-label {
+    display: none;
+  }
+}
+
+// ============================================================
+// Tooltip(仅折叠态)
+// ============================================================
+@media (min-width: ($bp-laptop + 1px)) {
+  html[data-nav="collapsed"] nav a[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 12px);
+    transform: translateY(-50%);
+
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    border: var(--glass-border-subtle);
+    box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--dur-glass-quick) var(--ease-glass-quick),
+      visibility var(--dur-glass-quick) var(--ease-glass-quick);
+
+    z-index: $z-nav-tooltip;
+  }
+
+  html[data-nav="collapsed"] nav a[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  html[data-nav="collapsed"] nav {
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+}
+
+// ============================================================
+// 响应式:平板及以下
+// ============================================================
 @include laptop {
+  .rail-toggle-card { display: none; }
+  .rail-toggle-label { display: none; }
+
   nav {
+    position: static;
+    width: 100%;
+    height: auto;
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    border-right: none;
+    border: none;
+    border-radius: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--glass-bg-weak);
+    box-shadow: none;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
+    z-index: auto;
 
-    &::-webkit-scrollbar {
-      display: none;
-    }
+    &::-webkit-scrollbar { display: none; }
 
     a {
       flex: 0 0 auto;
       white-space: nowrap;
       font-size: 16px;
       padding: 10px 16px;
+      margin: 0;
+      gap: 8px;
 
-      &:hover,
-      &.active {
-        transform: none;
-      }
+      .nav-label { display: inline; max-width: none; opacity: 1; }
+      svg { width: 18px; height: 18px; }
+      &:hover, &.active { transform: none; }
+      &[data-tooltip]::after { display: none !important; }
     }
+
+    a:first-of-type { margin-top: 0; }
+    a:last-of-type { margin-bottom: 0; }
   }
 
-  // 亮色下移动端 nav 的 border-bottom 也用 border-soft
+  html[data-nav="expanded"] nav,
+  html[data-nav="collapsed"] nav {
+    position: static;
+    width: 100%;
+    height: auto;
+    top: auto;
+    left: auto;
+    box-shadow: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  html[data-nav="collapsed"] nav a {
+    justify-content: flex-start;
+    padding: 10px 16px;
+    gap: 8px;
+
+    .nav-label { display: inline; max-width: none; opacity: 1; }
+  }
+
   [data-theme="light"] nav {
     border-bottom-color: var(--border-soft);
   }
@@ -102,5 +326,13 @@ nav {
       padding: 10px 14px;
       border-radius: 10px;
     }
+  }
+}
+
+@include laptop {
+  html[data-nav-mobile-mode="icon"] nav a {
+    .nav-label { display: none; }
+    svg { width: 22px; height: 22px; }
+    padding: 10px 14px;
   }
 }

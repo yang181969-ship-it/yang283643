@@ -1,35 +1,97 @@
 // ============================================================
-// 网站总体布局
+// 网站总体布局 —— Phase 3.5 双列联动版
+// 左列宽度跟随 html[data-nav] 在 collapsed/expanded 之间切换,
+// 主内容卡被推开,不再被 nav 浮层覆盖。
 // ============================================================
 
+@use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
+$rail-collapsed: $nav-width-collapsed !default;
+$rail-expanded:  $nav-width-expanded  !default;
+
+// ============================================================
+// .layout —— 三区 grid,左列宽度联动
+// ============================================================
 .layout {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: var(--rail-width, #{$rail-collapsed}) 1fr;
   grid-template-rows: auto 1fr;
   grid-template-areas:
     "header header"
-    "nav content";
+    "rail   page";
   height: 100vh;
   overflow: hidden;
+  gap: 12px;
+  padding: 0 12px 12px;
+
+  transition: grid-template-columns 200ms var(--ease-glass-quick);
 }
 
-// 右侧滚动容器：只有这里滚动
-// 背景改为透明，让 body::before 的 ambient 层透上来
+// 左列宽度由 html[data-nav] 驱动
+:root,
+html[data-nav="collapsed"] {
+  --rail-width: #{$rail-collapsed};
+}
+html[data-nav="expanded"] {
+  --rail-width: #{$rail-expanded};
+}
+
+// ---------- 左侧卡片列 ----------
+// nav 现在参与 grid,不再 absolute 浮出。
+// 保留 position: relative 给 tooltip 等子元素定位用。
+.rail {
+  grid-area: rail;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
+  max-height: 100%;
+}
+
+.rail-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: visible;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb {
+    background: var(--glass-bg-weak);
+    border-radius: 3px;
+  }
+}
+
+// ---------- 右侧页面卡片容器 ----------
+.page-card,
 .content-scroll {
-  grid-area: content;
+  grid-area: page;
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  background: transparent;
+
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: var(--glass-border-subtle);
+  border-radius: var(--radius-card-lg);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+
+  transition:
+    background var(--dur-glass) var(--ease-glass),
+    border-color var(--dur-glass) var(--ease-glass);
 }
 
-// Main：统一版心和留白
-// 背景同样透明，色斑透过来
 main {
   flex: 1 0 auto;
   width: 100%;
@@ -43,7 +105,6 @@ main {
   min-width: 0;
 }
 
-// 通用页面容器（不套默认卡片的容器）
 .page-container,
 .no-card {
   width: 100%;
@@ -54,17 +115,12 @@ main {
   box-shadow: none !important;
 }
 
-// Footer 跟 main 一起放进右侧滚动区
-// 毛玻璃化：和 header 呼应，形成"夹心"视觉
 footer {
   flex-shrink: 0;
   padding: 18px;
   text-align: center;
   color: var(--text-muted);
-
-  background: var(--glass-bg-weak);
-  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  background: transparent;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -72,7 +128,9 @@ footer {
   border-top-color: var(--border-soft);
 }
 
-// ----- 响应式：平板及以下，改成竖向布局 -----
+// ============================================================
+// 响应式:平板及以下 —— 单列堆叠,关闭联动
+// ============================================================
 @include laptop {
   html,
   body {
@@ -81,23 +139,44 @@ footer {
   }
 
   .layout {
+    display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto auto 1fr;
     grid-template-areas:
       "header"
-      "nav"
-      "content";
+      "rail"
+      "page";
     height: 100vh;
     overflow: hidden;
+    gap: 0;
+    padding: 0;
+    transition: none;
   }
 
+  .rail {
+    grid-area: rail;
+    position: static;
+    flex-direction: row;
+    overflow: visible;
+    max-height: none;
+    gap: 0;
+  }
+
+  .rail-extras { display: none; }
+
+  .page-card,
   .content-scroll {
+    grid-area: page;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
   }
 
-  main {
-    max-width: 100%;
-  }
+  main { max-width: 100%; }
 }
