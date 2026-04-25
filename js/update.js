@@ -198,46 +198,17 @@ async function loadUpdateMarkdown(file) {
 }
 
 /* =============================================================
- * 滚动位置保存：跳详情前存 scrollY，返回时恢复
- * ============================================================= */
-let _updateListScrollY = 0;
-
-function saveUpdateListScroll() {
-  const scroller = document.querySelector(".content-scroll");
-  if (scroller) _updateListScrollY = scroller.scrollTop;
-}
-
-function restoreUpdateListScroll() {
-  const scroller = document.querySelector(".content-scroll");
-  if (!scroller) return;
-  // 在 DOM 渲染完成后恢复
-  requestAnimationFrame(() => {
-    scroller.scrollTop = _updateListScrollY;
-  });
-}
-
-/* =============================================================
  * 详情视图(SPA 内渲染,复用 #main-content)
- *
- * 关键修复：
- *   - 返回按钮用 history.back() 而不是再 pushState 一条新历史
- *     （原来的 pushState 会把历史栈搞成 [..., 列表, 详情, 列表(新)]，
- *      用户再按浏览器后退会回到 [..., 列表, 详情]，又进了详情页）
- *   - 返回时恢复列表滚动位置
+ * 详情页是纯展示,没有返回按钮、不操作 history、不操作 URL。
+ * 用户回列表靠 nav 链接或浏览器原生后退键。
  * ============================================================= */
-function renderUpdateDetailView(item, onBack) {
+function renderUpdateDetailView(item) {
   const main = document.getElementById("main-content");
   if (!main) return;
 
   const wrapper = document.createElement("section");
   wrapper.className = "update-page update-detail-page no-card";
   wrapper.innerHTML = `
-    <div class="update-detail-back">
-      <button type="button" class="update-back-btn" id="update-back-btn">
-        <span aria-hidden="true">←</span>
-        <span>返回更新日志</span>
-      </button>
-    </div>
     <article class="update-detail-card">
       <div class="update-detail-top">
         <span class="update-tag">${updateEscapeHtml(item.category)}</span>
@@ -256,41 +227,13 @@ function renderUpdateDetailView(item, onBack) {
   // 详情页滚到顶
   const scrollEl = document.querySelector(".content-scroll");
   if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
-
-  /* 返回按钮：直接走浏览器历史 back，这样跟浏览器后退键行为一致 */
-  const backBtn = wrapper.querySelector("#update-back-btn");
-  if (backBtn) {
-    backBtn.addEventListener("click", () => {
-      history.back();
-    });
-  }
-
-  /* 更新 URL(便于刷新/分享保持在详情页) */
-  const url = new URL(window.location.href);
-  const currentUpdateParam = url.searchParams.get("update");
-  url.searchParams.set("update", item.file);
-
-  if (currentUpdateParam === item.file) {
-    // 当前 URL 已经是这个详情（例如从外部直接打开 ?update=xxx），用 replace 避免多推
-    history.replaceState(
-      { page: "update", update: item.file },
-      "",
-      url.toString()
-    );
-  } else {
-    history.pushState(
-      { page: "update", update: item.file },
-      "",
-      url.toString()
-    );
-  }
 }
 
 /* =============================================================
  * 渲染列表:从 JSON 索引 → 一组卡片
  * ============================================================= */
 let _updateRendering = false;
-let _updateItemsCache = null;  // 缓存所有条目，返回时不用重新 fetch 所有 md
+let _updateItemsCache = null;  // 缓存所有条目
 
 async function renderUpdatesFromJSON() {
   const listEl = document.getElementById("update-list");
@@ -334,23 +277,11 @@ async function renderUpdatesFromJSON() {
       `;
 
       card.addEventListener("click", () => {
-        // 跳详情前先存滚动位置
-        saveUpdateListScroll();
         renderUpdateDetailView(item);
       });
 
       listEl.appendChild(card);
     });
-
-    // 若 URL 里带 ?update=xxx,自动进入对应详情（直接打开链接的场景）
-    const url = new URL(window.location.href);
-    const targetFile = url.searchParams.get("update");
-    if (targetFile) {
-      const target = items.find((i) => i.file === targetFile);
-      if (target) {
-        renderUpdateDetailView(target);
-      }
-    }
   } catch (err) {
     console.error(err);
     listEl.innerHTML = `
@@ -382,10 +313,6 @@ async function initUpdatePage() {
   if (!document.getElementById("update-list")) {
     main.innerHTML = `
       <section class="update-page no-card">
-        <div class="update-hero">
-          <h2 class="page-title">更新日志</h2>
-          <p class="page-desc">这里记录这个网站每一次较重要的功能新增与页面优化</p>
-        </div>
         <div class="update-list" id="update-list"></div>
       </section>
     `;
@@ -393,45 +320,6 @@ async function initUpdatePage() {
 
   await renderUpdatesFromJSON();
 }
-
-/* =============================================================
- * 浏览器前进/后退
- *
- * 场景处理：
- *   1. 从详情页 back → URL 变成 ?page=update（无 update 参数）
- *      → 重建列表 + 恢复滚动位置
- *   2. 从列表页 back 到其他页 → URL 的 page 变成别的 → 不干预（main.js 处理）
- *   3. 前进到详情 → 重新渲染详情视图
- * ============================================================= */
-window.addEventListener("popstate", () => {
-  const url = new URL(window.location.href);
-  const onUpdatePage = url.searchParams.get("page") === "update";
-  if (!onUpdatePage) return; // 不在更新页就不干预,交给 main.js 的 SPA 路由
-
-  const targetFile = url.searchParams.get("update");
-
-  if (targetFile) {
-    // 前进到详情（或 forward 到详情）：如果当前不是对应详情视图，重新渲染
-    const currentDetailTitle = document
-      .querySelector(".update-detail-title")
-      ?.textContent?.trim();
-    if (_updateItemsCache) {
-      const target = _updateItemsCache.find((i) => i.file === targetFile);
-      if (target && target.title !== currentDetailTitle) {
-        renderUpdateDetailView(target);
-      }
-    } else {
-      // 没缓存就老老实实走 init
-      initUpdatePage();
-    }
-  } else {
-    // 回到列表：重建列表骨架 + 恢复滚动
-    (async () => {
-      await initUpdatePage();
-      restoreUpdateListScroll();
-    })();
-  }
-});
 
 /* =============================================================
  * SPA 切页自动响应
@@ -460,11 +348,6 @@ function watchForUpdatePage() {
 
 document.addEventListener("DOMContentLoaded", () => {
   watchForUpdatePage();
-  // 注意：这里不再主动调 initUpdatePage()。
-  // 原因：main.js 是 defer，这个脚本可能先跑（index.html 里 update.js 没加 defer），
-  // 如果直接访问 ?page=update 时这里先把 #main-content 替换掉，
-  // main.js 抓 homeContent 就会抓到错误内容（问题 3 的根因）。
-  //
   // 初始化交给两个路径来做：
   //   (a) main.js 的 loadPage 会调用 runPageInit("update") → window.initUpdatePage()
   //   (b) watchForUpdatePage 的 MutationObserver 会在骨架被塞进来时自动触发

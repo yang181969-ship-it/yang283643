@@ -85,34 +85,6 @@
 // 详情页
 // ============================================================
 
-// ----- 返回按钮 -----
-.update-detail-back {
-  margin-bottom: 16px;
-}
-
-// Phase 2: 小控件不走毛玻璃,用 --bg-panel 做实底次级面板
-.update-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  border: 1.5px solid var(--border-soft);
-  border-radius: 999px;
-  background: var(--bg-panel);
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    background: var(--primary-soft);
-    color: var(--primary-dark);
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px var(--glow);
-  }
-}
-
 // ----- 详情卡片 -----
 // Phase 2: background 交给 _card.scss 的 card-surface 统一管(毛玻璃)
 .update-detail-card {
@@ -361,11 +333,6 @@
     h1 { font-size: 22px; }
     h2 { font-size: 19px; }
     h3 { font-size: 16px; }
-  }
-
-  .update-back-btn {
-    font-size: 13px;
-    padding: 8px 14px;
   }
 
   .update-table {

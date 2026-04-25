@@ -21,25 +21,6 @@
   min-width: 0;
 }
 
-.notes-page-header {
-  margin-bottom: 20px;
-
-  h1 {
-    margin: 0 0 6px;
-    font-size: 28px;
-    line-height: 1.2;
-    font-weight: 700;
-    color: var(--primary-dark);
-  }
-
-  p {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.8;
-    color: var(--text-muted);
-  }
-}
-
 // ============================================================
 // 右侧分类侧边栏
 // ============================================================
@@ -205,20 +186,12 @@
 // ============================================================
 // 时间排序按钮
 // ============================================================
-.notes-header-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
 .notes-sort-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
-  padding-bottom: 2px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 // Phase 2: 小控件不走毛玻璃,用 --bg-panel 做实底次级面板
@@ -426,7 +399,7 @@
   .notes-main {
     display: contents;
   }
-  .notes-page-header { order: 1; }
+  .notes-sort-bar { order: 1; }
   .notes-sidebar {
     position: static;
     order: 2;
@@ -437,10 +410,6 @@
   .note-card {
     border-radius: 16px;
     padding: 20px;
-  }
-
-  .notes-page-header h1 {
-    font-size: 26px;
   }
 
   .note-card h2 {
@@ -454,7 +423,7 @@
     transform: none;
   }
 
-  .notes-header-row {
+  .notes-sort-bar {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
@@ -468,11 +437,6 @@
     padding: 18px;
   }
 
-  .notes-page-header h1 {
-    font-size: 24px;
-  }
-
-  .notes-page-header p,
   .note-card p,
   .notes-empty {
     font-size: 14px;

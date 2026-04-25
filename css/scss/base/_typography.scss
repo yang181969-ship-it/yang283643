@@ -1,0 +1,25 @@
+// ============================================================
+// 通用排版
+// ------------------------------------------------------------
+// 全站通用的标题 / 描述类,任何"标题 + 描述"场合可直接套用。
+// 当前使用场景:
+//   - index.html 主页 hero
+//   - js/search.js 搜索结果页标题
+// (项目页面如 anime / gallery / notes / about / update 已剥离 hero,
+//  不再使用这两个类)
+// ============================================================
+
+.page-title {
+  margin: 0 0 6px;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.page-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
