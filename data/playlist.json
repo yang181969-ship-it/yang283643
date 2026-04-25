@@ -1,0 +1,39 @@
+{
+  "tracks": [
+    {
+      "id": "track-001",
+      "title": "Call of Silence × YouSeeBIGGIRL",
+      "artist": "EYAir",
+      "src": "assets/music/call-of-silence.mp3",
+      "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-002",
+      "title": "Everyday Normal Guy 2",
+      "artist": "Jon Lajoie",
+      "src": "assets/music/everyday-normal-guy.mp3",
+      "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-003",
+      "title": "Do-Re-Mi",
+      "artist": "Julie Andrews & Cast",
+      "src": "assets/music/do-re-mi.mp3",
+      "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-004",
+      "title": "From The Start",
+      "artist": "Laufey & Spencer Stewart",
+      "src": "assets/music/from-the-start.mp3",
+      "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-005",
+      "title": "Alive",
+      "artist": "R3HAB, Vini Vici, Pangea, Dego",
+      "src": "assets/music/alive.mp3",
+      "lyric": "歌词待补充"
+    }
+  ]
+}
