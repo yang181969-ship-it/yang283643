@@ -262,7 +262,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function initFloatingBtns() {
   const topBtn  = document.getElementById("back-to-top");
   const prevBtn = document.getElementById("back-to-prev");
-  const scrollContainer = document.querySelector(".content-scroll");
+  // 详情页用 .content-scroll，index.html SPA 主骨架用 .page-card
+  const scrollContainer = document.querySelector(".content-scroll, .page-card");
   if (!scrollContainer) return;
 
   // 滚动时控制按钮显隐（所有页面都要，包括 standalone 详情页）
