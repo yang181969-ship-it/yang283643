@@ -1,0 +1,253 @@
+// ============================================================
+// 侧栏小组件占位 —— Phase A Commit 3 骨架
+// 三个 widget:月历 / 专注计时器 / 音乐播放器
+// 容器:.rail-extras(220px - padding ≈ 192px 可用宽)
+// 逻辑由 Phase C 接入(JS 渲染、计时、音频播放)
+// ============================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// ============================================================
+// 通用骨架
+// ============================================================
+.rail-widget {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  flex-shrink: 0;
+
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: var(--glass-border-subtle);
+  border-radius: var(--radius-card-md, 14px);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+
+  transition:
+    transform var(--dur-glass) var(--ease-glass),
+    box-shadow var(--dur-glass) var(--ease-glass);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--glass-shadow-hover, var(--glass-shadow-rest)), var(--glass-highlight);
+  }
+}
+
+.rail-widget__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--accent, currentColor);
+  }
+}
+
+.rail-widget__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-widget__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+// ============================================================
+// 月历
+// ============================================================
+.rail-widget--calendar {
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+    opacity: 0.55;
+    margin-bottom: 2px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: 22px;
+    gap: 2px;
+  }
+
+  .cal-day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text);
+    border-radius: 4px;
+    transition: background var(--dur-glass) var(--ease-glass);
+
+    &--out {
+      opacity: 0.22;
+    }
+
+    &--today {
+      background: var(--accent, hsl(var(--primary-hue, 260) 60% 60% / 0.85));
+      color: #fff;
+      font-weight: 600;
+    }
+  }
+}
+
+// ============================================================
+// 专注计时器
+// ============================================================
+.rail-widget--timer {
+  .timer-display {
+    font-family: var(--font-mono, ui-monospace, "SF Mono", Consolas, monospace);
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text);
+    letter-spacing: 0.05em;
+    padding: 4px 0;
+  }
+
+  .timer-controls {
+    display: flex;
+    gap: 4px;
+  }
+
+  .timer-btn {
+    flex: 1;
+    padding: 5px 0;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
+    border-radius: 6px;
+    cursor: pointer;
+    transition:
+      background var(--dur-glass) var(--ease-glass),
+      color var(--dur-glass) var(--ease-glass);
+
+    &:hover:not(:disabled) {
+      background: var(--glass-bg-weak);
+      color: var(--text);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+  }
+}
+
+// ============================================================
+// 音乐播放器
+// ============================================================
+.rail-widget--music {
+  .music-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .music-cover {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary-hue, 260) 50% 55% / 0.6) 0%,
+      rgba(255, 255, 255, 0.08) 100%
+    );
+    box-shadow: inset 0 0 0 1px var(--border-soft, rgba(255, 255, 255, 0.12));
+  }
+
+  .music-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .music-title,
+  .music-artist {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .music-title {
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .music-artist {
+    font-size: 10px;
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+
+  .music-controls {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .music-btn {
+    width: 32px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition:
+      background var(--dur-glass) var(--ease-glass),
+      color var(--dur-glass) var(--ease-glass);
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &--play {
+      color: var(--text);
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--glass-bg-weak);
+      color: var(--text);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+  }
+}
+
+// ============================================================
+// 平板及以下:.rail-extras 已在 _layout.scss 里 display:none
+// 此处无需额外 media query
+// ============================================================
