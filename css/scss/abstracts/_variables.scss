@@ -4,7 +4,6 @@
 // ============================================================
 
 // ----- 响应式断点 -----
-// 保持与原 CSS 一致，不要改数值
 $bp-small: 480px;     // 极小屏
 $bp-mobile: 600px;    // 手机
 $bp-tablet: 768px;    // 平板 / 大手机
@@ -13,11 +12,8 @@ $bp-desktop: 1000px;  // 标准桌面
 $bp-wide: 1100px;     // 宽屏
 $bp-xwide: 1200px;    // 超宽屏
 
-// ----- Nav 宽度（Phase 3 折叠导航）-----
-// 展开态:220px 同原侧边栏;收起态:60px 窄图标栏
-// 两态切换走 CSS transition,触发 _layout.scss 里 grid-template-columns 变化
-$nav-width-expanded: 220px;
-$nav-width-collapsed: 60px;
+// ----- 侧栏宽度(Phase A:固定 220px,无折叠态) -----
+$rail-width: 220px;
 
 // ----- z-index 层级 -----
 $z-nav: 5;
@@ -25,7 +21,6 @@ $z-header: 50;
 $z-dropdown: 20;
 $z-search-mobile: 100;
 $z-search-toggle: 101;
-$z-nav-tooltip: 200;   // nav 收起态 tooltip:要盖过 nav 自身,低于 header
 $z-floating-btns: 999;
 $z-theme-panel: 1000;
 $z-image-lightbox: 2000;
