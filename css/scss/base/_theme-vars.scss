@@ -50,7 +50,7 @@
 
   // ----- 毛玻璃边框与高光 -----
   --glass-border: 1px solid rgba(255, 255, 255, 0.6);
-  --glass-border-subtle: 1px solid rgba(255, 255, 255, 0.35);
+  --glass-border-subtle: 1px solid rgba(255, 255, 255, 0.6);
 
   // 顶部高光（内发光，模拟玻璃边缘反射）
   --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
