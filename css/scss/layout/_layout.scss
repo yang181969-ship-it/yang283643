@@ -2,6 +2,8 @@
 // 网站总体布局 —— Phase A 简化版
 // 左列固定 220px,无折叠态;主内容卡通栏。
 // Commit 2:右侧主区域引入 .bento-grid 12 列 bento 容器。
+// Commit 2.5:全局移除 .page-card 玻璃外壳(Bento 子卡片各自带玻璃,
+//             外壳与子卡片"双层玻璃"冗余,所有页面统一漂在背景上)。
 // ============================================================
 
 @use '../abstracts/variables' as *;
@@ -52,7 +54,10 @@
   }
 }
 
-// ---------- 右侧页面卡片容器 ----------
+// ============================================================
+// 右侧页面容器 —— 仅承担布局/滚动职责,无玻璃外壳
+// 玻璃由内部子卡片(.bento-card / .note-card / .update-card / ...)各自负责
+// ============================================================
 .page-card,
 .content-scroll {
   grid-area: page;
@@ -63,17 +68,7 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-
-  background: var(--glass-bg-weak);
-  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  border: var(--glass-border-subtle);
-  border-radius: var(--radius-card-lg);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
-
-  transition:
-    background var(--dur-glass) var(--ease-glass),
-    border-color var(--dur-glass) var(--ease-glass);
+  background: transparent;
 }
 
 main {
@@ -165,26 +160,6 @@ footer {
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  // ============================================================
-  // 主页 bento 模式:主区域不加玻璃外壳(避免和子卡片"双层玻璃")
-  // 详情页(notes/anime/gallery 等)保留 Phase 3.5 玻璃外壳
-  // ============================================================
-  .page-card:has(.bento-grid),
-  .content-scroll:has(.bento-grid) {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
   }
 
   main { max-width: 100%; }
