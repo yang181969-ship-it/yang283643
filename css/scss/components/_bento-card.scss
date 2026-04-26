@@ -1,0 +1,177 @@
+// ============================================================
+// 主页 9 张主卡片骨架(Commit 2 版)
+// 通用样式:头部小图标+标题、右上→按钮、正文占位、右下装饰图位、hover 动效。
+// Phase B 会按卡片差异化精修(目前各卡片只通过 data-card 标识不做差异)。
+// ============================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// ============================================================
+// 卡片本体
+// ============================================================
+.bento-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+  padding: 20px;
+  overflow: hidden;
+
+  background: var(--glass-bg-weak, rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(var(--glass-blur, 14px)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 14px)) saturate(130%);
+  border: var(--glass-border-subtle, 1px solid rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-card-lg, 16px);
+  box-shadow:
+    var(--glass-shadow-rest, 0 4px 16px rgba(0, 0, 0, 0.08)),
+    var(--glass-highlight, inset 0 1px 0 rgba(255, 255, 255, 0.06));
+
+  transition:
+    transform var(--dur-glass, 220ms) var(--ease-glass, cubic-bezier(0.4, 0, 0.2, 1)),
+    box-shadow var(--dur-glass, 220ms) var(--ease-glass, cubic-bezier(0.4, 0, 0.2, 1)),
+    border-color var(--dur-glass, 220ms) var(--ease-glass, cubic-bezier(0.4, 0, 0.2, 1));
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      var(--glass-shadow-hover, 0 8px 28px rgba(0, 0, 0, 0.14)),
+      var(--glass-highlight, inset 0 1px 0 rgba(255, 255, 255, 0.06));
+
+    // hover 整卡时装饰图微微浮起旋转(memory 约定:心情卡的 mood 头像不动)
+    .bento-card-deco:not(.bento-card-deco--mood) {
+      transform: rotate(3deg) translateY(-3px);
+    }
+  }
+}
+
+// ---------- span 通过 data 属性控制 ----------
+.bento-card[data-span="3"] { grid-column: span 3; }
+.bento-card[data-span="4"] { grid-column: span 4; }
+.bento-card[data-span="6"] { grid-column: span 6; }
+
+// ============================================================
+// 卡片头部:左上小图标 + 标题
+// ============================================================
+.bento-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.bento-card-icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-tint, rgba(199, 150, 230, 0.16));
+  border-radius: 10px;
+  color: var(--accent, #c796e6);
+
+  svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+  }
+}
+
+.bento-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong, var(--text-primary, currentColor));
+  margin: 0;
+  line-height: 1.2;
+}
+
+// ============================================================
+// 右上跳转箭头(部分卡片有,关于网页/心情/统计 例外详见 HTML)
+// ============================================================
+.bento-card-link {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+  }
+
+  &:hover {
+    background: var(--glass-bg-weak, rgba(255, 255, 255, 0.08));
+    color: var(--accent, #c796e6);
+    transform: translateX(2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent, #c796e6);
+    outline-offset: 2px;
+  }
+}
+
+// ============================================================
+// 卡片正文:占位区(Phase E 数据 API 接入时填充)
+// ============================================================
+.bento-card-body {
+  flex: 1 1 auto;
+  min-height: 60px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.65));
+  font-size: 13px;
+  line-height: 1.6;
+
+  // 骨架阶段占位文案弱化显示
+  &.is-skeleton {
+    opacity: 0.55;
+    font-style: italic;
+  }
+}
+
+// ============================================================
+// 右下装饰图位(Phase B 替换为真实 PNG)
+// ============================================================
+.bento-card-deco {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 64px;
+  height: 64px;
+  pointer-events: none;
+  opacity: 0.85;
+  transition: transform var(--dur-glass, 220ms) var(--ease-glass, cubic-bezier(0.4, 0, 0.2, 1));
+
+  // 骨架占位:虚线框,Phase B 改成 <img>
+  &.is-placeholder {
+    border: 1.5px dashed var(--border-soft, rgba(255, 255, 255, 0.15));
+    border-radius: 12px;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+}
+
+// 关于网页 / 关于我:装饰图位用 Q版/半身图,尺寸要更大
+.bento-card[data-card="intro"] .bento-card-deco,
+.bento-card[data-card="about-me"] .bento-card-deco {
+  width: 96px;
+  height: 96px;
+}

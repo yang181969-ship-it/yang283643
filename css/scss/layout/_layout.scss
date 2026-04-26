@@ -1,21 +1,18 @@
 // ============================================================
-// 网站总体布局 —— Phase 3.5 双列联动版
-// 左列宽度跟随 html[data-nav] 在 collapsed/expanded 之间切换,
-// 主内容卡被推开,不再被 nav 浮层覆盖。
+// 网站总体布局 —— Phase A 简化版
+// 左列固定 220px,无折叠态;主内容卡通栏。
+// Commit 2:右侧主区域引入 .bento-grid 12 列 bento 容器。
 // ============================================================
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
-$rail-collapsed: $nav-width-collapsed !default;
-$rail-expanded:  $nav-width-expanded  !default;
-
 // ============================================================
-// .layout —— 三区 grid,左列宽度联动
+// .layout —— 三区 grid,左列固定 220px
 // ============================================================
 .layout {
   display: grid;
-  grid-template-columns: var(--rail-width, #{$rail-collapsed}) 1fr;
+  grid-template-columns: $rail-width 1fr;
   grid-template-rows: auto 1fr;
   grid-template-areas:
     "header header"
@@ -24,22 +21,9 @@ $rail-expanded:  $nav-width-expanded  !default;
   overflow: hidden;
   gap: 12px;
   padding: 0 12px 12px;
-
-  transition: grid-template-columns 200ms var(--ease-glass-quick);
-}
-
-// 左列宽度由 html[data-nav] 驱动
-:root,
-html[data-nav="collapsed"] {
-  --rail-width: #{$rail-collapsed};
-}
-html[data-nav="expanded"] {
-  --rail-width: #{$rail-expanded};
 }
 
 // ---------- 左侧卡片列 ----------
-// nav 现在参与 grid,不再 absolute 浮出。
-// 保留 position: relative 给 tooltip 等子元素定位用。
 .rail {
   grid-area: rail;
   position: relative;
@@ -115,6 +99,18 @@ main {
   box-shadow: none !important;
 }
 
+// ============================================================
+// .bento-grid —— 主页 9 张主卡的 12 列 bento 容器
+// 卡片 span 通过 [data-span="N"] 控制,定义在 _bento-card.scss
+// ============================================================
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(180px, auto);
+  gap: var(--bento-gap, 16px);
+  width: 100%;
+}
+
 footer {
   flex-shrink: 0;
   padding: 18px;
@@ -129,7 +125,7 @@ footer {
 }
 
 // ============================================================
-// 响应式:平板及以下 —— 单列堆叠,关闭联动
+// 响应式:平板及以下 —— 单列堆叠
 // ============================================================
 @include laptop {
   html,
@@ -150,7 +146,6 @@ footer {
     overflow: hidden;
     gap: 0;
     padding: 0;
-    transition: none;
   }
 
   .rail {
@@ -178,5 +173,26 @@ footer {
     box-shadow: none;
   }
 
+  // ============================================================
+  // 主页 bento 模式:主区域不加玻璃外壳(避免和子卡片"双层玻璃")
+  // 详情页(notes/anime/gallery 等)保留 Phase 3.5 玻璃外壳
+  // ============================================================
+  .page-card:has(.bento-grid),
+  .content-scroll:has(.bento-grid) {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
   main { max-width: 100%; }
+
+  // bento-grid 在平板及以下变单列堆叠;Phase D 移动端再细化
+  .bento-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    gap: 12px;
+  }
 }
