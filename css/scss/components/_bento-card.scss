@@ -108,14 +108,6 @@
     stroke-width: 2;
   }
 }
-
-// 暗色:primary-soft 在暗色已经定义为 hsla(...0.22),颜色对的;
-// 但 primary-dark 在暗色定义是浅色(hsl 78%),正好用作 icon 描边
-[data-theme="dark"] .bento-card-icon {
-  // 直接用主题变量;dark 下 primary-soft 已经是半透明粉紫,够用
-  // primary-dark 在 dark 下是浅色 hsl(78%),适合做 icon stroke
-}
-
 .bento-card-title {
   font-size: 15px;
   font-weight: 600;
