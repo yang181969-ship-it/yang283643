@@ -1,7 +1,17 @@
 // ============================================================
-// 主页 9 张主卡片骨架(Commit 2 版)
-// 通用样式:头部小图标+标题、右上→按钮、正文占位、右下装饰图位、hover 动效。
-// Phase B 会按卡片差异化精修(目前各卡片只通过 data-card 标识不做差异)。
+// 主页 9 张主卡片 —— Commit 4 (B1) 视觉精修版
+//
+// 改动相对 Commit 2:
+//   1. 变量名对齐项目实际 --primary / --primary-soft / --text-main
+//      (Commit 2 用的 --accent / --accent-tint / --text-strong 项目里没定义,调色盘失效)
+//   2. 装饰图尺寸按 span 适配:span3 = 48,span4 = 64,intro/about-me = 96
+//   3. 装饰图右下贴边 12px(对齐定稿规范),并给 body / head 用 :has() 自动让位避免重叠
+//   4. 占位状态从虚线框换成柔和玻璃 tint,hover rotate 时不再像未完成
+//   5. mood 卡(数据卡 -- 头像不是装饰)预留专属钩子,不参与 hover 动效
+//   6. 暗色模式下 icon tint 走 hsla 形态,避免被强 light 残影
+//
+// Phase B2 会:把 .is-placeholder 替换为真 PNG <img>;给 body 灌真实数据;
+// 实装 mood 头像 / stats 数字滚动。本刀只产出"模式"。
 // ============================================================
 
 @use '../abstracts/variables' as *;
@@ -18,30 +28,40 @@
   padding: 20px;
   overflow: hidden;
 
-  background: var(--glass-bg-weak, rgba(255, 255, 255, 0.05));
-  backdrop-filter: blur(var(--glass-blur, 14px)) saturate(130%);
-  -webkit-backdrop-filter: blur(var(--glass-blur, 14px)) saturate(130%);
-  border: var(--glass-border-subtle, 1px solid rgba(255, 255, 255, 0.08));
-  border-radius: var(--radius-card-lg, 16px);
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: var(--glass-border-subtle);
+  border-radius: var(--radius-card);
   box-shadow:
-    var(--glass-shadow-rest, 0 4px 16px rgba(0, 0, 0, 0.08)),
-    var(--glass-highlight, inset 0 1px 0 rgba(255, 255, 255, 0.06));
+    var(--glass-shadow-rest),
+    var(--glass-highlight);
 
   transition:
-    transform var(--dur-glass, 220ms) var(--ease-glass, cubic-bezier(0.4, 0, 0.2, 1)),
-    box-shadow var(--dur-glass, 220ms) var(--ease-glass, cubic-bezier(0.4, 0, 0.2, 1)),
-    border-color var(--dur-glass, 220ms) var(--ease-glass, cubic-bezier(0.4, 0, 0.2, 1));
+    transform var(--dur-glass) var(--ease-glass),
+    box-shadow var(--dur-glass) var(--ease-glass),
+    background var(--dur-glass) var(--ease-glass);
 
   &:hover {
     transform: translateY(-2px);
+    background: var(--glass-bg);
     box-shadow:
-      var(--glass-shadow-hover, 0 8px 28px rgba(0, 0, 0, 0.14)),
-      var(--glass-highlight, inset 0 1px 0 rgba(255, 255, 255, 0.06));
+      var(--glass-shadow-hover),
+      var(--glow-card),
+      var(--glass-highlight);
 
-    // hover 整卡时装饰图微微浮起旋转(memory 约定:心情卡的 mood 头像不动)
+    // hover 整卡时装饰图微微浮起旋转;
+    // mood 头像是数据不是装饰,显式排除(B2 实装的 mood-avatar 也走相同选择器)
     .bento-card-deco:not(.bento-card-deco--mood) {
       transform: rotate(3deg) translateY(-3px);
     }
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow:
+      var(--glass-shadow-active),
+      var(--glass-highlight);
   }
 }
 
@@ -49,6 +69,8 @@
 .bento-card[data-span="3"] { grid-column: span 3; }
 .bento-card[data-span="4"] { grid-column: span 4; }
 .bento-card[data-span="6"] { grid-column: span 6; }
+
+// 移动端在 _layout 里把 grid 改成单列,这里 span 自动失效不用管
 
 // ============================================================
 // 卡片头部:左上小图标 + 标题
@@ -58,17 +80,27 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 14px;
+  min-width: 0;
+
+  // 有右上跳转箭头时,head 给 link 让位避免压到标题
+  // (link 是绝对定位 30x30 + right 12px = 占 42px;留 8px 间距 → 50px)
+  .bento-card:has(> .bento-card-link) & {
+    padding-right: 50px;
+  }
 }
 
 .bento-card-icon {
   flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
-  background: var(--accent-tint, rgba(199, 150, 230, 0.16));
-  border-radius: 10px;
-  color: var(--accent, #c796e6);
+  background: var(--primary-soft);
+  border-radius: 12px;
+  color: var(--primary-dark);
+  transition:
+    background var(--dur-glass-quick) var(--ease-glass-quick),
+    color var(--dur-glass-quick) var(--ease-glass-quick);
 
   svg {
     width: 18px;
@@ -77,35 +109,46 @@
   }
 }
 
+// 暗色:primary-soft 在暗色已经定义为 hsla(...0.22),颜色对的;
+// 但 primary-dark 在暗色定义是浅色(hsl 78%),正好用作 icon 描边
+[data-theme="dark"] .bento-card-icon {
+  // 直接用主题变量;dark 下 primary-soft 已经是半透明粉紫,够用
+  // primary-dark 在 dark 下是浅色 hsl(78%),适合做 icon stroke
+}
+
 .bento-card-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-strong, var(--text-primary, currentColor));
+  color: var(--text-main);
   margin: 0;
   line-height: 1.2;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 // ============================================================
-// 右上跳转箭头(部分卡片有,关于网页/心情/统计 例外详见 HTML)
+// 右上跳转箭头(7 张卡有,intro/mood 例外)
 // ============================================================
 .bento-card-link {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 12px;
+  right: 12px;
   width: 30px;
   height: 30px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  color: var(--text-muted);
   background: transparent;
   border: none;
   cursor: pointer;
   text-decoration: none;
   transition:
-    background 180ms ease,
-    color 180ms ease,
-    transform 180ms ease;
+    background var(--dur-glass-quick) var(--ease-glass-quick),
+    color var(--dur-glass-quick) var(--ease-glass-quick),
+    transform var(--dur-glass-quick) var(--ease-glass-quick);
 
   svg {
     width: 16px;
@@ -114,24 +157,24 @@
   }
 
   &:hover {
-    background: var(--glass-bg-weak, rgba(255, 255, 255, 0.08));
-    color: var(--accent, #c796e6);
+    background: var(--glass-bg-weak);
+    color: var(--primary);
     transform: translateX(2px);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--accent, #c796e6);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 }
 
 // ============================================================
-// 卡片正文:占位区(Phase E 数据 API 接入时填充)
+// 卡片正文
 // ============================================================
 .bento-card-body {
   flex: 1 1 auto;
   min-height: 60px;
-  color: var(--text-muted, rgba(255, 255, 255, 0.65));
+  color: var(--text-muted);
   font-size: 13px;
   line-height: 1.6;
 
@@ -140,25 +183,46 @@
     opacity: 0.55;
     font-style: italic;
   }
+
+  // 卡片有装饰图时,body 右下让位避免文字被装饰图盖
+  // (装饰图 span4 = 64,贴边 12,需要 76+8 ≈ 84;小卡 span3 装饰图更小,padding 同步小)
+  .bento-card:has(> .bento-card-deco) & {
+    padding-right: 84px;
+    padding-bottom: 4px;
+  }
+  .bento-card[data-span="3"]:has(> .bento-card-deco) & {
+    padding-right: 64px;
+  }
+  .bento-card[data-card="intro"]:has(> .bento-card-deco) &,
+  .bento-card[data-card="about-me"]:has(> .bento-card-deco) & {
+    padding-right: 116px;
+  }
 }
 
 // ============================================================
-// 右下装饰图位(Phase B 替换为真实 PNG)
+// 右下装饰图位
 // ============================================================
 .bento-card-deco {
   position: absolute;
-  right: 14px;
-  bottom: 14px;
+  right: 12px;
+  bottom: 12px;
   width: 64px;
   height: 64px;
   pointer-events: none;
-  opacity: 0.85;
-  transition: transform var(--dur-glass, 220ms) var(--ease-glass, cubic-bezier(0.4, 0, 0.2, 1));
+  opacity: 0.9;
+  border-radius: 14px;
+  transition:
+    transform var(--dur-glass) var(--ease-glass),
+    opacity var(--dur-glass) var(--ease-glass);
 
-  // 骨架占位:虚线框,Phase B 改成 <img>
+  // 占位状态:柔和玻璃 tint(替换原虚线,hover rotate 时观感正常)
   &.is-placeholder {
-    border: 1.5px dashed var(--border-soft, rgba(255, 255, 255, 0.15));
-    border-radius: 12px;
+    background: linear-gradient(
+      135deg,
+      hsla(var(--primary-hue), 70%, 70%, 0.22) 0%,
+      hsla(var(--primary-hue), 60%, 80%, 0.10) 100%
+    );
+    box-shadow: inset 0 0 0 1px var(--glass-border-subtle, rgba(255, 255, 255, 0.12));
   }
 
   img {
@@ -169,9 +233,79 @@
   }
 }
 
-// 关于网页 / 关于我:装饰图位用 Q版/半身图,尺寸要更大
+// ---------- 按 span / 卡型差异化装饰图尺寸 ----------
+// 小卡(span3)装饰图小一点,与卡片视觉比例匹配
+.bento-card[data-span="3"] .bento-card-deco {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+// intro / about-me:Q版 / 半身,要更大更亮眼
 .bento-card[data-card="intro"] .bento-card-deco,
 .bento-card[data-card="about-me"] .bento-card-deco {
   width: 96px;
   height: 96px;
+  bottom: 14px;
+  right: 14px;
+}
+
+// ============================================================
+// mood 卡专属:头像位预留钩子(B2 实装 mood-avatar)
+// 不参与 hover rotate(已在 .bento-card &:hover 选择器里排除 --mood)
+// ============================================================
+.bento-card[data-card="mood"] {
+  // 给 B2 一个钩子:mood-avatar 居中显示,不在右下角
+  .bento-card-deco--mood {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 8px auto 0;
+    align-self: center;
+  }
+}
+
+// ============================================================
+// 移动端:bento-grid 已在 _layout 里改单列;这里只做密度收紧
+// ============================================================
+@media (max-width: 900px) {
+  .bento-card {
+    min-height: 160px;
+    padding: 18px;
+  }
+
+  .bento-card-head {
+    margin-bottom: 12px;
+
+    .bento-card:has(> .bento-card-link) & {
+      padding-right: 46px;
+    }
+  }
+
+  .bento-card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+
+    svg { width: 16px; height: 16px; }
+  }
+
+  .bento-card-title { font-size: 14px; }
+
+  .bento-card-deco {
+    width: 56px;
+    height: 56px;
+  }
+  .bento-card[data-span="3"] .bento-card-deco { width: 44px; height: 44px; }
+  .bento-card[data-card="intro"] .bento-card-deco,
+  .bento-card[data-card="about-me"] .bento-card-deco {
+    width: 80px; height: 80px;
+  }
+
+  .bento-card:has(> .bento-card-deco) .bento-card-body { padding-right: 72px; }
+  .bento-card[data-span="3"]:has(> .bento-card-deco) .bento-card-body { padding-right: 56px; }
+  .bento-card[data-card="intro"]:has(> .bento-card-deco) .bento-card-body,
+  .bento-card[data-card="about-me"]:has(> .bento-card-deco) .bento-card-body {
+    padding-right: 96px;
+  }
 }
