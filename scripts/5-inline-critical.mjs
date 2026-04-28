@@ -37,6 +37,12 @@ for (const htmlPath of HTML_FILES) {
   }
 
   let html = fs.readFileSync(htmlPath, 'utf-8');
+  
+  // 幂等性守卫:已经内联过就跳过(检测我们注入的注释)
+  if (html.includes('<!-- 关键 CSS:内联,首屏渲染零阻塞 -->')) {
+    console.log(`⏭ 跳过(已内联过):${htmlPath}`);
+    continue;
+  }
 
   // 备份原文件
   fs.writeFileSync(`${htmlPath}.bak`, html);
@@ -51,8 +57,8 @@ for (const htmlPath of HTML_FILES) {
   <style>${criticalCSS}</style>
   <!-- 完整 CSS:异步加载,不阻塞渲染 -->
   <link rel="stylesheet" href="${cssHref}" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="${cssHref}"></noscript>`;
-
+  <noscript><link data-fallback rel="stylesheet" href="${cssHref}"></noscript>`;
+  
   // 匹配并替换(同时支持 ./ 和 ../ 前缀)
   let replaced = false;
   for (const pattern of STYLE_LINK_PATTERNS) {
