@@ -1,31 +1,32 @@
 // ============================================================
 // js/home-cards.js
-// 主页 9 张主卡的数据注入入口(Phase B2 / Commit 5)
+// 主页 9 张主卡的数据注入入口
 //
-// 本刀只接 4 张卡:intro, about-me, notes, update
-// 其余 5 张(mood / stats / anime / gallery / comment)留 skeleton,后续 commit 处理
+// Commit 5：intro / about-me / notes / update（4 张）
+// Commit 6：anime / gallery / stats（3 张，stats 留言数留 commit 7）
+// 待办  ：mood（commit 7 天气 API）+ stats 留言数（commit 7 Waline API）
 //
-// 数据源:
-//   data/about.json          —— { intro: "...", aboutMe: "..." } 写死文案
-//   data/notes-index.json    —— [{ title, category, file, date }, ...] 按 date 倒序取 3
-//   data/updates-index.json  —— [{ file: "content/updates/YYYY-MM-DD.md" }, ...]
-//                                日期从 filename 解析,title 从 MD 第一行 # H1 提取
+// 数据源：
+//   data/about.json          —— 文案
+//   data/notes-index.json    —— 笔记索引
+//   data/updates-index.json  —— 更新索引
+//   window.animeData         —— anime-data.js 注入的全局变量
+//   window.galleryData       —— gallery-data.js 注入的全局变量
 // ============================================================
 
 (function () {
   'use strict';
 
   const NEW_THRESHOLD_DAYS = 7;
+  const SITE_LAUNCH_DATE = '2026-04-13'; // 建站日，stats 卡建站天数基准
 
-  // 监听:主页可能是初始加载就有 .bento-grid,也可能是 SPA 切回来时插入
-  // 简单保险:DOMContentLoaded 后跑一次;之后由 main.js 切页时再跑由它自己判断
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initHomeCards, { once: true });
   } else {
     initHomeCards();
   }
 
-  // 暴露给 main.js,SPA 切回主页时可以再调一次
+  // 暴露给 main.js，SPA 切回主页时再调一次
   window.initHomeCards = initHomeCards;
 
   // -------------------- 主流程 --------------------
@@ -33,38 +34,53 @@
   async function initHomeCards() {
     const grid = document.querySelector('.bento-grid');
     if (!grid) return;
-
-    // 防止重复注入(SPA 切页时)
     if (grid.dataset.cardsInjected === '1') return;
     grid.dataset.cardsInjected = '1';
 
-    // 4 个数据源并行,任一失败不影响其他卡
+    // 3 个 JSON 并行
     const [aboutRes, notesRes, updatesRes] = await Promise.allSettled([
       fetchJSON('data/about.json'),
       fetchJSON('data/notes-index.json'),
       fetchJSON('data/updates-index.json'),
     ]);
 
-    // intro / about-me
+    // ---------- Commit 5：4 张同步/JSON 卡 ----------
+
     if (aboutRes.status === 'fulfilled' && aboutRes.value) {
       if (aboutRes.value.intro)   fillTextCard('intro',    aboutRes.value.intro);
       if (aboutRes.value.aboutMe) fillTextCard('about-me', aboutRes.value.aboutMe);
     }
 
-    // notes
     if (notesRes.status === 'fulfilled' && Array.isArray(notesRes.value)) {
       fillNotesCard(notesRes.value);
     }
 
-    // updates(异步:还要 fetch 每个 MD 取标题)
     if (updatesRes.status === 'fulfilled' && Array.isArray(updatesRes.value)) {
       fillUpdatesCard(updatesRes.value).catch(err => {
         console.warn('[home-cards] updates render failed:', err);
       });
     }
+
+    // ---------- Commit 6：anime / gallery / stats ----------
+
+    const hasAnime   = typeof animeData   !== 'undefined' && animeData;
+    const hasGallery = typeof galleryData !== 'undefined' && Array.isArray(galleryData);
+
+    if (hasAnime)   fillAnimeCard(animeData);
+    if (hasGallery) fillGalleryCard(galleryData);
+
+    fillStatsCard({
+      notesCount:
+        notesRes.status === 'fulfilled' && Array.isArray(notesRes.value)
+          ? notesRes.value.length
+          : NaN,
+      animeCount: hasAnime ? Object.keys(animeData).length : NaN,
+      commentCount: NaN, // Commit 7 接 Waline 后填
+      daysCount: computeDaysSince(SITE_LAUNCH_DATE),
+    });
   }
 
-  // -------------------- 各卡渲染 --------------------
+  // -------------------- Commit 5：文本 / 列表卡 --------------------
 
   function fillTextCard(cardKey, text) {
     const body = getBody(cardKey);
@@ -84,33 +100,26 @@
   function fillNotesCard(list) {
     const body = getBody('notes');
     if (!body) return;
-
     const sorted = [...list]
       .map(it => ({ ...it, _ts: parseDate(it.date) }))
-      .sort((a, b) => b._ts - a._ts) // NaN 自动沉底
+      .sort((a, b) => b._ts - a._ts)
       .slice(0, 3);
-
     renderList(body, sorted.map(it => ({
       title: it.title || '(无标题)',
-      date: it.date,
       ts: it._ts,
-      isNew: false, // 笔记不打 NEW 标签
+      isNew: false,
     })));
   }
 
   async function fillUpdatesCard(list) {
     const body = getBody('update');
     if (!body) return;
-
-    // updates-index 按 file 名自然倒序(最新在前),直接取前 3;再按解析出的日期保险排一次
     const top = [...list]
       .map(it => ({ file: it.file, date: parseUpdateDateFromFile(it.file) }))
       .sort((a, b) => parseDate(b.date) - parseDate(a.date))
       .slice(0, 3);
-
-    // 并行 fetch 每个 MD 取首个 # H1
     const items = await Promise.all(top.map(async it => {
-      let title = it.date; // fallback:用日期当标题
+      let title = it.date;
       try {
         const md = await fetch(it.file).then(r => r.ok ? r.text() : '');
         const h1 = extractFirstHeading(md);
@@ -118,26 +127,166 @@
       } catch { /* fallback to date */ }
       return {
         title,
-        date: it.date,
         ts: parseDate(it.date),
         isNew: isWithinDays(it.date, NEW_THRESHOLD_DAYS),
       };
     }));
-
     renderList(body, items);
   }
 
-  // -------------------- 公共渲染 --------------------
+  // -------------------- Commit 6：anime --------------------
+
+  function fillAnimeCard(animeMap) {
+    const body = getBody('anime');
+    if (!body) return;
+
+    // 取末尾 3 个 reverse —— 末尾追加约定下，等价"最近"
+    const ids = Object.keys(animeMap);
+    const recent = ids.slice(-3).reverse();
+
+    body.classList.remove('is-skeleton');
+    body.innerHTML = '';
+
+    if (!recent.length) {
+      appendEmpty(body);
+      return;
+    }
+
+    const ul = document.createElement('ul');
+    ul.className = 'bento-list bento-list--anime';
+
+    recent.forEach(id => {
+      const item = animeMap[id];
+      if (!item) return;
+
+      const li = document.createElement('li');
+      li.className = 'bento-list-item';
+
+      const a = document.createElement('a');
+      a.className = 'bento-anime-row';
+      a.href = `html/anime-detail.html?id=${encodeURIComponent(id)}`;
+
+      const img = document.createElement('img');
+      img.className = 'bento-anime-thumb';
+      img.src = stripParentPath(item.image);
+      img.alt = item.title;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      a.appendChild(img);
+
+      const title = document.createElement('span');
+      title.className = 'bento-list-title';
+      title.textContent = item.title;
+      a.appendChild(title);
+
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+
+    body.appendChild(ul);
+  }
+
+  // -------------------- Commit 6：gallery --------------------
+
+  function fillGalleryCard(list) {
+    const card = document.querySelector('.bento-card[data-card="gallery"]');
+    const body = card && card.querySelector('.bento-card-body');
+    if (!body) return;
+
+    // 按 order 倒序取 4
+    const sorted = [...list]
+      .filter(it => it && it.src)
+      .sort((a, b) => (b.order || 0) - (a.order || 0))
+      .slice(0, 4);
+
+    body.classList.remove('is-skeleton');
+    body.innerHTML = '';
+
+    // 删掉装饰图位 —— mosaic 自身就是装饰，避免 :has() 让 body 缩水
+    const deco = card.querySelector('.bento-card-deco');
+    if (deco) deco.remove();
+
+    if (!sorted.length) {
+      appendEmpty(body);
+      return;
+    }
+
+    const mosaic = document.createElement('div');
+    mosaic.className = 'bento-gallery-mosaic';
+
+    sorted.forEach(it => {
+      const a = document.createElement('a');
+      a.className = 'bento-gallery-tile';
+      a.href = `index.html?page=gallery`;
+      a.setAttribute('aria-label', '查看完整画廊');
+
+      const img = document.createElement('img');
+      img.src = it.src;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      a.appendChild(img);
+
+      mosaic.appendChild(a);
+    });
+
+    body.appendChild(mosaic);
+  }
+
+  // -------------------- Commit 6：stats --------------------
+
+  function fillStatsCard(data) {
+    const body = getBody('stats');
+    if (!body) return;
+
+    body.classList.remove('is-skeleton');
+    body.innerHTML = '';
+
+    const cells = [
+      { label: '笔记', value: data.notesCount },
+      { label: '追番', value: data.animeCount },
+      { label: '留言', value: data.commentCount }, // Commit 7 填
+      { label: '建站', value: data.daysCount, suffix: '天' },
+    ];
+
+    const grid = document.createElement('div');
+    grid.className = 'bento-stats-grid';
+
+    cells.forEach(c => {
+      const cell = document.createElement('div');
+      cell.className = 'bento-stat';
+
+      const num = document.createElement('span');
+      num.className = 'bento-stat-num';
+      num.textContent = '0'; // 起始
+      cell.appendChild(num);
+
+      const label = document.createElement('span');
+      label.className = 'bento-stat-label';
+      label.textContent = c.label + (c.suffix ? '·' + c.suffix : '');
+      cell.appendChild(label);
+
+      grid.appendChild(cell);
+
+      // 触发滚动动画（视口内立即；非有限值显示 ─）
+      if (window.observeCountUp) {
+        window.observeCountUp(num, c.value);
+      } else {
+        num.textContent = Number.isFinite(c.value) ? String(c.value) : '─';
+      }
+    });
+
+    body.appendChild(grid);
+  }
+
+  // -------------------- 公共：列表渲染（notes / update 用） --------------------
 
   function renderList(body, items) {
     body.classList.remove('is-skeleton');
     body.innerHTML = '';
 
     if (!items.length) {
-      const p = document.createElement('p');
-      p.className = 'bento-empty';
-      p.textContent = '暂无内容';
-      body.appendChild(p);
+      appendEmpty(body);
       return;
     }
 
@@ -174,6 +323,13 @@
     });
 
     body.appendChild(ul);
+  }
+
+  function appendEmpty(body) {
+    const p = document.createElement('p');
+    p.className = 'bento-empty';
+    p.textContent = '暂无内容';
+    body.appendChild(p);
   }
 
   // -------------------- 工具 --------------------
@@ -219,5 +375,18 @@
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${m}/${day}`;
+  }
+
+  function computeDaysSince(launchDateStr) {
+    const launch = parseDate(launchDateStr);
+    if (!Number.isFinite(launch)) return NaN;
+    const days = Math.floor((Date.now() - launch) / (24 * 60 * 60 * 1000));
+    return days >= 0 ? days : 0;
+  }
+
+  // anime-data.js 用的是详情页相对路径 ../assets/...
+  // 主页要去掉 ../，否则 404
+  function stripParentPath(p) {
+    return String(p || '').replace(/^(\.\.\/)+/, '');
   }
 })();

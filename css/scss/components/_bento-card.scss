@@ -397,3 +397,124 @@
   font-style: italic;
   opacity: 0.7;
 }
+
+// ============================================================
+// Commit 6 (B2 第二刀)：anime / gallery / stats 卡正文样式
+// ============================================================
+
+// ---------- anime 卡：带封面缩略的列表 ----------
+.bento-list--anime {
+  .bento-list-item {
+    padding: 4px 0;
+    border-bottom: none; // 行内带封面已有视觉分隔，不再加虚线
+  }
+}
+
+.bento-anime-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+  text-decoration: none;
+  color: var(--text-main);
+  transition: color var(--dur-glass-quick) var(--ease-glass-quick);
+
+  &:hover {
+    color: var(--primary);
+
+    .bento-anime-thumb {
+      transform: scale(1.06);
+    }
+  }
+}
+
+.bento-anime-thumb {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px hsla(var(--primary-hue), 30%, 30%, 0.15);
+  transition: transform var(--dur-glass-quick) var(--ease-glass-quick);
+}
+
+// ---------- gallery 卡：2x2 mosaic ----------
+.bento-gallery-mosaic {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.bento-gallery-tile {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px hsla(var(--primary-hue), 30%, 30%, 0.12);
+  transition:
+    transform var(--dur-glass-quick) var(--ease-glass-quick),
+    box-shadow var(--dur-glass-quick) var(--ease-glass-quick);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--dur-glass) var(--ease-glass);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px hsla(var(--primary-hue), 30%, 30%, 0.2);
+
+    img {
+      transform: scale(1.08);
+    }
+  }
+}
+
+// ---------- stats 卡：2x2 数字 grid ----------
+.bento-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-top: 4px;
+}
+
+.bento-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.bento-stat-num {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+.bento-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
+
+// 移动端微调
+@media (max-width: 900px) {
+  .bento-anime-thumb {
+    width: 32px;
+    height: 32px;
+  }
+
+  .bento-stat-num {
+    font-size: 22px;
+  }
+}
