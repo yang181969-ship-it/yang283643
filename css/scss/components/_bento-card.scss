@@ -301,3 +301,99 @@
     padding-right: 96px;
   }
 }
+
+// ============================================================
+// Commit 5 (B2 第一刀):卡片正文真实数据样式
+// 给 home-cards.js 的 renderList / fillTextCard 输出做样式
+// ============================================================
+
+// 文本卡(intro / about-me):多段文案
+.bento-text-line {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-main);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// 列表卡(notes / update / 后续 anime / gallery):条目列表
+.bento-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bento-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-main);
+  border-bottom: 1px dashed transparent;
+  transition: border-color var(--dur-glass-quick) var(--ease-glass-quick);
+
+  &:not(:last-child) {
+    border-bottom-color: hsla(var(--primary-hue), 30%, 50%, 0.12);
+  }
+}
+
+.bento-list-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.bento-list-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-main);
+}
+
+// NEW 标签 —— 跟着调色盘色相走
+.bento-list-tag {
+  flex-shrink: 0;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+  color: #fff;
+  background: var(--primary);
+  border-radius: var(--radius-chip);
+  box-shadow: 0 2px 6px hsla(var(--primary-hue), 80%, 60%, calc(0.25 * var(--glow-intensity)));
+}
+
+[data-theme="dark"] .bento-list-tag {
+  // 深色模式 primary 偏亮,降低对比避免刺眼
+  color: #1a1a1a;
+}
+
+// 右侧日期
+.bento-list-date {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+// 空态(理论上不会到,Promise.allSettled 全失败才会)
+.bento-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 0.7;
+}
