@@ -518,3 +518,57 @@
     font-size: 22px;
   }
 }
+
+// =====================================================
+// Commit 8: mood 卡内部样式
+// 视觉方案 A：60px emoji + 一行文案 "东京・多云・22°"
+// =====================================================
+
+.bento-mood {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  min-height: 110px;       // 与 stats 卡 2x2 网格视觉高度对齐
+  padding: 4px 0 8px;
+  text-align: center;
+}
+
+.bento-mood-emoji {
+  font-size: 60px;
+  line-height: 1;
+  // emoji 字体在某些系统下边缘会硬切，加点投影增加层次
+  filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.10));
+  transition: transform var(--dur-glass) var(--ease-glass);
+  user-select: none;
+}
+
+// hover 整张卡时 emoji 跟着装饰图模式呼吸一下（与 commit 4 装饰图 hover 一致）
+.bento-card[data-card="mood"]:hover .bento-mood-emoji {
+  transform: rotate(3deg) translateY(-3px);
+}
+
+.bento-mood-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-main);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  // 单行省略，溢出加省略号（罕见，但 99° + 8 字文案的极端长度兜底）
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-theme="dark"] .bento-mood-emoji {
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.5));
+}
+
+@media (max-width: 480px) {
+  .bento-mood-emoji { font-size: 52px; }
+  .bento-mood-text  { font-size: 13px; }
+  .bento-mood       { gap: 8px; min-height: 96px; }
+}
