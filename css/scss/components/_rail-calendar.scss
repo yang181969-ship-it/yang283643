@@ -1,0 +1,110 @@
+// _rail-calendar.scss —— Phase C Commit 1
+// 月历组件样式,延续 rail-widget 通用骨架
+// 依赖变量: --primary-hue / --bg-card / --text-base / --text-muted / --border-soft
+
+@use '../abstracts/variables' as *;
+
+.rail-widget--calendar {
+  // 头部按钮组
+  .rail-widget__actions {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .rail-widget__btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover {
+      background: hsla(var(--primary-hue), 70%, 60%, 0.12);
+      color: hsl(var(--primary-hue), 60%, 50%);
+    }
+
+    &[hidden] { display: none; }
+  }
+
+  .rail-widget__btn--text {
+    width: auto;
+    min-width: 22px;
+    padding: 0 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  // 周标题行
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.6;
+
+    span {
+      padding: 2px 0;
+      letter-spacing: 0.02em;
+    }
+  }
+
+  // 日期网格
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  .cal-day {
+    aspect-ratio: 1 / 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-base);
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .cal-day--out {
+    color: var(--text-muted);
+    opacity: 0.4;
+  }
+
+  .cal-day--today {
+    background: hsl(var(--primary-hue), 70%, 60%);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 2px 6px hsla(var(--primary-hue), 70%, 60%, 0.35);
+  }
+}
+
+// 暗色模式微调
+[data-theme="dark"] .rail-widget--calendar {
+  .cal-day--today {
+    background: hsl(var(--primary-hue), 65%, 55%);
+    box-shadow: 0 2px 8px hsla(var(--primary-hue), 65%, 55%, 0.45);
+  }
+
+  .rail-widget__btn:hover {
+    background: hsla(var(--primary-hue), 65%, 60%, 0.18);
+  }
+}
