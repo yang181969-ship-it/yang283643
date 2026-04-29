@@ -98,6 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function runPageInit(page) {
+    if (page === "home"    && typeof window.initHomeCards === "function") window.initHomeCards();
     if (page === "comment" && typeof initCommentPage === "function") initCommentPage();
     if (page === "anime"   && typeof initAnimePage   === "function") initAnimePage();
     if (page === "gallery" && typeof initGalleryPage === "function") initGalleryPage();
@@ -254,7 +255,9 @@ document.addEventListener("DOMContentLoaded", () => {
       homeContent = main.innerHTML;
     }
     history.replaceState({ page: "home" }, "", "index.html");
-    requestAnimationFrame(() => runPageInit("home"));
+    // 首次进入主页时，home-cards.js 自己的 DOMContentLoaded 会初始化卡片，
+    // 这里不再调用 runPageInit("home")，避免双重渲染。
+    // SPA 切换回主页时由 loadPage("home") → afterPageLoad → runPageInit("home") 处理。
   }
 });
 
