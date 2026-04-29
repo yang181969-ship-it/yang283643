@@ -34,8 +34,14 @@
   async function initHomeCards() {
     const grid = document.querySelector('.bento-grid');
     if (!grid) return;
-    if (grid.dataset.cardsInjected === '1') return;
-    grid.dataset.cardsInjected = '1';
+
+    // 注意：这里曾有 grid.dataset.cardsInjected 守卫，已删除。
+    // 原因：该 flag 在 await 前同步写入 DOM。main.js 在 DOMContentLoaded 时
+    // 抓的 homeContent 字符串里会带上 data-cards-injected="1"，但内容还是骨架
+    // （因为 fetch 还没回来）。SPA 切回主页时 main.innerHTML 会还原这份"带 flag
+    // 的骨架"，再次调用 initHomeCards 会被 flag 直接拦截，导致主页卡片永远
+    // 停留在 "介绍文案待 Phase E 注入..." 这种占位态。
+    // 现改为每次调用都全量重渲染（幂等：所有 fillXxxCard 都先清空 body 再写）。
 
     // 3 个 JSON 并行
     const [aboutRes, notesRes, updatesRes] = await Promise.allSettled([
@@ -203,6 +209,8 @@
     body.innerHTML = '';
 
     // 删掉装饰图位 —— mosaic 自身就是装饰，避免 :has() 让 body 缩水
+    // SPA 切回主页时 main.innerHTML 还原骨架会把 deco 带回来，这里再次 remove
+    // 是幂等的（找不到就 no-op）。
     const deco = card.querySelector('.bento-card-deco');
     if (deco) deco.remove();
 
