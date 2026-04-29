@@ -112,19 +112,164 @@
 }
 
 // ============================================================
-// 专注计时器
+// 专注计时器 —— Phase C Commit 2: 双 tab 番茄钟
 // ============================================================
 .rail-widget--timer {
+  // header 右侧的"今日累计"
+  .timer-today {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  // tab 切换
+  .timer-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    background: var(--glass-bg-weak);
+    border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.08));
+    border-radius: 8px;
+  }
+
+  .timer-tab {
+    flex: 1;
+    padding: 4px 0;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition:
+      background var(--dur-glass) var(--ease-glass),
+      color var(--dur-glass) var(--ease-glass);
+
+    &:hover:not(:disabled):not(.is-active) {
+      color: var(--text, var(--text-main));
+    }
+
+    &.is-active {
+      background: var(--bg-card, var(--glass-bg));
+      color: var(--text, var(--text-main));
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  // 显示器
   .timer-display {
     font-family: var(--font-mono, ui-monospace, "SF Mono", Consolas, monospace);
     font-size: 28px;
     font-weight: 600;
     text-align: center;
-    color: var(--text);
+    color: var(--text, var(--text-main));
     letter-spacing: 0.05em;
     padding: 4px 0;
+    font-variant-numeric: tabular-nums;
+    transition: color var(--dur-glass) var(--ease-glass);
   }
 
+  &[data-status="running"] .timer-display {
+    color: var(--accent, var(--primary, currentColor));
+  }
+  &[data-status="completed"] .timer-display {
+    color: var(--accent, var(--primary, currentColor));
+    opacity: 0.7;
+  }
+
+  // slider
+  .timer-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 2px;
+
+    &[hidden] { display: none; }
+  }
+
+  .timer-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--border-soft, rgba(255, 255, 255, 0.15));
+    border-radius: 999px;
+    outline: none;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent, var(--primary, hsl(var(--primary-hue, 330) 70% 60%)));
+      border: 2px solid var(--bg-card, #fff);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    &::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent, var(--primary, hsl(var(--primary-hue, 330) 70% 60%)));
+      border: 2px solid var(--bg-card, #fff);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+    }
+
+    &:hover:not(:disabled)::-webkit-slider-thumb { transform: scale(1.15); }
+    &:hover:not(:disabled)::-moz-range-thumb { transform: scale(1.15); }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  .timer-slider-value {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  // 进度条
+  .timer-progress {
+    height: 3px;
+    background: var(--border-soft, rgba(255, 255, 255, 0.12));
+    border-radius: 999px;
+    overflow: hidden;
+
+    &[hidden] { display: none; }
+  }
+
+  .timer-progress__bar {
+    height: 100%;
+    width: 0%;
+    background: var(--accent, var(--primary, hsl(var(--primary-hue, 330) 70% 60%)));
+    border-radius: 999px;
+    transition: width 0.15s linear;
+  }
+
+  // 按钮组
   .timer-controls {
     display: flex;
     gap: 4px;
@@ -132,6 +277,7 @@
 
   .timer-btn {
     flex: 1;
+    position: relative;
     padding: 5px 0;
     font-size: 11px;
     color: var(--text-muted);
@@ -139,24 +285,61 @@
     border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
     border-radius: 6px;
     cursor: pointer;
+    overflow: hidden;
     transition:
       background var(--dur-glass) var(--ease-glass),
-      color var(--dur-glass) var(--ease-glass);
+      color var(--dur-glass) var(--ease-glass),
+      border-color var(--dur-glass) var(--ease-glass);
 
     &:hover:not(:disabled) {
       background: var(--glass-bg-weak);
-      color: var(--text);
+      color: var(--text, var(--text-main));
     }
 
     &:disabled {
       cursor: not-allowed;
-      opacity: 0.45;
+      opacity: 0.4;
+    }
+
+    &--primary:not(:disabled) {
+      color: var(--text, var(--text-main));
+      border-color: var(--accent, var(--primary, transparent));
+      background: hsla(var(--primary-hue, 330), 80%, 60%, 0.12);
+
+      &:hover {
+        background: hsla(var(--primary-hue, 330), 80%, 60%, 0.22);
+      }
+    }
+  }
+
+  // 重置按钮长按填充层
+  .timer-btn--reset {
+    .timer-btn__hold {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      transform-origin: left center;
+      transform: scaleX(var(--hold-progress, 0));
+      background: hsla(var(--primary-hue, 330), 80%, 60%, 0.35);
+      pointer-events: none;
+      transition: transform 80ms linear;
+    }
+
+    .timer-btn__label {
+      position: relative;
+      z-index: 1;
+    }
+
+    &.is-holding {
+      color: var(--text, var(--text-main));
+      border-color: var(--accent, var(--primary));
     }
   }
 }
 
 // ============================================================
-// 音乐播放器
+// 音乐播放器 —— Phase C Commit 3
+// 5 控件 + LRC 同步歌词 + 跨页 audio + 歌单浮层
 // ============================================================
 .rail-widget--music {
   .music-row {
@@ -171,12 +354,32 @@
     height: 40px;
     flex-shrink: 0;
     border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
     background: linear-gradient(
       135deg,
-      hsl(var(--primary-hue, 260) 50% 55% / 0.6) 0%,
-      rgba(255, 255, 255, 0.08) 100%
+      hsl(var(--primary-hue, 330) 70% 60% / 0.35) 0%,
+      hsl(var(--primary-hue, 330) 50% 45% / 0.15) 100%
     );
-    box-shadow: inset 0 0 0 1px var(--border-soft, rgba(255, 255, 255, 0.12));
+    box-shadow: inset 0 0 0 1px var(--border-soft, rgba(255, 255, 255, 0.15));
+    transition:
+      box-shadow var(--dur-glass) var(--ease-glass),
+      transform var(--dur-glass) var(--ease-glass);
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  &[data-status="playing"] .music-cover {
+    color: var(--accent, var(--primary, currentColor));
+    box-shadow:
+      inset 0 0 0 1px var(--accent, var(--primary)),
+      0 0 12px hsla(var(--primary-hue, 330), 75%, 60%, calc(0.5 * var(--glow-intensity, 1)));
+    animation: musicCoverPulse 2.4s ease-in-out infinite;
   }
 
   .music-meta {
@@ -196,24 +399,63 @@
 
   .music-title {
     font-size: 12px;
-    color: var(--text);
+    font-weight: 500;
+    color: var(--text, var(--text-main));
   }
 
   .music-artist {
     font-size: 10px;
     color: var(--text-muted);
-    opacity: 0.7;
+    opacity: 0.85;
   }
 
+  // 进度条
+  .music-progress {
+    position: relative;
+    height: 3px;
+    background: var(--border-soft, rgba(255, 255, 255, 0.12));
+    border-radius: 999px;
+    overflow: hidden;
+    cursor: pointer;
+    outline: none;
+
+    &:hover .music-progress__bar,
+    &:focus-visible .music-progress__bar {
+      background: var(--accent, var(--primary));
+      filter: brightness(1.1);
+    }
+  }
+
+  .music-progress__bar {
+    height: 100%;
+    width: 0%;
+    background: var(--accent, var(--primary, hsl(var(--primary-hue, 330) 70% 60%)));
+    border-radius: 999px;
+    transition: width 0.15s linear, background 0.2s ease;
+  }
+
+  .music-time {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    opacity: 0.7;
+    margin-top: -2px;
+  }
+
+  // 5 控件按钮组
   .music-controls {
     display: flex;
-    justify-content: center;
-    gap: 4px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2px;
+    margin-top: 2px;
   }
 
   .music-btn {
-    width: 32px;
-    height: 28px;
+    flex: 1;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -224,6 +466,70 @@
     cursor: pointer;
     transition:
       background var(--dur-glass) var(--ease-glass),
+      color var(--dur-glass) var(--ease-glass),
+      transform var(--dur-glass-quick) var(--ease-glass-quick);
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--glass-bg-weak);
+      color: var(--text, var(--text-main));
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.92);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    // 主播放按钮:更大更突出
+    &--play {
+      flex: 1.4;
+      height: 32px;
+      color: var(--text, var(--text-main));
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .music-icon-pause { display: none; }
+      .music-icon-play  { display: block; }
+    }
+
+    // 激活态(loop 开启或正在播放):primary 色高亮
+    &.is-active {
+      color: var(--accent, var(--primary));
+    }
+  }
+
+  // play 按钮:播放中切换图标
+  &[data-status="playing"] .music-btn--play {
+    .music-icon-play  { display: none; }
+    .music-icon-pause { display: block; }
+  }
+
+  // 歌词 toggle —— 透明小按钮,跟 music-btn 一致风格
+  .music-lyrics-toggle {
+    width: 26px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0;
+    transition:
+      background var(--dur-glass) var(--ease-glass),
       color var(--dur-glass) var(--ease-glass);
 
     svg {
@@ -231,23 +537,376 @@
       height: 14px;
     }
 
-    &--play {
-      color: var(--text);
-    }
-
-    &:hover:not(:disabled) {
+    &:hover {
       background: var(--glass-bg-weak);
-      color: var(--text);
+      color: var(--text, var(--text-main));
     }
 
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.45;
+    &[aria-pressed="true"] {
+      color: var(--accent, var(--primary));
+      background: hsla(var(--primary-hue, 330), 80%, 60%, 0.12);
     }
   }
+
+  // loop 按钮三态:sequential(顺序) / shuffle(随机) / one(单曲循环)
+  .music-btn[data-music-act="loop"] {
+    .music-icon-loop-sequential,
+    .music-icon-loop-shuffle,
+    .music-icon-loop-one { display: none; }
+
+    &[data-loop-mode="sequential"] .music-icon-loop-sequential { display: block; }
+    &[data-loop-mode="shuffle"]    .music-icon-loop-shuffle    { display: block; }
+    &[data-loop-mode="one"]        .music-icon-loop-one        { display: block; }
+
+    // 随机 / 单曲循环:primary 高亮
+    &[data-loop-mode="shuffle"],
+    &[data-loop-mode="one"] {
+      color: var(--accent, var(--primary));
+    }
+    // 顺序播放:灰色
+    &[data-loop-mode="sequential"] {
+      color: var(--text-muted);
+    }
+  }
+}
+
+
+
+@keyframes musicCoverPulse {
+  0%, 100% { box-shadow: inset 0 0 0 1px var(--accent, var(--primary)), 0 0 8px  hsla(var(--primary-hue, 330), 75%, 60%, calc(0.4 * var(--glow-intensity, 1))); }
+  50%      { box-shadow: inset 0 0 0 1px var(--accent, var(--primary)), 0 0 14px hsla(var(--primary-hue, 330), 75%, 60%, calc(0.6 * var(--glow-intensity, 1))); }
+}
+
+// ============================================================
+// 歌词区(toggle 控制,持久化 y181_music_lyrics_visible)
+// ============================================================
+.music-lyrics {
+  max-height: 110px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--glass-bg-weak);
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.08));
+
+  &[hidden] { display: none !important; }
+}
+
+.music-lyrics__inner {
+  height: 110px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  scroll-behavior: smooth;
+
+  // 与全局滚动条样式一致(隐藏)
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
+
+  p {
+    margin: 0 0 4px;
+    padding: 1px 0;
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--text-muted);
+    text-align: center;
+    transition: color 0.2s ease, transform 0.2s ease;
+
+    &:last-child { margin-bottom: 0; }
+  }
+
+  .music-lyrics__line.is-active {
+    color: var(--text, var(--text-main));
+    font-weight: 600;
+    transform: scale(1.05);
+  }
+
+  .music-lyrics__hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    opacity: 0.55;
+    text-align: center;
+    margin-top: 36px;
+  }
+}
+
+// ============================================================
+// 歌单浮层(沿用 focus-modal 视觉语言)
+// ============================================================
+.music-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms var(--ease-glass);
+
+  &[hidden] { display: none !important; }
+
+  &.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+
+    .music-modal__panel {
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
+.music-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  cursor: pointer;
+}
+
+.music-modal__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, 100%);
+  max-height: 70vh;
+  background: var(--bg-card, #fff);
+  border: var(--glass-border-subtle);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  transform: translateY(8px) scale(0.96);
+  transition: transform 280ms var(--ease-glass);
+  overflow: hidden;
+}
+
+.music-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-soft, rgba(255, 255, 255, 0.08));
+}
+
+.music-modal__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main, var(--text));
+  flex: 1;
+}
+
+.music-modal__count {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.music-modal__close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--dur-glass) var(--ease-glass), color var(--dur-glass) var(--ease-glass);
+
+  svg { width: 14px; height: 14px; }
+
+  &:hover {
+    background: var(--glass-bg-weak);
+    color: var(--text-main, var(--text));
+  }
+}
+
+.music-modal__list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  // 4 首高度:每首 ~52px,加 padding 约 220px,然后内滚
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background var(--dur-glass-quick) var(--ease-glass-quick);
+
+    &:hover {
+      background: var(--glass-bg-weak);
+    }
+
+    &.is-current {
+      background: hsla(var(--primary-hue, 330), 80%, 60%, 0.12);
+
+      .music-modal__index { color: var(--accent, var(--primary)); }
+      .music-modal__name  { color: var(--accent, var(--primary)); font-weight: 600; }
+    }
+  }
+}
+
+.music-modal__index {
+  width: 22px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.music-modal__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.music-modal__name {
+  font-size: 13px;
+  color: var(--text-main, var(--text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-modal__sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-modal__playing {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--accent, var(--primary));
+  display: none;
+
+  svg { width: 100%; height: 100%; }
+}
+
+.music-modal__list li.is-current .music-modal__playing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 // ============================================================
 // 平板及以下:.rail-extras 已在 _layout.scss 里 display:none
 // 此处无需额外 media query
 // ============================================================
+
+// ============================================================
+// 专注完成 modal —— Phase C Commit 2
+// 静音 + 自画 modal,跑完触发,无音效
+// (作用域全局,可后续抽到 components/_modal.scss)
+// ============================================================
+.focus-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms var(--ease-glass);
+
+  &[hidden] { display: none !important; }
+
+  &.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+
+    .focus-modal__panel {
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
+.focus-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  cursor: pointer;
+}
+
+.focus-modal__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 32px;
+  min-width: 240px;
+  max-width: 320px;
+  background: var(--bg-card, #fff);
+  border: var(--glass-border-subtle);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  transform: translateY(8px) scale(0.96);
+  transition: transform 280ms var(--ease-glass);
+}
+
+.focus-modal__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary-soft, hsla(var(--primary-hue, 330), 80%, 68%, 0.18));
+  color: var(--primary, currentColor);
+
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.focus-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main, var(--text));
+  text-align: center;
+}
+
+.focus-modal__desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.focus-modal__btn {
+  margin-top: 4px;
+  padding: 8px 28px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background var(--dur-glass) var(--ease-glass),
+    transform var(--dur-glass-quick) var(--ease-glass-quick);
+
+  &:hover { background: var(--primary-dark); }
+  &:active { transform: translateY(1px); }
+}

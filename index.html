@@ -23,6 +23,10 @@
   <noscript><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css"></noscript>
 </head>
 <body>
+
+  <!-- 跨页常驻 audio(SPA 页面切换不重建) -->
+  <audio id="music-audio" preload="metadata" aria-hidden="true"></audio>
+
   <div class="layout">
 
     <!-- 头部 -->
@@ -228,35 +232,36 @@
       <!-- 侧栏小组件 —— Commit 3 骨架,逻辑 Phase C 接入 -->
       <div class="rail-extras">
 
-        <!-- 月历(Phase C:JS 渲染当月) -->
+        <!-- 月历 —— Phase C Commit 1: JS 接入 -->
         <article class="rail-widget rail-widget--calendar" data-widget="calendar" aria-label="月历">
           <header class="rail-widget__header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg class="rail-widget__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span class="rail-widget__title" data-cal-title>2026 年 4 月</span>
+            <span class="rail-widget__title" data-cal-title>—</span>
+            <div class="rail-widget__actions">
+              <button type="button" class="rail-widget__btn" data-cal-prev aria-label="上一月">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <button type="button" class="rail-widget__btn rail-widget__btn--text" data-cal-today hidden>今</button>
+              <button type="button" class="rail-widget__btn" data-cal-next aria-label="下一月">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            </div>
           </header>
           <div class="rail-widget__body">
             <div class="cal-weekdays" aria-hidden="true">
               <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
             </div>
-            <div class="cal-grid" data-cal-grid>
-              <!-- 静态占位:2026-04 —— Phase C 替换为 JS 渲染 -->
-              <span class="cal-day cal-day--out">29</span><span class="cal-day cal-day--out">30</span><span class="cal-day cal-day--out">31</span><span class="cal-day">1</span><span class="cal-day">2</span><span class="cal-day">3</span><span class="cal-day">4</span>
-              <span class="cal-day">5</span><span class="cal-day">6</span><span class="cal-day">7</span><span class="cal-day">8</span><span class="cal-day">9</span><span class="cal-day">10</span><span class="cal-day">11</span>
-              <span class="cal-day">12</span><span class="cal-day">13</span><span class="cal-day">14</span><span class="cal-day">15</span><span class="cal-day">16</span><span class="cal-day">17</span><span class="cal-day">18</span>
-              <span class="cal-day">19</span><span class="cal-day">20</span><span class="cal-day">21</span><span class="cal-day">22</span><span class="cal-day">23</span><span class="cal-day">24</span><span class="cal-day">25</span>
-              <span class="cal-day cal-day--today">26</span><span class="cal-day">27</span><span class="cal-day">28</span><span class="cal-day">29</span><span class="cal-day">30</span><span class="cal-day cal-day--out">1</span><span class="cal-day cal-day--out">2</span>
-              <span class="cal-day cal-day--out">3</span><span class="cal-day cal-day--out">4</span><span class="cal-day cal-day--out">5</span><span class="cal-day cal-day--out">6</span><span class="cal-day cal-day--out">7</span><span class="cal-day cal-day--out">8</span><span class="cal-day cal-day--out">9</span>
-            </div>
+            <div class="cal-grid" data-cal-grid></div>
           </div>
         </article>
 
-        <!-- 专注计时器(Phase C:番茄钟逻辑) -->
-        <article class="rail-widget rail-widget--timer" data-widget="timer" aria-label="专注计时器">
+        <!-- 专注计时器(Phase C Commit 2:秒表 / 计时双 tab) -->
+        <article class="rail-widget rail-widget--timer" data-widget="timer" data-status="idle" aria-label="专注计时器">
           <header class="rail-widget__header">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="10" y1="2" x2="14" y2="2"></line>
@@ -264,19 +269,45 @@
               <circle cx="12" cy="14" r="8"></circle>
             </svg>
             <span class="rail-widget__title">专注</span>
+            <span class="timer-today" data-timer-today aria-label="今日累计专注时长">今日 0m</span>
           </header>
           <div class="rail-widget__body">
-            <div class="timer-display" data-timer-display>25:00</div>
-            <div class="timer-controls">
-              <button type="button" class="timer-btn" data-timer-act="start" disabled>开始</button>
-              <button type="button" class="timer-btn" data-timer-act="pause" disabled>暂停</button>
-              <button type="button" class="timer-btn" data-timer-act="reset" disabled>重置</button>
+
+            <!-- Tab 切换 -->
+            <div class="timer-tabs" role="tablist">
+              <button type="button" class="timer-tab is-active" role="tab" data-timer-tab="stopwatch" aria-selected="true">秒表</button>
+              <button type="button" class="timer-tab" role="tab" data-timer-tab="countdown" aria-selected="false">计时</button>
             </div>
+
+            <!-- 显示器 -->
+            <div class="timer-display" data-timer-display>00:00</div>
+
+            <!-- 计时模式 slider(秒表模式隐藏) -->
+            <div class="timer-slider-wrap" data-timer-slider-wrap hidden>
+              <input type="range" class="timer-slider" data-timer-slider min="1" max="60" step="1" value="25" aria-label="计时时长(分钟)">
+              <span class="timer-slider-value" data-timer-slider-value>25 min</span>
+            </div>
+
+            <!-- 进度条(仅计时模式 + 非 idle 时显示) -->
+            <div class="timer-progress" data-timer-progress hidden>
+              <div class="timer-progress__bar" data-timer-progress-bar></div>
+            </div>
+
+            <!-- 控制按钮 -->
+            <div class="timer-controls">
+              <button type="button" class="timer-btn timer-btn--primary" data-timer-act="start">开始</button>
+              <button type="button" class="timer-btn" data-timer-act="pause" disabled>暂停</button>
+              <button type="button" class="timer-btn timer-btn--reset" data-timer-act="reset" disabled aria-label="重置">
+                <span class="timer-btn__hold" data-timer-hold aria-hidden="true"></span>
+                <span class="timer-btn__label">重置</span>
+              </button>
+            </div>
+
           </div>
         </article>
 
-        <!-- 音乐播放器(Phase C:audio + MP3s + 曲目 JSON) -->
-        <article class="rail-widget rail-widget--music" data-widget="music" aria-label="音乐播放器">
+        <!-- 音乐播放器(Phase C Commit 3:audio + LRC + 歌单浮层) -->
+        <article class="rail-widget rail-widget--music" data-widget="music" data-status="idle" aria-label="音乐播放器">
           <header class="rail-widget__header">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M9 18V5l12-2v13"></path>
@@ -284,31 +315,105 @@
               <circle cx="18" cy="16" r="3"></circle>
             </svg>
             <span class="rail-widget__title">音乐</span>
+            <button type="button" class="music-lyrics-toggle" data-music-lyrics-toggle aria-label="显示/隐藏歌词" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="6" width="18" height="12" rx="2" ry="2"></rect>
+                <line x1="7"  y1="11" x2="13" y2="11"></line>
+                <line x1="7"  y1="15" x2="17" y2="15"></line>
+              </svg>
+            </button>
           </header>
+
           <div class="rail-widget__body">
+            <!-- 当前曲目信息行 -->
             <div class="music-row">
-              <div class="music-cover" data-music-cover aria-hidden="true"></div>
+              <div class="music-cover" data-music-cover aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 18V5l12-2v13"></path>
+                  <circle cx="6" cy="18" r="3"></circle>
+                  <circle cx="18" cy="16" r="3"></circle>
+                </svg>
+              </div>
               <div class="music-meta">
-                <span class="music-title" data-music-title>未播放</span>
+                <span class="music-title"  data-music-title>未播放</span>
                 <span class="music-artist" data-music-artist>—</span>
               </div>
             </div>
+
+            <!-- 歌词区(toggle 控制,持久化) -->
+            <div class="music-lyrics" data-music-lyrics hidden>
+              <div class="music-lyrics__inner" data-music-lyrics-inner>
+                <p class="music-lyrics__hint">暂无歌词</p>
+              </div>
+            </div>
+
+            <!-- 进度条(可点击 seek) -->
+            <div class="music-progress" data-music-progress role="slider" tabindex="0" aria-label="播放进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="music-progress__bar" data-music-progress-bar></div>
+            </div>
+            <div class="music-time">
+              <span data-music-time-current>0:00</span>
+              <span data-music-time-total>0:00</span>
+            </div>
+
+            <!-- 5 个控件:loop / prev / play / next / playlist -->
             <div class="music-controls">
+              <button type="button" class="music-btn" data-music-act="loop" data-loop-mode="sequential" aria-label="循环模式:顺序播放">
+                <!-- 顺序播放 -->
+                <svg class="music-icon-loop-sequential" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="4" y1="12" x2="18" y2="12"></line>
+                  <polyline points="13 7 18 12 13 17"></polyline>
+                </svg>
+                <!-- 随机播放 -->
+                <svg class="music-icon-loop-shuffle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="16 3 21 3 21 8"></polyline>
+                  <line x1="4" y1="20" x2="21" y2="3"></line>
+                  <polyline points="21 16 21 21 16 21"></polyline>
+                  <line x1="15" y1="15" x2="21" y2="21"></line>
+                  <line x1="4" y1="4" x2="9" y2="9"></line>
+                </svg>
+                <!-- 单曲循环 -->
+                <svg class="music-icon-loop-one" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="17 1 21 5 17 9"></polyline>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <polyline points="7 23 3 19 7 15"></polyline>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                  <text x="12" y="14" text-anchor="middle" font-size="8" font-weight="700" fill="currentColor" stroke="none">1</text>
+                </svg>
+              </button>
+
               <button type="button" class="music-btn" data-music-act="prev" disabled aria-label="上一首">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <polygon points="19 20 9 12 19 4 19 20"></polygon>
-                  <line x1="5" y1="19" x2="5" y2="5"></line>
+                  <rect x="4" y="5" width="2" height="14" rx="0.5"></rect>
                 </svg>
               </button>
+
               <button type="button" class="music-btn music-btn--play" data-music-act="play" disabled aria-label="播放">
-                <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                <svg class="music-icon-play"  viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+                  <polygon points="6 4 20 12 6 20 6 4"></polygon>
+                </svg>
+                <svg class="music-icon-pause" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+                  <rect x="6"  y="4" width="4" height="16" rx="1"></rect>
+                  <rect x="14" y="4" width="4" height="16" rx="1"></rect>
                 </svg>
               </button>
+
               <button type="button" class="music-btn" data-music-act="next" disabled aria-label="下一首">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <polygon points="5 4 15 12 5 20 5 4"></polygon>
-                  <line x1="19" y1="5" x2="19" y2="19"></line>
+                  <rect x="18" y="5" width="2" height="14" rx="0.5"></rect>
+                </svg>
+              </button>
+
+              <button type="button" class="music-btn" data-music-act="playlist" aria-label="打开歌单">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="8"  y1="6"  x2="21" y2="6"></line>
+                  <line x1="8"  y1="12" x2="21" y2="12"></line>
+                  <line x1="8"  y1="18" x2="21" y2="18"></line>
+                  <circle cx="3.5" cy="6"  r="1.2" fill="currentColor"></circle>
+                  <circle cx="3.5" cy="12" r="1.2" fill="currentColor"></circle>
+                  <circle cx="3.5" cy="18" r="1.2" fill="currentColor"></circle>
                 </svg>
               </button>
             </div>
@@ -533,6 +638,27 @@
   <script defer src="js/notes.js"></script>
   <script defer src="js/update.js"></script>
   <script defer src="js/home-cards.js"></script>
+  <script defer src="js/calendar-widget.js"></script>
+  <script defer src="js/focus-timer.js"></script>
+  <script defer src="js/music-player.js"></script>
+
+  <!-- 歌单浮层(Phase C Commit 3) -->
+  <div class="music-modal" data-music-modal hidden aria-hidden="true">
+    <div class="music-modal__backdrop" data-music-modal-close></div>
+    <div class="music-modal__panel" role="dialog" aria-modal="true" aria-label="歌单">
+      <header class="music-modal__header">
+        <h3 class="music-modal__title">歌单</h3>
+        <span class="music-modal__count" data-music-modal-count>0 首</span>
+        <button type="button" class="music-modal__close" data-music-modal-close aria-label="关闭歌单">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="6"  y1="6"  x2="18" y2="18"></line>
+            <line x1="18" y1="6"  x2="6"  y2="18"></line>
+          </svg>
+        </button>
+      </header>
+      <ul class="music-modal__list" data-music-modal-list></ul>
+    </div>
+  </div>
 
   <div id="floating-btns">
     <button id="back-to-prev" title="返回上一页" aria-label="返回上一页">
