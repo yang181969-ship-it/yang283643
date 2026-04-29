@@ -18,7 +18,7 @@
 (function () {
   'use strict';
 
-  const WEEK_START = 1; // 0=周日, 1=周一
+  const WEEK_START = 0; // 0=周日, 1=周一
   const MONTH_NAMES = [
     '1 月', '2 月', '3 月', '4 月', '5 月', '6 月',
     '7 月', '8 月', '9 月', '10 月', '11 月', '12 月',
