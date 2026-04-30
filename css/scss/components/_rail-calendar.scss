@@ -1,4 +1,4 @@
-// _rail-calendar.scss —— Phase C Commit 1
+// _rail-calendar.scss —— Phase C Commit 1 + 高亮 badge 化 + 网格收口(2026-04-30)
 // 月历组件样式,延续 rail-widget 通用骨架
 // 依赖变量: --primary-hue / --bg-card / --text-base / --text-muted / --border-soft
 
@@ -49,10 +49,15 @@
     letter-spacing: 0.02em;
   }
 
-  // 周标题行
+  // ============================================================
+  // 周标题行 + 日期网格:每列上限 44px,大 widget 内居中显示
+  // 桌面 220 sidebar:每列被压缩到 ~25px(行为不变);
+  // 移动横滑大 widget:列封顶 44px,左右留白由 justify-content 分配。
+  // ============================================================
   .cal-weekdays {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 44px));
+    justify-content: center;          // ← 新增:窄容器无效(列已撑满),宽容器居中
     gap: 2px;
     margin-bottom: 4px;
     font-size: 10px;
@@ -66,10 +71,10 @@
     }
   }
 
-  // 日期网格
   .cal-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 44px));
+    justify-content: center;          // ← 新增:同上,与 weekdays 对齐
     gap: 2px;
   }
 
@@ -82,6 +87,8 @@
     color: var(--text-base);
     border-radius: 6px;
     transition: background 0.15s ease, color 0.15s ease;
+    position: relative;
+    isolation: isolate;
   }
 
   .cal-day--out {
@@ -90,16 +97,30 @@
   }
 
   .cal-day--today {
-    background: hsl(var(--primary-hue), 70%, 60%);
+    background: transparent;
     color: #fff;
     font-weight: 600;
-    box-shadow: 0 2px 6px hsla(var(--primary-hue), 70%, 60%, 0.35);
+    box-shadow: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: min(78%, 30px);
+      height: min(78%, 30px);
+      border-radius: 50%;
+      background: hsl(var(--primary-hue), 70%, 60%);
+      box-shadow: 0 2px 6px hsla(var(--primary-hue), 70%, 60%, 0.35);
+      transform: translate(-50%, -50%);
+      z-index: -1;
+    }
   }
 }
 
 // 暗色模式微调
 [data-theme="dark"] .rail-widget--calendar {
-  .cal-day--today {
+  .cal-day--today::before {
     background: hsl(var(--primary-hue), 65%, 55%);
     box-shadow: 0 2px 8px hsla(var(--primary-hue), 65%, 55%, 0.45);
   }

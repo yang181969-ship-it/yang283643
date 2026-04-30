@@ -50,6 +50,11 @@
   overflow-x: visible;
 }
 
+// 桌面默认隐藏分页点(只在 laptop 断点下显示)
+.rail-extras-dots {
+  display: none;
+}
+
 // ============================================================
 // 右侧页面容器 —— 仅承担布局/滚动职责,无玻璃外壳
 // 玻璃由内部子卡片(.bento-card / .note-card / .update-card / ...)各自负责
@@ -119,7 +124,9 @@ footer {
 }
 
 // ============================================================
-// 响应式:平板及以下 —— 单列堆叠
+// 响应式:平板及以下 —— 整页统一滚动 + rail-extras 横滑
+// 关键:.layout 自己接管垂直滚动,header / rail / rail-extras / page 
+//       都跟着上滑;page-card 不再单独 overflow,避免双滚动区
 // ============================================================
 @include laptop {
   html,
@@ -128,42 +135,82 @@ footer {
     overflow: hidden;
   }
 
+  // .layout 改 flex column,自己滚动
   .layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr;
-    grid-template-areas:
-      "header"
-      "rail"
-      "page";
+    display: flex;
+    flex-direction: column;
     height: 100vh;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     gap: 0;
     padding: 0;
+
+    // 隐藏滚动条
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
 
+  // header 不再用 grid-area,在 flex 流里自然排第一
+  .layout > header {
+    flex-shrink: 0;
+  }
+
+  // rail 不再用 grid-area,在 flex 流里排第二,内部仍是 column
   .rail {
-    grid-area: rail;
+    flex-shrink: 0;
     position: static;
-    flex-direction: row;
+    flex-direction: column;
     overflow: visible;
     max-height: none;
     gap: 0;
+    padding-top: 0;
   }
 
-  .rail-extras { display: none; }
+  // ---------- rail-extras:横滑 swipe(强制宽度兜底) ----------
+  .rail-extras {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    padding: 12px 16px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-shrink: 0;
 
+    &::-webkit-scrollbar { display: none; }
+
+    > .rail-widget {
+      flex: 0 0 calc(100% - 32px);
+      width: auto;            // ← 强制覆盖桌面 220 sidebar 继承
+      max-width: none;        // ← 取消之前 480 限制(窄屏没意义)
+      min-width: 0;
+      box-sizing: border-box;
+      overflow: hidden;       // ← 内容溢出兜底,翻月键不再被切到外面
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+    }
+  }
+
+  .rail-extras-dots {
+    flex-shrink: 0;
+  }
+
+  // ---------- page-card:不再单独滚,内容撑长由 .layout 滚 ----------
   .page-card,
   .content-scroll {
-    grid-area: page;
+    flex: 1 0 auto;
     min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: visible;
+    background: transparent;
   }
 
-  main { max-width: 100%; }
+  main {
+    max-width: 100%;
+  }
 
-  // bento-grid 在平板及以下变单列堆叠;Phase D 移动端再细化
   .bento-grid {
     grid-template-columns: 1fr;
     grid-auto-rows: auto;
@@ -189,5 +236,21 @@ main {
     display: none;
     width: 0;
     height: 0;
+  }
+}
+
+// ============================================================
+// Phase D2 修订:移动端(< 640)main 左右 padding 大幅缩
+// 让 bento 卡更接近全宽,bento gap 同步收紧
+// ============================================================
+@media (max-width: 639px) {
+  main {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 12px;
+  }
+
+  .bento-grid {
+    gap: 10px;
   }
 }

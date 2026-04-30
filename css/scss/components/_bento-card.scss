@@ -586,3 +586,43 @@
   .bento-card[data-span="4"] { grid-column: span 3; }
   .bento-card[data-span="3"] { grid-column: span 3; }
 }
+
+// ============================================================
+// Phase D2 修订:移动端(< 640)卡片内边距 + 装饰图全面收紧
+// ============================================================
+@media (max-width: 639px) {
+  // ★★ 新增(2026-04-30):重置 span,防止 1fr 单列 grid 被隐式扩展为多列 ★★
+  // _layout.scss @include laptop 把 .bento-grid 设成 1fr,但本文件第 69-71 行
+  // .bento-card[data-span="N"] 仍然声明 span 3/4/6,浏览器会隐式开 N-1 个 auto
+  // 列,导致 span=4 卡片只占 ~2/3 行宽。在 < 640 段统一压回整行。
+  .bento-card[data-span="3"],
+  .bento-card[data-span="4"],
+  .bento-card[data-span="6"] {
+    grid-column: 1 / -1;
+  }
+
+  .bento-card {
+    padding: 14px;   // 之前 18×16 → 14×14
+  }
+
+  .bento-card-deco {
+    width: 56px;
+    height: 56px;
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .bento-card[data-card="intro"] .bento-card-deco,
+  .bento-card[data-card="about-me"] .bento-card-deco {
+    width: 72px;
+    height: 72px;
+  }
+
+  .bento-card:has(> .bento-card-deco) .bento-card-body {
+    padding-right: 64px;
+  }
+  .bento-card[data-card="intro"]:has(> .bento-card-deco) .bento-card-body,
+  .bento-card[data-card="about-me"]:has(> .bento-card-deco) .bento-card-body {
+    padding-right: 80px;
+  }
+}
