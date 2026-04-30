@@ -421,6 +421,14 @@
         </article>
 
       </div>
+
+      <!-- Phase D2:横滑指示点(桌面隐藏,< 1024 显示) -->
+      <div class="rail-extras-dots" role="tablist" aria-label="侧栏组件切换">
+        <button type="button" class="rail-extras-dot is-active" data-dot-idx="0" aria-label="日历"></button>
+        <button type="button" class="rail-extras-dot" data-dot-idx="1" aria-label="专注计时器"></button>
+        <button type="button" class="rail-extras-dot" data-dot-idx="2" aria-label="音乐播放器"></button>
+      </div>
+
     </aside>
 
     <!-- 主内容:9 主卡 12 列 bento grid(骨架,Phase B 精修,Phase E 灌数据) -->
@@ -655,6 +663,7 @@
   <script defer src="js/calendar-widget.js"></script>
   <script defer src="js/focus-timer.js"></script>
   <script defer src="js/music-player.js"></script>
+  <script defer src="js/rail-extras-swipe.js"></script>
 
   <!-- 歌单浮层(Phase C Commit 3) -->
   <div class="music-modal" data-music-modal hidden aria-hidden="true">
