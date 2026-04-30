@@ -2,8 +2,8 @@
 // 网站总体布局 —— Phase A 简化版
 // 左列固定 220px,无折叠态;主内容卡通栏。
 // Commit 2:右侧主区域引入 .bento-grid 12 列 bento 容器。
-// Commit 2.5:全局移除 .page-card 玻璃外壳(Bento 子卡片各自带玻璃,
-//             外壳与子卡片"双层玻璃"冗余,所有页面统一漂在背景上)。
+// Commit 2.5:全局移除 .page-card 玻璃外壳。
+// D3:移动端 nav → 底部 tab bar,layout/floating btns 让位。
 // ============================================================
 
 @use '../abstracts/variables' as *;
@@ -36,8 +36,6 @@
   min-height: 0;
   overflow: visible;
   max-height: 100%;
-
-  // 与右侧 main 的 padding-top 对齐,保证 nav 卡顶 ↔ bento 第一行顶部齐平
   padding-top: var(--page-pad-top);
 }
 
@@ -50,14 +48,12 @@
   overflow-x: visible;
 }
 
-// 桌面默认隐藏分页点(只在 laptop 断点下显示)
 .rail-extras-dots {
   display: none;
 }
 
 // ============================================================
-// 右侧页面容器 —— 仅承担布局/滚动职责,无玻璃外壳
-// 玻璃由内部子卡片(.bento-card / .note-card / .update-card / ...)各自负责
+// 右侧页面容器
 // ============================================================
 .page-card,
 .content-scroll {
@@ -96,16 +92,15 @@ main {
 }
 
 // ============================================================
-// .bento-grid —— 主页 9 张主卡的 12 列 bento 容器
-// 卡片 span 通过 [data-span="N"] 控制,定义在 _bento-card.scss
+// .bento-grid —— 12 列 bento 容器
 // ============================================================
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows:
-    minmax(180px, auto)    // R1 intro/mood/stats:intro 内容可能多,保持自适应
-    minmax(180px, 240px)   // R2 笔记/动漫/画廊:上限 240
-    minmax(180px, auto);   // R3 更新/留言/关于我:暂保持自适应
+    minmax(180px, auto)
+    minmax(180px, 240px)
+    minmax(180px, auto);
   gap: var(--bento-gap, 16px);
   width: 100%;
 }
@@ -124,9 +119,7 @@ footer {
 }
 
 // ============================================================
-// 响应式:平板及以下 —— 整页统一滚动 + rail-extras 横滑
-// 关键:.layout 自己接管垂直滚动,header / rail / rail-extras / page 
-//       都跟着上滑;page-card 不再单独 overflow,避免双滚动区
+// 响应式:平板及以下 —— 整页统一滚动 + tab bar 底部留白(D3)
 // ============================================================
 @include laptop {
   html,
@@ -135,7 +128,6 @@ footer {
     overflow: hidden;
   }
 
-  // .layout 改 flex column,自己滚动
   .layout {
     display: flex;
     flex-direction: column;
@@ -144,19 +136,18 @@ footer {
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     gap: 0;
-    padding: 0;
 
-    // 隐藏滚动条
+    // D3:底部给 tab bar 让位,变量在 _nav.scss 内定义
+    padding: 0 0 var(--tab-bar-h, 0px);
+
     scrollbar-width: none;
     &::-webkit-scrollbar { display: none; }
   }
 
-  // header 不再用 grid-area,在 flex 流里自然排第一
   .layout > header {
     flex-shrink: 0;
   }
 
-  // rail 不再用 grid-area,在 flex 流里排第二,内部仍是 column
   .rail {
     flex-shrink: 0;
     position: static;
@@ -167,7 +158,7 @@ footer {
     padding-top: 0;
   }
 
-  // ---------- rail-extras:横滑 swipe(强制宽度兜底) ----------
+  // ---------- rail-extras:横滑 swipe ----------
   .rail-extras {
     display: flex;
     flex-direction: row;
@@ -184,11 +175,11 @@ footer {
 
     > .rail-widget {
       flex: 0 0 calc(100% - 32px);
-      width: auto;            // ← 强制覆盖桌面 220 sidebar 继承
-      max-width: none;        // ← 取消之前 480 限制(窄屏没意义)
+      width: auto;
+      max-width: none;
       min-width: 0;
       box-sizing: border-box;
-      overflow: hidden;       // ← 内容溢出兜底,翻月键不再被切到外面
+      overflow: hidden;
       scroll-snap-align: center;
       scroll-snap-stop: always;
     }
@@ -198,7 +189,6 @@ footer {
     flex-shrink: 0;
   }
 
-  // ---------- page-card:不再单独滚,内容撑长由 .layout 滚 ----------
   .page-card,
   .content-scroll {
     flex: 1 0 auto;
@@ -216,22 +206,31 @@ footer {
     grid-auto-rows: auto;
     gap: 12px;
   }
+
+  // ============================================================
+  // D3:floating btns 上移,避免被 tab bar 遮挡
+  // 注:#back-to-top / #back-to-prev 原样式在各自组件文件,
+  //    这里通过 mobile 段全局抬高 bottom 偏移
+  // ============================================================
+  #floating-btns {
+    bottom: calc(24px + var(--tab-bar-h, 0px));
+  }
+
+  #back-to-top {
+    bottom: calc(80px + var(--tab-bar-h, 0px));
+  }
 }
 
 // ============================================================
-// 主滚动容器:完全隐藏滚动条(保留滚动功能)
-// 适用:.page-card / .content-scroll / .rail-extras / main
+// 主滚动容器隐藏滚动条
 // ============================================================
 .page-card,
 .content-scroll,
 .rail-extras,
 main {
-  // Firefox
   scrollbar-width: none;
-  // IE / 旧 Edge
   -ms-overflow-style: none;
 
-  // Chrome / Safari / Edge / Opera
   &::-webkit-scrollbar {
     display: none;
     width: 0;
@@ -240,8 +239,7 @@ main {
 }
 
 // ============================================================
-// Phase D2 修订:移动端(< 640)main 左右 padding 大幅缩
-// 让 bento 卡更接近全宽,bento gap 同步收紧
+// Phase D2:移动端 main 左右 padding 收紧
 // ============================================================
 @media (max-width: 639px) {
   main {

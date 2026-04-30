@@ -1,16 +1,14 @@
 // ============================================================
-// 侧边导航 —— Phase A 简化版 (v4.0)
-// 变更:
-//   ① 废弃 nav 折叠态,固定 220px 始终展开
-//   ② 删除 .rail-toggle-card / .rail-toggle / .rail-toggle-label
-//   ③ 删除所有 html[data-nav="..."] 选择器与 tooltip
+// 侧边导航 —— Phase A 简化版 (v4.1)
+// 桌面:固定 220px 卡片列(沿用 v4.0)
+// D3 移动端:底部固定 tab bar(覆盖 laptop 段横滑形态)
 // ============================================================
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
 // ============================================================
-// nav 卡片本体 —— 参与 rail 列流式布局,固定 220px 展开
+// nav 卡片本体 —— 桌面端参与 rail 列流式布局,固定 220px 展开
 // ============================================================
 nav {
   position: relative;
@@ -38,7 +36,7 @@ nav {
 }
 
 // ============================================================
-// nav 链接
+// nav 链接 —— 桌面态
 // ============================================================
 nav a {
   position: relative;
@@ -92,70 +90,144 @@ nav a:first-of-type { margin-top: 4px; }
 nav a:last-of-type { margin-bottom: 8px; }
 
 // ============================================================
-// 响应式:平板及以下 —— 横向滚动条
+// D3 移动端 nav → 底部固定 tab bar
+// 关键:
+//   ① position: fixed 钉在视口底部,JS 路由逻辑零改动
+//   ② flex column 单元(图标+文字),6 tab 等分
+//   ③ env(safe-area-inset-bottom) 兜刘海机
+//   ④ 暴露 --tab-bar-h,layout/floating btns 引用做底部留白
 // ============================================================
 @include laptop {
+
+  // 暴露给 .layout / #floating-btns 用作底部留白
+  // 桌面端 fallback = 0px(在 _layout.scss 用 var(--tab-bar-h, 0px))
+  :root {
+    --tab-bar-h: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+
   nav {
-    position: static;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     width: 100%;
     height: auto;
+
     flex-direction: row;
     flex-wrap: nowrap;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    align-items: stretch;
+    justify-content: space-around;
+    gap: 4px;
+
+    padding: 6px 8px;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur-strong)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(140%);
     border: none;
-    border-radius: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    background: var(--glass-bg-weak);
-    box-shadow: none;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    z-index: auto;
+    border-top: var(--glass-border-subtle);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+
+    // 取消横滑形态遗留
+    overflow: visible;
+    white-space: normal;
+    -webkit-overflow-scrolling: auto;
+
+    z-index: $z-header; // 50,搜索/lightbox 之下
 
     &::-webkit-scrollbar { display: none; }
+  }
 
-    a {
-      flex: 0 0 auto;
+  nav a {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    padding: 6px 4px;
+
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.2;
+    border-radius: 12px;
+
+    .nav-label {
+      max-width: 100%;
       white-space: nowrap;
-      font-size: 16px;
-      padding: 10px 16px;
-      margin: 0;
-      gap: 8px;
-
-      svg { width: 18px; height: 18px; }
-      &:hover, &.active { transform: none; }
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    a:first-of-type { margin-top: 0; }
-    a:last-of-type { margin-bottom: 0; }
+    svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2;
+    }
+
+    &:hover {
+      // 桌面端的 hover 在触屏上有粘滞感,移动端关掉
+      background: transparent;
+      color: var(--text-muted);
+      transform: none;
+    }
+
+    &.active {
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      font-weight: 700;
+      box-shadow: none;
+      transform: none;
+    }
+
+    &.active svg { color: var(--primary-dark); }
+  }
+
+  nav a:first-of-type,
+  nav a:last-of-type {
+    margin: 0;
   }
 
   [data-theme="light"] nav {
-    border-bottom-color: var(--border-soft);
+    border-top-color: var(--border-soft);
   }
 }
 
+// ============================================================
+// 极小屏:6 tab 在 360px 屏宽下文字进一步收紧
+// ============================================================
 @include small {
   nav {
-    gap: 10px;
-    padding: 10px 12px;
+    padding: 5px 4px;
+    padding-bottom: max(5px, env(safe-area-inset-bottom));
+    gap: 2px;
+  }
 
-    a {
-      font-size: 15px;
-      padding: 10px 14px;
-      border-radius: 10px;
+  nav a {
+    font-size: 10px;
+    padding: 5px 2px;
+    border-radius: 10px;
+
+    svg {
+      width: 20px;
+      height: 20px;
     }
   }
 }
 
-// 移动端图标-only 模式(预留,Phase D 移动端会接管)
+// ============================================================
+// 图标-only 模式钩子(原 v4.0 已留,继续保留)
+// 给 html[data-nav-mobile-mode="icon"] 设置时只显示图标
+// ============================================================
 @include laptop {
   html[data-nav-mobile-mode="icon"] nav a {
     .nav-label { display: none; }
-    svg { width: 22px; height: 22px; }
-    padding: 10px 14px;
+    svg { width: 24px; height: 24px; }
+    padding: 8px 4px;
   }
 }
