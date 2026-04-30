@@ -22,6 +22,7 @@ const TARGETS = [
   { dir: 'assets/portrait/q',   label: 'Q 版人像' },
   { dir: 'assets/portrait/half', label: '半身人像' },
   { dir: 'assets/decoration',    label: '装饰图标' },
+  { dir: 'assets/mood',          label: '心情头像' },
 ];
 
 function pickQuality(bytes) {
