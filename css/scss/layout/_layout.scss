@@ -97,7 +97,10 @@ main {
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-auto-rows: minmax(180px, auto);
+  grid-template-rows:
+    minmax(180px, auto)    // R1 intro/mood/stats:intro 内容可能多,保持自适应
+    minmax(180px, 240px)   // R2 笔记/动漫/画廊:上限 240
+    minmax(180px, auto);   // R3 更新/留言/关于我:暂保持自适应
   gap: var(--bento-gap, 16px);
   width: 100%;
 }
