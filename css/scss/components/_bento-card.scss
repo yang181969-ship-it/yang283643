@@ -572,3 +572,17 @@
   .bento-mood-text  { font-size: 13px; }
   .bento-mood       { gap: 8px; min-height: 96px; }
 }
+
+// ============================================================
+// Phase D1:平板段(640-1023px)bento 改 6 列
+// span6 占满一行,其余 span3/4 都缩成 span3(1/2 行)
+// ============================================================
+@media (min-width: 640px) and (max-width: 1023px) {
+  .bento-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .bento-card[data-span="6"] { grid-column: span 6; }
+  .bento-card[data-span="4"] { grid-column: span 3; }
+  .bento-card[data-span="3"] { grid-column: span 3; }
+}
