@@ -28,7 +28,7 @@
   };
 
   const COUNT = {
-    notes:    3,
+    notes:    4,
     anime:    3,
     gallery:  4,
     update:   3,
