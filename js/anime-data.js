@@ -21,6 +21,7 @@ const animeData = {
       "../assets/animes/majo-cover.webp",
       "../assets/animes/majo-4.webp"
     ],
+    updateDate: "2026-04-18",
     links: [
       { text: "观影链接", url: "https://yhdm6.top/v/3398.html" },
     ]
@@ -40,6 +41,7 @@ const animeData = {
       "../assets/animes/frieren-3.jpg",
       "../assets/animes/frieren-4.webp"
     ],
+    updateDate: "2026-04-18",
     links: [
       { text: "观影链接", url: "https://yhdm6.top/v/22881.html" },
     ]
@@ -58,6 +60,7 @@ const animeData = {
       "../assets/animes/garden-2.webp",
       "../assets/animes/garden-3.webp"
     ],
+    updateDate: "2026-04-21",
     links: [
       { text: "观影链接", url: "https://yhdm6.top/vsh/%E7%B4%AB%E7%BD%97%E5%85%B0%E6%B0%B8%E6%81%92%E8%8A%B1%E5%9B%AD-------------.html" },
     ]
@@ -76,6 +79,7 @@ const animeData = {
       "../assets/animes/slayer-2.webp",
       "../assets/animes/slayer-3.webp"
     ],
+    updateDate: "2026-04-25",
     links: [
       { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E9%AC%BC%E7%81%AD%E4%B9%8B%E5%88%83&submit=" },
     ]
@@ -95,6 +99,7 @@ const animeData = {
       "../assets/animes/spy-3.webp",
       "../assets/animes/spy-4.webp"
     ],
+    updateDate: "2026-04-24",
     links: [
       { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E9%97%B4%E8%B0%8D%E8%BF%87%E5%AE%B6%E5%AE%B6&submit=" },
     ]
@@ -114,6 +119,7 @@ const animeData = {
       "../assets/animes/titan-3.jpg",
       "../assets/animes/titan-4.webp"
     ],
+    updateDate: "2026-04-25",
     links: [
       { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA&submit=" },
     ]
@@ -127,6 +133,7 @@ const animeData = {
       "题材：奇幻 / 战斗 / 后宫",
       "主角：五河士道",
     ],
+    updateDate: "2026-04-14",
     gallery: [
       "../assets/animes/datebattle-cover.jpg",
       "../assets/animes/datebattle-2.jpg",
@@ -152,6 +159,7 @@ const animeData = {
       "../assets/animes/suzuya-3.webp",
       "../assets/animes/suzuya-4.webp"
     ],
+    updateDate: "2026-04-25",
     links: [
       { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E9%93%83%E8%8A%BD%E4%B9%8B%E6%97%85&submit=" },
     ]
@@ -165,6 +173,7 @@ const animeData = {
       "题材：奇幻 / 战斗 / 百合",
       "主角：鹿目圆",
     ],
+    updateDate: "2026-04-25",
     gallery: [
       "../assets/animes/xiaoyuan-1.jpg",
       "../assets/animes/xiaoyuan-cover.jpg",

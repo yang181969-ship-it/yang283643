@@ -17,6 +17,10 @@
 - 命令:`npm run update:refs`
 - 会生成 `.bak` 备份文件,确认无误后手动删
 
+### 4-optimize-portraits.mjs
+- 作用：`assets/decoration/`的图片，保留原文件名
+- 命令：`npm run optimize:portraits`
+
 ### 压缩策略(1 和 2 共用)
 - 动态质量:>500KB 用 92,200-500KB 用 85,100-200KB 用 82,<100KB 用 78
 - PNG 透明图用无损

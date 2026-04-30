@@ -1,621 +1,372 @@
 // ============================================================
 // js/home-cards.js
-// 主页 9 张主卡的数据注入入口
+// 主页 9 张 bento 卡数据灌入 —— Phase E
 //
-// Commit 5：intro / about-me / notes / update（4 张同步/JSON 卡）
-// Commit 6：anime / gallery / stats（3 张本地数据卡 + count-up 动画）
-// Commit 7：去除 cardsInjected 守卫，修 SPA 切回主页数据丢失
-// Commit 8：mood 天气 API + stats 留言数 Waline API（最后 2 个异步源，9 张卡全部活了）
-//
-// 数据源：
-//   data/about.json          —— 关于网页 + 关于我 文案
-//   data/notes-index.json    —— 笔记索引
-//   data/updates-index.json  —— 更新索引
-//   data/mood-map.json       —— Open-Meteo weather code → emoji+文案
-//   window.animeData         —— anime-data.js 注入的全局变量
-//   window.galleryData       —— gallery-data.js 注入的全局变量
-//   Open-Meteo API           —— 东京当前天气（30min localStorage 缓存）
-//   Waline recent API        —— 全站留言数（1h localStorage 缓存）
+// 渲染策略:9 卡并发请求,各自渲染,骨架屏 200-800ms 内逐个褪色
+// 缓存层:内存 Map(同会话零延迟) + localStorage(y181_ 前缀,跨会话)
+// 失败兜底:用过期 localStorage 缓存
 // ============================================================
 
 (function () {
-  'use strict';
+  "use strict";
 
-  // -------------------- 常量 --------------------
+  // ---------------- 常量 ----------------
+  const SITE_BIRTHDAY  = "2026-04-13";                          // 建站日
+  const NEW_TAG_DAYS   = 7;                                     // anime NEW 阈值
+  const TOKYO_LAT      = 35.6762;
+  const TOKYO_LNG      = 139.6503;
+  const WALINE_API     = "https://yang283643-waline.vercel.app";
+  const STORAGE_PREFIX = "y181_";
 
-  const NEW_THRESHOLD_DAYS = 7;
-  const SITE_LAUNCH_DATE = '2026-04-13';
+  const TTL = {
+    about:    1000 * 60 * 60 * 24,   // 静态 1 天
+    notes:    1000 * 60 * 60 * 24,
+    updates:  1000 * 60 * 60 * 24,
+    moodMap:  1000 * 60 * 60 * 24,
+    mood:     1000 * 60 * 30,        // 30 分钟
+    comments: 1000 * 60 * 60,        // 1 小时
+  };
 
-  // Commit 8: 外部 API 配置
-  const WALINE_SERVER_URL = 'https://yang283643-waline.vercel.app';
-  const TOKYO_LAT = 35.6762;
-  const TOKYO_LNG = 139.6503;
-  const TOKYO_LABEL = '东京';
+  const COUNT = {
+    notes:    3,
+    anime:    3,
+    gallery:  4,
+    update:   3,
+    comment:  3,
+  };
 
-  // localStorage 缓存（前缀 y181_ 沿用既有约定）
-  const MOOD_CACHE_KEY = 'y181_mood_cache';
-  const MOOD_CACHE_TTL_MS = 30 * 60 * 1000;        // 30 min
-  const COMMENT_CACHE_KEY = 'y181_comment_count_cache';
-  const COMMENT_CACHE_TTL_MS = 60 * 60 * 1000;     // 1 hour
+  // 同会话内存缓存
+  const memCache = new Map();
 
-  // mood 卡终极 fallback（缓存也没有 + API 失败）
-  const MOOD_FALLBACK = { emoji: '🌸', text: '今日心情未知', temp: null };
+  // ---------------- 缓存核心 ----------------
+  /**
+   * 三段式取数据:内存 → 未过期 localStorage → 网络;失败回退过期 localStorage
+   */
+  async function cached(key, ttl, fetcher) {
+    if (memCache.has(key)) return memCache.get(key);
 
-  // -------------------- 自启动 --------------------
+    const fullKey = STORAGE_PREFIX + key;
+    const stored = readStorage(fullKey);
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHomeCards, { once: true });
-  } else {
-    initHomeCards();
-  }
-
-  // 暴露给 main.js，SPA 切回主页时再调一次
-  window.initHomeCards = initHomeCards;
-
-  // -------------------- 主流程 --------------------
-
-  async function initHomeCards() {
-    const grid = document.querySelector('.bento-grid');
-    if (!grid) return;
-
-    // 注意：这里曾有 grid.dataset.cardsInjected 守卫，已删除。
-    // 原因：该 flag 在 await 前同步写入 DOM。main.js 在 DOMContentLoaded 时
-    // 抓的 homeContent 字符串里会带上 data-cards-injected="1"，但内容还是骨架
-    // （因为 fetch 还没回来）。SPA 切回主页时 main.innerHTML 会还原这份"带 flag
-    // 的骨架"，再次调用 initHomeCards 会被 flag 直接拦截，导致主页卡片永远
-    // 停留在 "介绍文案待 Phase E 注入..." 这种占位态。
-    // 现改为每次调用都全量重渲染（幂等：所有 fillXxxCard 都先清空 body 再写）。
-
-    // 3 个 JSON 并行
-    const [aboutRes, notesRes, updatesRes] = await Promise.allSettled([
-      fetchJSON('data/about.json'),
-      fetchJSON('data/notes-index.json'),
-      fetchJSON('data/updates-index.json'),
-    ]);
-
-    // ---------- Commit 5：4 张同步/JSON 卡 ----------
-
-    if (aboutRes.status === 'fulfilled' && aboutRes.value) {
-      if (aboutRes.value.intro)   fillTextCard('intro',    aboutRes.value.intro);
-      if (aboutRes.value.aboutMe) fillTextCard('about-me', aboutRes.value.aboutMe);
+    if (stored && Date.now() - stored.t < ttl) {
+      memCache.set(key, stored.v);
+      return stored.v;
     }
 
-    if (notesRes.status === 'fulfilled' && Array.isArray(notesRes.value)) {
-      fillNotesCard(notesRes.value);
-    }
-
-    if (updatesRes.status === 'fulfilled' && Array.isArray(updatesRes.value)) {
-      fillUpdatesCard(updatesRes.value).catch(err => {
-        console.warn('[home-cards] updates render failed:', err);
-      });
-    }
-
-    // ---------- Commit 6：anime / gallery / stats ----------
-
-    const hasAnime   = typeof animeData   !== 'undefined' && animeData;
-    const hasGallery = typeof galleryData !== 'undefined' && Array.isArray(galleryData);
-
-    if (hasAnime)   fillAnimeCard(animeData);
-    if (hasGallery) fillGalleryCard(galleryData);
-
-    fillStatsCard({
-      notesCount:
-        notesRes.status === 'fulfilled' && Array.isArray(notesRes.value)
-          ? notesRes.value.length
-          : NaN,
-      animeCount: hasAnime ? Object.keys(animeData).length : NaN,
-      commentCount: NaN, // Commit 8: 占位 ─，下面 loadCommentCount() 异步补
-      daysCount: computeDaysSince(SITE_LAUNCH_DATE),
-    });
-
-    // ---------- Commit 8：异步外部 API（不 await，让它们后台跑）----------
-
-    loadMoodCard();
-    loadCommentCount();
-  }
-
-  // -------------------- Commit 5：文本 / 列表卡 --------------------
-
-  function fillTextCard(cardKey, text) {
-    const body = getBody(cardKey);
-    if (!body) return;
-    body.classList.remove('is-skeleton');
-    body.innerHTML = '';
-    text.split(/\n+/).forEach(line => {
-      const t = line.trim();
-      if (!t) return;
-      const p = document.createElement('p');
-      p.className = 'bento-text-line';
-      p.textContent = t;
-      body.appendChild(p);
-    });
-  }
-
-  function fillNotesCard(list) {
-    const body = getBody('notes');
-    if (!body) return;
-    const sorted = [...list]
-      .map(it => ({ ...it, _ts: parseDate(it.date) }))
-      .sort((a, b) => b._ts - a._ts)
-      .slice(0, 3);
-    renderList(body, sorted.map(it => ({
-      title: it.title || '(无标题)',
-      ts: it._ts,
-      isNew: false,
-    })));
-  }
-
-  async function fillUpdatesCard(list) {
-    const body = getBody('update');
-    if (!body) return;
-    const top = [...list]
-      .map(it => ({ file: it.file, date: parseUpdateDateFromFile(it.file) }))
-      .sort((a, b) => parseDate(b.date) - parseDate(a.date))
-      .slice(0, 3);
-    const items = await Promise.all(top.map(async it => {
-      let title = it.date;
-      try {
-        const md = await fetch(it.file).then(r => r.ok ? r.text() : '');
-        const h1 = extractFirstHeading(md);
-        if (h1) title = h1;
-      } catch { /* fallback to date */ }
-      return {
-        title,
-        ts: parseDate(it.date),
-        isNew: isWithinDays(it.date, NEW_THRESHOLD_DAYS),
-      };
-    }));
-    renderList(body, items);
-  }
-
-  // -------------------- Commit 6：anime --------------------
-
-  function fillAnimeCard(animeMap) {
-    const body = getBody('anime');
-    if (!body) return;
-
-    // 取末尾 3 个 reverse —— 末尾追加约定下，等价"最近"
-    const ids = Object.keys(animeMap);
-    const recent = ids.slice(-3).reverse();
-
-    body.classList.remove('is-skeleton');
-    body.innerHTML = '';
-
-    if (!recent.length) {
-      appendEmpty(body);
-      return;
-    }
-
-    const ul = document.createElement('ul');
-    ul.className = 'bento-list bento-list--anime';
-
-    recent.forEach(id => {
-      const item = animeMap[id];
-      if (!item) return;
-
-      const li = document.createElement('li');
-      li.className = 'bento-list-item';
-
-      const a = document.createElement('a');
-      a.className = 'bento-anime-row';
-      a.href = `html/anime-detail.html?id=${encodeURIComponent(id)}`;
-
-      const img = document.createElement('img');
-      img.className = 'bento-anime-thumb';
-      img.src = stripParentPath(item.image);
-      img.alt = item.title;
-      img.loading = 'lazy';
-      img.decoding = 'async';
-      a.appendChild(img);
-
-      const title = document.createElement('span');
-      title.className = 'bento-list-title';
-      title.textContent = item.title;
-      a.appendChild(title);
-
-      li.appendChild(a);
-      ul.appendChild(li);
-    });
-
-    body.appendChild(ul);
-  }
-
-  // -------------------- Commit 6：gallery --------------------
-
-  function fillGalleryCard(list) {
-    const card = document.querySelector('.bento-card[data-card="gallery"]');
-    const body = card && card.querySelector('.bento-card-body');
-    if (!body) return;
-
-    // 按 order 倒序取 4
-    const sorted = [...list]
-      .filter(it => it && it.src)
-      .sort((a, b) => (b.order || 0) - (a.order || 0))
-      .slice(0, 4);
-
-    body.classList.remove('is-skeleton');
-    body.innerHTML = '';
-
-    // 删掉装饰图位 —— mosaic 自身就是装饰，避免 :has() 让 body 缩水
-    // SPA 切回主页时 main.innerHTML 还原骨架会把 deco 带回来，这里再次 remove
-    // 是幂等的（找不到就 no-op）。
-    const deco = card.querySelector('.bento-card-deco');
-    if (deco) deco.remove();
-
-    if (!sorted.length) {
-      appendEmpty(body);
-      return;
-    }
-
-    const mosaic = document.createElement('div');
-    mosaic.className = 'bento-gallery-mosaic';
-
-    sorted.forEach(it => {
-      const a = document.createElement('a');
-      a.className = 'bento-gallery-tile';
-      a.href = `index.html?page=gallery`;
-      a.setAttribute('aria-label', '查看完整画廊');
-
-      const img = document.createElement('img');
-      img.src = it.src;
-      img.alt = '';
-      img.loading = 'lazy';
-      img.decoding = 'async';
-      a.appendChild(img);
-
-      mosaic.appendChild(a);
-    });
-
-    body.appendChild(mosaic);
-  }
-
-  // -------------------- Commit 6：stats --------------------
-
-  function fillStatsCard(data) {
-    const body = getBody('stats');
-    if (!body) return;
-
-    body.classList.remove('is-skeleton');
-    body.innerHTML = '';
-
-    const cells = [
-      { label: '笔记', value: data.notesCount },
-      { label: '追番', value: data.animeCount },
-      { label: '留言', value: data.commentCount }, // Commit 8 异步补
-      { label: '建站', value: data.daysCount, suffix: '天' },
-    ];
-
-    const grid = document.createElement('div');
-    grid.className = 'bento-stats-grid';
-
-    cells.forEach(c => {
-      const cell = document.createElement('div');
-      cell.className = 'bento-stat';
-
-      const num = document.createElement('span');
-      num.className = 'bento-stat-num';
-      num.textContent = '0'; // 起始
-      cell.appendChild(num);
-
-      const label = document.createElement('span');
-      label.className = 'bento-stat-label';
-      label.textContent = c.label + (c.suffix ? '·' + c.suffix : '');
-      cell.appendChild(label);
-
-      grid.appendChild(cell);
-
-      // 触发滚动动画（视口内立即；非有限值显示 ─）
-      if (window.observeCountUp) {
-        window.observeCountUp(num, c.value);
-      } else {
-        num.textContent = Number.isFinite(c.value) ? String(c.value) : '─';
-      }
-    });
-
-    body.appendChild(grid);
-  }
-
-  // -------------------- Commit 8：mood 天气卡 --------------------
-
-  async function loadMoodCard() {
-    // 1. 命中未过期缓存：直接渲染，不发请求
-    const cached = readCache(MOOD_CACHE_KEY);
-    if (cached && (Date.now() - cached.ts) < MOOD_CACHE_TTL_MS) {
-      fillMoodCard(cached.data);
-      return;
-    }
-
-    // 2. 缓存过期或没有：先把"什么"垫到屏幕上，避免 1-2s 空白
-    if (cached) {
-      fillMoodCard(cached.data); // 显示过期数据，下面 fetch 成功再覆盖
-    } else {
-      fillMoodCard(MOOD_FALLBACK); // 第一次访问：先显示 🌸 占位
-    }
-
-    // 3. 异步 fetch 真实数据
     try {
-      const [weather, moodMap] = await Promise.all([
-        fetchWeather(),
-        fetchMoodMap(),
-      ]);
-      const mood = mapWeatherToMood(weather, moodMap);
-      fillMoodCard(mood);
-      writeCache(MOOD_CACHE_KEY, mood);
+      const v = await fetcher();
+      writeStorage(fullKey, v);
+      memCache.set(key, v);
+      return v;
     } catch (err) {
-      console.warn('[home-cards] mood fetch failed:', err);
-      // fetch 失败：保持步骤 2 已经渲染的过期缓存或 fallback，no-op
+      console.warn(`[home-cards] ${key} fetch failed, falling back to stale cache:`, err);
+      if (stored) {
+        memCache.set(key, stored.v);
+        return stored.v;
+      }
+      throw err;
     }
   }
 
-  function fillMoodCard(mood) {
-    const body = getBody('mood');
+  function readStorage(k) {
+    try {
+      const raw = localStorage.getItem(k);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+  function writeStorage(k, v) {
+    try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), v })); }
+    catch {}
+  }
+
+  // ---------------- 工具 ----------------
+  function $card(name) {
+    return document.querySelector(`.bento-card[data-card="${name}"]`);
+  }
+  function setBody(card, html) {
+    if (!card) return;
+    const body = card.querySelector(".bento-card-body");
     if (!body) return;
-    body.classList.remove('is-skeleton');
-    body.innerHTML = '';
-
-    const wrap = document.createElement('div');
-    wrap.className = 'bento-mood';
-
-    const emoji = document.createElement('div');
-    emoji.className = 'bento-mood-emoji';
-    emoji.textContent = mood.emoji || '🌸';
-    wrap.appendChild(emoji);
-
-    const text = document.createElement('div');
-    text.className = 'bento-mood-text';
-    text.textContent = formatMoodText(mood);
-    wrap.appendChild(text);
-
-    body.appendChild(wrap);
+    body.classList.remove("is-skeleton");
+    body.innerHTML = html;
+  }
+  function fmtDate(s) {
+    if (!s) return "";
+    const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[2]}-${m[3]}` : String(s).slice(0, 10);
+  }
+  function daysSince(d) {
+    if (!d) return Infinity;
+    const t = new Date(d).getTime();
+    if (Number.isNaN(t)) return Infinity;
+    return (Date.now() - t) / (1000 * 60 * 60 * 24);
+  }
+  function escapeHTML(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
   }
 
-  function formatMoodText(mood) {
-    // "东京・多云・22°"，缺哪部分跳过哪部分
-    const parts = [TOKYO_LABEL];
-    if (mood.text) parts.push(mood.text);
-    if (Number.isFinite(mood.temp)) parts.push(mood.temp + '°');
-    return parts.join('・');
-  }
-
-  async function fetchWeather() {
-    const url = 'https://api.open-meteo.com/v1/forecast'
-      + '?latitude=' + TOKYO_LAT
-      + '&longitude=' + TOKYO_LNG
-      + '&current=temperature_2m,weather_code'
-      + '&timezone=Asia%2FTokyo';
+  // ---------------- 数据源 ----------------
+  async function fetchJson(url) {
     const res = await fetch(url);
-    if (!res.ok) throw new Error('open-meteo ' + res.status);
-    const json = await res.json();
-    const cur = json && json.current;
-    if (!cur) throw new Error('open-meteo: no .current');
-    return {
-      code: Number.isFinite(cur.weather_code) ? cur.weather_code : NaN,
-      temp: Number.isFinite(cur.temperature_2m) ? Math.round(cur.temperature_2m) : NaN,
-    };
-  }
-
-  async function fetchMoodMap() {
-    const res = await fetch('data/mood-map.json');
-    if (!res.ok) throw new Error('mood-map ' + res.status);
+    if (!res.ok) throw new Error(`${url} → ${res.status}`);
     return res.json();
   }
 
-  function mapWeatherToMood(weather, map) {
-    const key = String(weather.code);
-    const found = map[key] || map.default || MOOD_FALLBACK;
+  const fetchAbout    = () => fetchJson("data/about.json");
+  const fetchMoodMap  = () => fetchJson("data/mood-map.json");
+  const fetchNotes    = () => fetchJson("data/notes-index.json");
+  const fetchUpdates  = () => fetchJson("data/updates-index.json");
+
+  async function fetchMood() {
+    const url = `https://api.open-meteo.com/v1/forecast`
+              + `?latitude=${TOKYO_LAT}&longitude=${TOKYO_LNG}`
+              + `&current=temperature_2m,weather_code&timezone=Asia/Tokyo`;
+    const data = await fetchJson(url);
     return {
-      emoji: found.emoji,
-      text: found.text,
-      temp: weather.temp,
+      temp: data.current?.temperature_2m,
+      code: data.current?.weather_code,
     };
   }
 
-  // -------------------- Commit 8：stats 留言数 --------------------
+  async function fetchCommentsRecent() {
+    // 一次拿 100 条:comment 卡用前 N 条,stats 卡数 length
+    const url = `${WALINE_API}/api/comment?type=recent&pageSize=100`;
+    const data = await fetchJson(url);
+    // Waline 可能返回数组或 { data: [...] } 包裹
+    return Array.isArray(data) ? data : (data?.data || []);
+  }
 
-  async function loadCommentCount() {
-    // 1. 命中未过期缓存：直接渲染（不重渲整张 stats，只动留言这一格）
-    const cached = readCache(COMMENT_CACHE_KEY);
-    if (cached && (Date.now() - cached.ts) < COMMENT_CACHE_TTL_MS) {
-      refreshStatsComment(cached.data);
-      return;
-    }
+  // ---------------- 各卡渲染 ----------------
 
-    // 过期缓存先垫一下（如果有），避免一直显示 ─
-    if (cached) {
-      refreshStatsComment(cached.data);
-    }
-
-    // 2. 异步 fetch
+  // 1. intro - 关于这个网页
+  async function renderIntro() {
+    const card = $card("intro");
+    if (!card) return;
     try {
-      const count = await fetchCommentCount();
-      refreshStatsComment(count);
-      writeCache(COMMENT_CACHE_KEY, count);
-    } catch (err) {
-      console.warn('[home-cards] comment count fetch failed:', err);
-      // 保持现状（过期缓存或 ─ 占位）
-    }
-  }
-
-  async function fetchCommentCount() {
-    // Waline recent API：取最近评论列表，长度即为已发表评论数
-    // pageSize 默认上限 100，对独立站点足够；超过则显示 "99+"
-    const url = WALINE_SERVER_URL + '/api/comment?type=recent&pageSize=100';
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('waline ' + res.status);
-    const json = await res.json();
-    // Waline v3 返回结构: { errno, errmsg, data: [...] }
-    // 兼容性写法（旧版本/不同部署可能 data.data 嵌套）
-    const list = Array.isArray(json.data) ? json.data
-               : (json.data && Array.isArray(json.data.data)) ? json.data.data
-               : [];
-    return list.length;
-  }
-
-  function refreshStatsComment(count) {
-    const body = getBody('stats');
-    if (!body) return;
-
-    // 在 4 个 stat cell 里找 label 含"留言"的那个
-    const cells = body.querySelectorAll('.bento-stat');
-    if (!cells.length) return;
-    let target = null;
-    cells.forEach(cell => {
-      const label = cell.querySelector('.bento-stat-label');
-      if (label && label.textContent.indexOf('留言') !== -1) {
-        target = cell;
-      }
-    });
-    if (!target) return;
-
-    const num = target.querySelector('.bento-stat-num');
-    if (!num) return;
-
-    // ≥ 100 直接文字显示，count-up 动画到 99 再跳到 "99+" 视觉差
-    if (count >= 100) {
-      num.textContent = '99+';
-      return;
-    }
-
-    // 重置为 0 让 observeCountUp 从 0 滚到目标，复刻 commit 6 的视觉效果
-    // 其他 3 个 cell（笔记/追番/建站）不受影响
-    num.textContent = '0';
-    if (window.observeCountUp) {
-      window.observeCountUp(num, count);
-    } else {
-      num.textContent = String(count);
-    }
-  }
-
-  // -------------------- Commit 8：localStorage 缓存工具 --------------------
-
-  function readCache(key) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return null;
-      const obj = JSON.parse(raw);
-      if (!obj || typeof obj.ts !== 'number') return null;
-      return obj;
+      const data = await cached("about", TTL.about, fetchAbout);
+      setBody(card, `<p class="bento-text">${escapeHTML(data.intro || "").replace(/\n/g, "<br>")}</p>`);
     } catch {
-      return null;
+      setBody(card, `<p class="bento-text bento-text--muted">介绍加载失败</p>`);
     }
   }
 
-  function writeCache(key, data) {
+  // 2. mood - 今日心情
+  async function renderMood() {
+    const card = $card("mood");
+    if (!card) return;
     try {
-      localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
+      const [mood, map] = await Promise.all([
+        cached("mood", TTL.mood, fetchMood),
+        cached("mood-map", TTL.moodMap, fetchMoodMap),
+      ]);
+      const code  = String(mood.code ?? "default");
+      const entry = map[code] || map.default || { emoji: "🌸", text: "" };
+      const temp  = mood.temp != null ? `${Math.round(mood.temp)}°C` : "--°C";
+      setBody(card, `
+        <div class="mood-display">
+          <div class="mood-emoji" aria-hidden="true">${entry.emoji}</div>
+          <div class="mood-meta">
+            <div class="mood-temp">${temp}</div>
+            <div class="mood-text">${escapeHTML(entry.text || "")}</div>
+          </div>
+        </div>
+      `);
     } catch {
-      /* localStorage 满或被禁，忽略 */
+      setBody(card, `<p class="bento-text bento-text--muted">心情获取失败</p>`);
     }
   }
 
-  // -------------------- 公共：列表渲染（notes / update 用） --------------------
+  // 3. stats - 站点统计
+  async function renderStats() {
+    const card = $card("stats");
+    if (!card) return;
+    try {
+      const [notes, comments] = await Promise.all([
+        cached("notes", TTL.notes, fetchNotes),
+        cached("comments-recent", TTL.comments, fetchCommentsRecent),
+      ]);
+      const animeCount = (typeof animeData === "object" && animeData)
+        ? Object.keys(animeData).length : 0;
+      const days = Math.max(1, Math.floor(daysSince(SITE_BIRTHDAY)));
 
-  function renderList(body, items) {
-    body.classList.remove('is-skeleton');
-    body.innerHTML = '';
+      setBody(card, `
+        <ul class="stats-list">
+          <li><span class="stats-num">${notes.length}</span><span class="stats-label">笔记</span></li>
+          <li><span class="stats-num">${animeCount}</span><span class="stats-label">追番</span></li>
+          <li><span class="stats-num">${comments.length}</span><span class="stats-label">留言</span></li>
+          <li><span class="stats-num">${days}</span><span class="stats-label">天</span></li>
+        </ul>
+      `);
+    } catch {
+      setBody(card, `<p class="bento-text bento-text--muted">统计加载失败</p>`);
+    }
+  }
 
-    if (!items.length) {
-      appendEmpty(body);
+  // 4. notes - 笔记更新
+  async function renderNotes() {
+    const card = $card("notes");
+    if (!card) return;
+    try {
+      const notes = await cached("notes", TTL.notes, fetchNotes);
+      const recent = [...notes]
+        .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+        .slice(0, COUNT.notes);
+      const html = recent.map(n => `
+        <li class="bento-list-item">
+          <a class="bento-list-link" href="index.html?page=notes">
+            <span class="bento-list-title">${escapeHTML(n.title)}</span>
+            <span class="bento-list-meta">${escapeHTML(n.category || "")} · ${fmtDate(n.date)}</span>
+          </a>
+        </li>
+      `).join("");
+      setBody(card, `<ul class="bento-list">${html}</ul>`);
+    } catch {
+      setBody(card, `<p class="bento-text bento-text--muted">笔记加载失败</p>`);
+    }
+  }
+
+  // 5. anime - 动漫追番(同步,数据来自 anime-data.js)
+  function renderAnime() {
+    const card = $card("anime");
+    if (!card) return;
+    if (typeof animeData !== "object" || !animeData) {
+      setBody(card, `<p class="bento-text bento-text--muted">动漫数据缺失</p>`);
       return;
     }
+    // 末尾 N 个 reverse(顺序约定:新增追加到末尾)
+    const recent = Object.keys(animeData).slice(-COUNT.anime).reverse();
+    const html = recent.map(id => {
+      const a = animeData[id];
+      const cover = (a.image || "").replace(/^\.\.\//, "");  // 详情页是 ../,主页去掉
+      const isNew = daysSince(a.updateDate) <= NEW_TAG_DAYS;
+      const newTag = isNew ? `<span class="bento-tag-new">NEW</span>` : "";
+      return `
+        <li class="bento-anime-item">
+          <a href="html/anime-detail.html?id=${encodeURIComponent(id)}" class="bento-anime-link">
+            <span class="bento-anime-cover-wrap">
+              <img class="bento-anime-cover" src="${escapeHTML(cover)}" alt="${escapeHTML(a.title)}" loading="lazy">
+              ${newTag}
+            </span>
+            <span class="bento-anime-title">${escapeHTML(a.title)}</span>
+          </a>
+        </li>
+      `;
+    }).join("");
+    setBody(card, `<ul class="bento-anime-list">${html}</ul>`);
+  }
 
-    const ul = document.createElement('ul');
-    ul.className = 'bento-list';
+  // 6. gallery - 画廊更新(同步,数据来自 gallery-data.js)
+  function renderGallery() {
+    const card = $card("gallery");
+    if (!card) return;
+    if (typeof galleryData !== "object" || !Array.isArray(galleryData)) {
+      setBody(card, `<p class="bento-text bento-text--muted">画廊数据缺失</p>`);
+      return;
+    }
+    // 按 order 倒序取最新
+    const recent = [...galleryData]
+      .sort((a, b) => (b.order || 0) - (a.order || 0))
+      .slice(0, COUNT.gallery);
+    const html = recent.map(g => `
+      <a href="index.html?page=gallery" class="bento-gallery-item">
+        <img src="${escapeHTML(g.src)}" alt="" loading="lazy">
+      </a>
+    `).join("");
+    setBody(card, `<div class="bento-gallery-grid">${html}</div>`);
+  }
 
-    items.forEach(it => {
-      const li = document.createElement('li');
-      li.className = 'bento-list-item';
+  // 7. update - 更新公告
+  async function renderUpdate() {
+    const card = $card("update");
+    if (!card) return;
+    try {
+      const list = await cached("updates", TTL.updates, fetchUpdates);
+      const recent = list.slice(0, COUNT.update);  // updates-index 已倒序
+      const html = recent.map(u => {
+        const m = u.file && u.file.match(/(\d{4}-\d{2}-\d{2})/);
+        const date = m ? m[1] : "";
+        const slug = u.file ? u.file.split("/").pop().replace(/\.md$/, "") : "";
+        return `
+          <li class="bento-list-item">
+            <a class="bento-list-link"
+               href="index.html?page=update&update=${encodeURIComponent(slug)}">
+              <span class="bento-list-title">${escapeHTML(date)} 更新</span>
+              <span class="bento-list-meta">${fmtDate(date)}</span>
+            </a>
+          </li>
+        `;
+      }).join("");
+      setBody(card, `<ul class="bento-list">${html}</ul>`);
+    } catch {
+      setBody(card, `<p class="bento-text bento-text--muted">更新加载失败</p>`);
+    }
+  }
 
-      const main = document.createElement('span');
-      main.className = 'bento-list-main';
-
-      const title = document.createElement('span');
-      title.className = 'bento-list-title';
-      title.textContent = it.title;
-      main.appendChild(title);
-
-      if (it.isNew) {
-        const tag = document.createElement('span');
-        tag.className = 'bento-list-tag';
-        tag.textContent = 'NEW';
-        main.appendChild(tag);
+  // 8. comment - 留言板
+  async function renderComment() {
+    const card = $card("comment");
+    if (!card) return;
+    try {
+      const items = await cached("comments-recent", TTL.comments, fetchCommentsRecent);
+      const recent = items.slice(0, COUNT.comment);
+      if (!recent.length) {
+        setBody(card, `<p class="bento-text bento-text--muted">还没有留言,过来聊聊吧 ~</p>`);
+        return;
       }
-
-      li.appendChild(main);
-
-      const time = document.createElement('time');
-      time.className = 'bento-list-date';
-      time.textContent = formatMonthDay(it.ts);
-      li.appendChild(time);
-
-      ul.appendChild(li);
-    });
-
-    body.appendChild(ul);
+      const tmp = document.createElement("div");
+      const html = recent.map(c => {
+        tmp.innerHTML = c.comment || "";
+        const text = (tmp.textContent || "").trim().slice(0, 32);
+        return `
+          <li class="bento-list-item">
+            <a class="bento-list-link" href="index.html?page=comment">
+              <span class="bento-list-title">
+                <strong>${escapeHTML(c.nick || "匿名")}</strong>: ${escapeHTML(text)}
+              </span>
+            </a>
+          </li>
+        `;
+      }).join("");
+      setBody(card, `<ul class="bento-list">${html}</ul>`);
+    } catch {
+      setBody(card, `<p class="bento-text bento-text--muted">留言加载失败</p>`);
+    }
   }
 
-  function appendEmpty(body) {
-    const p = document.createElement('p');
-    p.className = 'bento-empty';
-    p.textContent = '暂无内容';
-    body.appendChild(p);
+  // 9. about-me - 关于我
+  async function renderAboutMe() {
+    const card = $card("about-me");
+    if (!card) return;
+    try {
+      const data = await cached("about", TTL.about, fetchAbout);
+      setBody(card, `<p class="bento-text">${escapeHTML(data.aboutMe || "").replace(/\n/g, "<br>")}</p>`);
+    } catch {
+      setBody(card, `<p class="bento-text bento-text--muted">介绍加载失败</p>`);
+    }
   }
 
-  // -------------------- 工具 --------------------
-
-  function getBody(cardKey) {
-    const card = document.querySelector(`.bento-card[data-card="${cardKey}"]`);
-    return card ? card.querySelector('.bento-card-body') : null;
+  // ---------------- 入口 ----------------
+  function initHomeCards() {
+    renderIntro();
+    renderMood();
+    renderStats();
+    renderNotes();
+    renderAnime();
+    renderGallery();
+    renderUpdate();
+    renderComment();
+    renderAboutMe();
   }
 
-  function fetchJSON(url) {
-    return fetch(url).then(r => {
-      if (!r.ok) throw new Error(`${url} ${r.status}`);
-      return r.json();
-    });
-  }
+  window.initHomeCards = initHomeCards;
 
-  function parseDate(s) {
-    if (!s) return NaN;
-    const t = new Date(s).getTime();
-    return Number.isFinite(t) ? t : NaN;
-  }
-
-  function parseUpdateDateFromFile(filePath) {
-    const m = String(filePath || '').match(/(\d{4}-\d{2}-\d{2})/);
-    return m ? m[1] : '';
-  }
-
-  function extractFirstHeading(md) {
-    if (!md) return null;
-    const m = md.match(/^\s*#\s+(.+?)\s*$/m);
-    return m ? m[1].trim() : null;
-  }
-
-  function isWithinDays(dateStr, days) {
-    const t = parseDate(dateStr);
-    if (!Number.isFinite(t)) return false;
-    return Date.now() - t < days * 24 * 60 * 60 * 1000;
-  }
-
-  function formatMonthDay(ts) {
-    if (!Number.isFinite(ts)) return '';
-    const d = new Date(ts);
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${m}/${day}`;
-  }
-
-  function computeDaysSince(launchDateStr) {
-    const launch = parseDate(launchDateStr);
-    if (!Number.isFinite(launch)) return NaN;
-    const days = Math.floor((Date.now() - launch) / (24 * 60 * 60 * 1000));
-    return days >= 0 ? days : 0;
-  }
-
-  // anime-data.js 用的是详情页相对路径 ../assets/...
-  // 主页要去掉 ../，否则 404
-  function stripParentPath(p) {
-    return String(p || '').replace(/^(\.\.\/)+/, '');
-  }
+  // 首次进入主页时,main.js 不主动调 runPageInit,所以本脚本自己绑定
+  document.addEventListener("DOMContentLoaded", () => {
+    if (document.body.dataset.standalone === "true") return;
+    const page = new URLSearchParams(window.location.search).get("page") || "home";
+    if (page !== "home") return;
+    initHomeCards();
+  });
 })();
