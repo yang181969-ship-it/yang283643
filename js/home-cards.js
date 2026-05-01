@@ -207,6 +207,13 @@
   }
 
   // 3. stats - 站点统计
+  const STATS_ICONS = {
+    notes:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+    anime:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>`,
+    comment: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    days:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  };
+
   async function renderStats() {
     const card = $card("stats");
     if (!card) return;
@@ -219,14 +226,29 @@
         ? Object.keys(animeData).length : 0;
       const days = Math.max(1, Math.floor(daysSince(SITE_BIRTHDAY)));
 
-      setBody(card, `
-        <ul class="stats-list">
-          <li><span class="stats-num">${notes.length}</span><span class="stats-label">笔记</span></li>
-          <li><span class="stats-num">${animeCount}</span><span class="stats-label">追番</span></li>
-          <li><span class="stats-num">${comments.length}</span><span class="stats-label">留言</span></li>
-          <li><span class="stats-num">${days}</span><span class="stats-label">天</span></li>
-        </ul>
-      `);
+      // baseline 决定 value=0 时进度条多空;value*1.2 让进度条永远 ~83%
+      const items = [
+        { label: "笔记", value: notes.length,    baseline: 10, icon: STATS_ICONS.notes   },
+        { label: "追番", value: animeCount,      baseline: 10, icon: STATS_ICONS.anime   },
+        { label: "留言", value: comments.length, baseline: 10, icon: STATS_ICONS.comment },
+        { label: "建站", value: days,            baseline: 30, icon: STATS_ICONS.days    },
+      ];
+
+      const html = items.map(it => {
+        const max = Math.max(it.baseline, it.value * 1.2);
+        const pct = Math.min(100, (it.value / max) * 100);
+        return `
+          <li class="stats-row">
+            <span class="stats-row-icon" aria-hidden="true">${it.icon}</span>
+            <span class="stats-row-label">${it.label}</span>
+            <span class="stats-row-bar">
+              <span class="stats-row-bar-fill" style="--fill:${pct.toFixed(1)}%"></span>
+            </span>
+            <span class="stats-row-value">${it.value}</span>
+          </li>
+        `;
+      }).join("");
+      setBody(card, `<ul class="stats-list">${html}</ul>`);
     } catch {
       setBody(card, `<p class="bento-text bento-text--muted">统计加载失败</p>`);
     }

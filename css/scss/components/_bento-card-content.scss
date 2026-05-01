@@ -62,38 +62,74 @@
 }
 
 // ============================================================
-// 统计卡 —— stats
+// 统计卡 —— stats(横排进度条版)
+// 单行 grid:[24 icon] [auto 标签] [1fr 进度条] [auto 数字]
 // ============================================================
 .stats-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   height: 100%;
-  align-content: center;
-
-  li {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-    min-width: 0;
-  }
+  justify-content: center;
 }
 
-.stats-num {
-  font-size: 22px;
-  font-weight: 700;
+.stats-row {
+  display: grid;
+  grid-template-columns: 24px auto minmax(40px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.stats-row-icon {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--primary-soft);
   color: var(--primary-dark);
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
+
+  svg { width: 14px; height: 14px; }
 }
 
-.stats-label {
+.stats-row-label {
   font-size: 12px;
   color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.stats-row-bar {
+  position: relative;
+  height: 5px;
+  background: var(--primary-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.stats-row-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--fill, 0%);
+  background: linear-gradient(
+    90deg,
+    hsla(var(--primary-hue), 75%, 65%, 0.9) 0%,
+    hsla(var(--primary-hue), 70%, 50%, 1) 100%
+  );
+  border-radius: inherit;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stats-row-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  font-variant-numeric: tabular-nums;
+  min-width: 1.5ch;
+  text-align: right;
 }
 
 // ============================================================
@@ -271,7 +307,6 @@
 // 移动端微调
 // ============================================================
 @include small {
-  .stats-num   { font-size: 20px; }
   .mood-emoji  { font-size: 42px; }
   .mood-temp   { font-size: 20px; }
   .bento-anime-list { gap: 8px; }
