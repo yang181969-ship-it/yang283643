@@ -109,23 +109,3 @@
   }
 }
 
-// ============================================================
-// Phase D1:移动段(< 640px)三按钮 46 → 40,svg 同步缩
-// 注:.search-toggle.is-open 在 < 600 走 fixed 浮层(自己的尺寸规则)
-//     这里只缩静态(关闭)状态,浮层布局留给 D3 整合移动端 header
-// ============================================================
-@media (max-width: 639px) {
-  .search-toggle:not(.is-open),
-  #theme-toggle,
-  .mode-toggle {
-    width: 40px;
-    height: 40px;
-  }
-
-  .search-toggle:not(.is-open) svg,
-  #theme-toggle svg,
-  .mode-toggle svg {
-    width: 18px;
-    height: 18px;
-  }
-}

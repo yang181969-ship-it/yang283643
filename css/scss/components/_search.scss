@@ -3,6 +3,7 @@
 // ============================================================
 
 @use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
 
 // ----- 搜索按钮容器 -----
 .search-control {
@@ -12,43 +13,31 @@
   flex-direction: row-reverse; // 按钮固定在右端，搜索框从左侧伸出
 }
 
-// ----- 触发按钮（46x46 圆形） -----
+// ----- 触发按钮（46x46 圆形,玻璃风格,与 mode-toggle / #theme-toggle 视觉对齐） -----
 .search-toggle {
-  width: 46px;
-  height: 46px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid var(--border-soft);
-  border-radius: 50%;
-  background: var(--bg-card);
-  color: var(--primary);
-  cursor: pointer;
-  box-shadow: var(--shadow-soft);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, background 0.2s ease;
+  @include circle-icon-btn;
+  flex-shrink: 0;       // 防 flex 容器把按钮压扁
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
   }
 
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
-  }
-
-  // 展开态：按钮自身高亮 + 去掉左侧圆角，与输入框无缝拼接
+  // 展开态:按钮自身高亮 + 去掉左侧圆角,与输入框无缝拼接
+  // 用 primary 实色高亮,需要覆盖 mixin 的玻璃 bg 和 hover 行为
   &.is-open {
     background: var(--primary);
     color: #fff;
     border-color: var(--primary);
     border-radius: 0 999px 999px 0;
     box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 
     &:hover {
       transform: none;
       background: var(--primary-dark);
+      box-shadow: none;
     }
   }
 }
@@ -252,6 +241,8 @@
       color: #fff;
       border-color: var(--primary);
       box-shadow: none;
+      backdrop-filter: none;            // 实色高亮,关掉 blur
+      -webkit-backdrop-filter: none;
     }
   }
 
