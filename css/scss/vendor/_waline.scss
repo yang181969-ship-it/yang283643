@@ -227,13 +227,15 @@
 
 // ============================================================
 // 隐藏输入区工具栏（小图标、图片上传等）
+// 注意：.wl-actions 同时存在于「编辑器面板」和「评论卡片头部」，
+// 这里只隐藏「编辑器面板内」的，不影响评论的点赞/回复按钮。
 // ============================================================
 #waline .wl-toolbar,
-#waline .wl-actions,
-#waline .wl-actions .wl-action,
-#waline .wl-actions button,
-#waline .wl-actions i,
-#waline .wl-actions svg,
+#waline .wl-panel .wl-actions,
+#waline .wl-panel .wl-actions .wl-action,
+#waline .wl-panel .wl-actions button,
+#waline .wl-panel .wl-actions i,
+#waline .wl-panel .wl-actions svg,
 #waline .wl-footer .wl-action,
 #waline .wl-footer .wl-preview,
 #waline .wl-footer .wl-upload,
@@ -246,7 +248,7 @@
   display: none !important;
 }
 
-#waline .wl-actions {
+#waline .wl-panel .wl-actions {
   margin: 0 !important;
   padding: 0 !important;
   min-height: 0 !important;
@@ -906,4 +908,39 @@
     font-size: 0.84rem;
     padding: 6px 12px 6px 8px;
   }
+}
+
+// ============================================================
+// 兜底:确保评论卡片的点赞/回复按钮可点击,不被任何兄弟元素遮挡
+// 通过提升层级 + 强制 pointer-events 同时解决"看不到"和"点不到"
+// ============================================================
+#waline .wl-cards .wl-card-item {
+  position: relative;
+}
+
+#waline .custom-action-slot {
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+}
+
+#waline .custom-action-slot .wl-like,
+#waline .custom-action-slot .wl-reply,
+#waline .custom-action-slot .wl-action,
+#waline .custom-action-slot .wl-actions,
+#waline .custom-action-slot .wl-likecount,
+#waline .custom-action-slot button {
+  position: relative !important;
+  z-index: 6 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+// 卡片内的 wl-meta 经常会因为 width:100% + margin 把行高吃掉,
+// 顺便把点赞回复区域覆盖,这里关掉它的 pointer-events
+#waline .wl-card .wl-head .wl-meta {
+  pointer-events: none !important;
+}
+#waline .wl-card .wl-head .wl-meta > * {
+  pointer-events: auto !important;  // 但浏览器/系统 chip 内部还能点
 }
