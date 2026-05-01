@@ -216,7 +216,25 @@ function bindEditorBehavior() {
 
   root.dataset.editorBound = "true";
 
-  root.addEventListener("focusin", () => {
+  let lastReplyClickAt = 0;
+
+  // 拦截评论里的 reply 按钮:Waline 自己不会把焦点送到主编辑器
+  root.addEventListener("click", (e) => {
+    const replyBtn = e.target.closest(".wl-cards .wl-reply");
+    if (!replyBtn) return;
+
+    lastReplyClickAt = Date.now();
+    root.classList.add("editor-expanded");
+
+    setTimeout(() => {
+      const editor = root.querySelector(".wl-editor");
+      if (editor && document.contains(editor)) editor.focus();
+    }, 50);
+  });
+
+  // focusin 只对真正的输入元素响应,避免点赞按钮临时获焦时误展开
+  root.addEventListener("focusin", (e) => {
+    if (!e.target.matches(".wl-editor, .wl-input, input, textarea")) return;
     root.classList.add("editor-expanded");
     ensureRatingUI();
   });
@@ -226,8 +244,9 @@ function bindEditorBehavior() {
       const activeInside = root.contains(document.activeElement);
       const editor = root.querySelector(".wl-editor");
       const hasText = !!getEditorText(editor).trim();
+      const stickyForReply = Date.now() - lastReplyClickAt < 600;
 
-      if (!activeInside && !hasText) {
+      if (!activeInside && !hasText && !stickyForReply) {
         root.classList.remove("editor-expanded");
       }
     }, 120);

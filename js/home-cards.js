@@ -117,7 +117,35 @@
   const fetchAbout    = () => fetchJson("data/about.json");
   const fetchMoodMap  = () => fetchJson("data/mood-map.json");
   const fetchNotes    = () => fetchJson("data/notes-index.json");
-  const fetchUpdates  = () => fetchJson("data/updates-index.json");
+
+  async function fetchUpdates() {
+  const index = await fetchJson("data/updates-index.json");
+
+  // 并发拿每个 md 的 title 和 date(单个失败不影响其他)
+  const items = await Promise.all(
+    index.map(async (entry) => {
+      const fallbackDate = (entry.file.match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || "";
+      try {
+        const res = await fetch(entry.file);
+        if (!res.ok) throw new Error(`fetch ${entry.file} failed`);
+        const md = (await res.text()).replace(/\r\n/g, "\n");
+        let title = "";
+        let date = "";
+        for (const raw of md.split("\n")) {
+          const line = raw.trim();
+          if (!title && line.startsWith("# ")) title = line.slice(2).trim();
+          if (line.startsWith("@date:"))      date = line.replace("@date:", "").trim();
+          if (title && date) break;
+        }
+        return { ...entry, title, date: date || fallbackDate };
+      } catch {
+        return { ...entry, title: "", date: fallbackDate };
+      }
+    })
+  );
+
+  return items;
+}
 
   async function fetchMood() {
     const url = `https://api.open-meteo.com/v1/forecast`
@@ -282,18 +310,18 @@
     const card = $card("update");
     if (!card) return;
     try {
-      const list = await cached("updates", TTL.updates, fetchUpdates);
+      // cache key 升级到 v2，让旧缓存(只有 file 字段的)自动失效
+      const list = await cached("updates-v2", TTL.updates, fetchUpdates);
       const recent = list.slice(0, COUNT.update);  // updates-index 已倒序
       const html = recent.map(u => {
-        const m = u.file && u.file.match(/(\d{4}-\d{2}-\d{2})/);
-        const date = m ? m[1] : "";
         const slug = u.file ? u.file.split("/").pop().replace(/\.md$/, "") : "";
+        const title = u.title || "未命名更新";
         return `
           <li class="bento-list-item">
             <a class="bento-list-link"
-               href="index.html?page=update&update=${encodeURIComponent(slug)}">
-              <span class="bento-list-title">${escapeHTML(date)} 更新</span>
-              <span class="bento-list-meta">${fmtDate(date)}</span>
+              href="index.html?page=update&update=${encodeURIComponent(slug)}">
+              <span class="bento-list-title">${escapeHTML(title)}</span>
+              <span class="bento-list-meta">${fmtDate(u.date)}</span>
             </a>
           </li>
         `;
