@@ -55,11 +55,11 @@ function showVpnIntroModal() {
 
       <div class="comment-vpn-content">
         当前留言系统仍在测试阶段，依赖境外评论服务。<br><br>
-        如果你处于中国大陆网络环境，通常需要开启 VPN 后，才能正常查看、发布、回复和点赞评论。
+        目前正在准备迁移国内，所以留言系统暂时无法使用，还请理解。
       </div>
 
       <div class="comment-vpn-tags">
-        <span>后续会迁移国内</span>
+        <span>正在迁移国内</span>
         <span>请耐心等待</span>
       </div>
 

@@ -14,6 +14,7 @@ xxxx: {
       "../assets/animes/2.jpg",
       "../assets/animes/3.jpg"
     ],
+    updateDate:
     links:[
       { text: "观影链接", url: ""},
     ]
