@@ -226,17 +226,21 @@
         ? Object.keys(animeData).length : 0;
       const days = Math.max(1, Math.floor(daysSince(SITE_BIRTHDAY)));
 
-      // baseline 决定 value=0 时进度条多空;value*1.2 让进度条永远 ~83%
+      // 笔记 / 追番 / 留言 三项互相对比(以三者最大值为基准)
+      // 建站固定 100%,不参与归一化(避免天数膨胀后压扁其他三项)
+      const notesCount    = notes.length;
+      const commentsCount = comments.length;
+      const normMax = Math.max(notesCount, animeCount, commentsCount, 1);
+
       const items = [
-        { label: "笔记", value: notes.length,    baseline: 10, icon: STATS_ICONS.notes   },
-        { label: "追番", value: animeCount,      baseline: 10, icon: STATS_ICONS.anime   },
-        { label: "留言", value: comments.length, baseline: 10, icon: STATS_ICONS.comment },
-        { label: "建站", value: days,            baseline: 30, icon: STATS_ICONS.days    },
+        { label: "笔记", value: notesCount,    pct: (notesCount    / normMax) * 100, icon: STATS_ICONS.notes   },
+        { label: "追番", value: animeCount,    pct: (animeCount    / normMax) * 100, icon: STATS_ICONS.anime   },
+        { label: "留言", value: commentsCount, pct: (commentsCount / normMax) * 100, icon: STATS_ICONS.comment },
+        { label: "建站", value: days,          pct: 100,                              icon: STATS_ICONS.days    },
       ];
 
       const html = items.map(it => {
-        const max = Math.max(it.baseline, it.value * 1.2);
-        const pct = Math.min(100, (it.value / max) * 100);
+        const pct = Math.min(100, Math.max(0, it.pct));
         return `
           <li class="stats-row">
             <span class="stats-row-icon" aria-hidden="true">${it.icon}</span>
