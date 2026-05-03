@@ -19,7 +19,6 @@ function initCommentPage() {
   const root = document.getElementById("waline");
   if (!root) return;
 
-  showVpnIntroModal();
   showLoading(root);
   initWalineComment();
 }
@@ -32,60 +31,6 @@ function showLoading(root) {
     </div>
   `;
 }
-
-function showVpnIntroModal() {
-  if (window.__commentVpnModalShown) return;
-  if (document.getElementById("comment-vpn-modal")) return;
-
-  window.__commentVpnModalShown = true;
-
-  const modal = document.createElement("div");
-  modal.id = "comment-vpn-modal";
-  modal.className = "comment-vpn-modal";
-
-  modal.innerHTML = `
-    <div class="comment-vpn-mask"></div>
-
-    <div class="comment-vpn-card">
-      <button class="comment-vpn-close">×</button>
-
-      <div class="comment-vpn-title">
-        留言说明
-      </div>
-
-      <div class="comment-vpn-content">
-        当前留言系统仍在测试阶段，依赖境外评论服务。<br><br>
-        目前正在准备迁移国内，所以留言系统暂时无法使用，还请理解。
-      </div>
-
-      <div class="comment-vpn-tags">
-        <span>正在迁移国内</span>
-        <span>请耐心等待</span>
-      </div>
-
-      <button class="comment-vpn-btn">我知道了</button>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-  document.body.classList.add("vpn-modal-open");
-
-  const closeBtn = modal.querySelector(".comment-vpn-close");
-  const confirmBtn = modal.querySelector(".comment-vpn-btn");
-
-  function closeModal() {
-    modal.classList.add("closing");
-    document.body.classList.remove("vpn-modal-open");
-
-    setTimeout(() => {
-      modal.remove();
-    }, 250);
-  }
-
-  closeBtn.onclick = closeModal;
-  confirmBtn.onclick = closeModal;
-}
-
 
 function showGenericError(root) {
   root.innerHTML = `

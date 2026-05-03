@@ -24,16 +24,6 @@
   }
 }
 
-.back-link {
-  color: var(--primary-dark);
-  text-decoration: none;
-  font-weight: bold;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 // ----- 额外图片展示 -----
 .anime-extra-gallery {
   display: grid;
