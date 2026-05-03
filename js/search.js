@@ -10,8 +10,8 @@ const STATIC_PAGES = [
   { title: "关于",   desc: "关于这个网站和站主",       page: "about",   type: "页面" },
 ];
 
-/* ---------- 动漫数据（与 anime-detail.js 保持同步） ---------- */
-const ANIME_DATA = [
+/* ---------- 动漫数据：优先复用 anime-data.js，缺失时使用兜底 ---------- */
+const ANIME_DATA_FALLBACK = [
   { id: "majo",      title: "魔女之旅",       desc: "魔女伊蕾娜在世界各地旅行，经历相逢与离别", tags: "奇幻 公路 旅行" },
   { id: "frieren",   title: "葬送的芙莉莲",   desc: "精灵魔法使芙莉莲重新踏上旅程，理解生命意义", tags: "奇幻 冒险 治愈" },
   { id: "garden",    title: "紫罗兰永恒花园", desc: "薇尔莉特·伊芙加登的故事",                   tags: "治愈 奇幻 日常" },
@@ -19,7 +19,21 @@ const ANIME_DATA = [
   { id: "spy",       title: "间谍过家家",     desc: "间谍黄昏、超能力少女阿尼亚、暗杀者约尔的家庭喜剧", tags: "战斗 搞笑 日常" },
   { id: "titan",     title: "进击的巨人",     desc: "那一天，人类想起了被他们支配的恐惧",        tags: "热血 奇幻 神作" },
   { id: "datebattle",title: "约会大作战",     desc: "间谍为拯救精灵与其约会的故事",              tags: "奇幻 战斗 后宫" },
+  { id: "suzuya",    title: "铃芽之旅",       desc: "铃芽与闭门师宗像草太一起关闭灾难源头之门",  tags: "青春 恋爱 治愈 电影" },
+  { id: "xiaoyuan",  title: "魔法少女小圆",   desc: "鹿目圆与晓美焰面对魔法少女命运的故事",      tags: "奇幻 战斗 百合" },
 ];
+
+function getAnimeSearchData() {
+  if (typeof animeData === "object" && animeData) {
+    return Object.entries(animeData).map(([id, item]) => ({
+      id,
+      title: item.title || id,
+      desc: item.description || "",
+      tags: Array.isArray(item.info) ? item.info.join(" ") : "",
+    }));
+  }
+  return ANIME_DATA_FALLBACK;
+}
 
 /* ---------- 工具函数 ---------- */
 function escapeHtml(str) {
@@ -91,7 +105,7 @@ async function runSearch(kw) {
   });
 
   /* 2. 动漫 */
-  ANIME_DATA.forEach(a => {
+  getAnimeSearchData().forEach(a => {
     if (match(a.title, q) || match(a.desc, q) || match(a.tags, q)) {
       results.push({
         type: "动漫",

@@ -6,12 +6,7 @@
 //      (Commit 2 用的 --accent / --accent-tint / --text-strong 项目里没定义,调色盘失效)
 //   2. 装饰图尺寸按 span 适配:span3 = 48,span4 = 64,intro/about-me = 96
 //   3. 装饰图右下贴边 12px(对齐定稿规范),并给 body / head 用 :has() 自动让位避免重叠
-//   4. 占位状态从虚线框换成柔和玻璃 tint,hover rotate 时不再像未完成
-//   5. mood 卡(数据卡 -- 头像不是装饰)预留专属钩子,不参与 hover 动效
-//   6. 暗色模式下 icon tint 走 hsla 形态,避免被强 light 残影
-//
-// Phase B2 会:把 .is-placeholder 替换为真 PNG <img>;给 body 灌真实数据;
-// 实装 mood 头像 / stats 数字滚动。本刀只产出"模式"。
+//   4. 暗色模式下 icon tint 走 hsla 形态,避免被强 light 残影
 // ============================================================
 
 @use '../abstracts/variables' as *;
@@ -50,9 +45,8 @@
       var(--glow-card),
       var(--glass-highlight);
 
-    // hover 整卡时装饰图微微浮起旋转;
-    // mood 头像是数据不是装饰,显式排除(B2 实装的 mood-avatar 也走相同选择器)
-    .bento-card-deco:not(.bento-card-deco--mood) {
+    // hover 整卡时装饰图微微浮起旋转
+    .bento-card-deco {
       transform: rotate(3deg) translateY(-3px);
     }
   }
@@ -207,16 +201,6 @@
     transform var(--dur-glass) var(--ease-glass),
     opacity var(--dur-glass) var(--ease-glass);
 
-  // 占位状态:柔和玻璃 tint(替换原虚线,hover rotate 时观感正常)
-  &.is-placeholder {
-    background: linear-gradient(
-      135deg,
-      hsla(var(--primary-hue), 70%, 70%, 0.22) 0%,
-      hsla(var(--primary-hue), 60%, 80%, 0.10) 100%
-    );
-    box-shadow: inset 0 0 0 1px var(--glass-border-subtle, rgba(255, 255, 255, 0.12));
-  }
-
   img {
     width: 100%;
     height: 100%;
@@ -240,21 +224,6 @@
   height: 96px;
   bottom: 14px;
   right: 14px;
-}
-
-// ============================================================
-// mood 卡专属:头像位预留钩子(B2 实装 mood-avatar)
-// 不参与 hover rotate(已在 .bento-card &:hover 选择器里排除 --mood)
-// ============================================================
-.bento-card[data-card="mood"] {
-  // 给 B2 一个钩子:mood-avatar 居中显示,不在右下角
-  .bento-card-deco--mood {
-    position: static;
-    width: auto;
-    height: auto;
-    margin: 8px auto 0;
-    align-self: center;
-  }
 }
 
 // ============================================================
