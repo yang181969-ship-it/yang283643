@@ -188,6 +188,11 @@ footer {
     }
   }
 
+  html[data-page]:not([data-page="home"]) .rail-extras,
+  html[data-page]:not([data-page="home"]) .rail-extras-dots {
+    display: none;
+  }
+
   .rail-extras-dots {
     flex-shrink: 0;
   }
