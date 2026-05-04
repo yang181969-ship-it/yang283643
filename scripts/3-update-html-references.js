@@ -15,6 +15,7 @@ const MAPPING_FILE = path.join(__dirname, 'rename-mapping.json');
 // 需要处理的文件列表
 const TARGET_FILES = [
   'html/anime.html',
+  'js/anime-data.js',
   'js/anime-detail.js',
 ];
 

@@ -17,7 +17,8 @@
   const KEY_STATE   = 'y181_music_state';
   const KEY_LOOP    = 'y181_music_loop';
   const KEY_LYRICS  = 'y181_music_lyrics_visible';
-  const PLAYLIST_URL = 'data/playlist.json';
+  const SITE_ROOT_URL = getSiteRootUrl();
+  const PLAYLIST_URL = new URL('data/playlist.json', SITE_ROOT_URL).href;
   const LOOP_MODES  = ['sequential', 'shuffle', 'one'];
   const DEFAULT_LOOP = 'sequential';
 
@@ -39,6 +40,16 @@
       loopBtn, prevBtn, playBtn, nextBtn, playlistBtn,
       lyricsToggleBtn, lyricsEl, lyricsInnerEl,
       modalEl, modalListEl, modalCountEl;
+
+  function getSiteRootUrl() {
+    const script = document.currentScript
+      || document.querySelector('script[src$="music-player.js"]');
+    return script?.src ? new URL('../', script.src) : new URL('./', document.baseURI);
+  }
+
+  function resolveSiteUrl(path) {
+    return new URL(path, SITE_ROOT_URL).href;
+  }
 
   // ============================================================
   // 入口
@@ -155,7 +166,7 @@
     const track = state.tracks[index];
     state.currentIndex = index;
 
-    audio.src = track.src;
+    audio.src = resolveSiteUrl(track.src);
     titleEl.textContent  = track.title || '未命名';
     artistEl.textContent = track.artist || '—';
     parseLyric(track.lyric);
