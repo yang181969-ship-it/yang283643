@@ -130,8 +130,8 @@
   }
 
   // ---------------- 数据源 ----------------
-  async function fetchJson(url) {
-    const res = await fetch(url);
+  async function fetchJson(url, options) {
+    const res = await fetch(url, options);
     if (!res.ok) throw new Error(`${url} → ${res.status}`);
     return res.json();
   }
@@ -141,34 +141,43 @@
   const fetchNotes    = () => fetchJson("data/notes-index.json");
   const fetchPortraitRotation = () => fetchJson("data/portrait-rotation.json");
 
-  async function fetchUpdates() {
-  const index = await fetchJson("data/updates-index.json");
+  const fetchUpdatesIndex = () => fetchJson("data/updates-index.json", { cache: "no-cache" });
 
-  // 并发拿每个 md 的 title 和 date(单个失败不影响其他)
-  const items = await Promise.all(
-    index.map(async (entry) => {
-      const fallbackDate = (entry.file.match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || "";
-      try {
-        const res = await fetch(entry.file);
-        if (!res.ok) throw new Error(`fetch ${entry.file} failed`);
-        const md = (await res.text()).replace(/\r\n/g, "\n");
-        let title = "";
-        let date = "";
-        for (const raw of md.split("\n")) {
-          const line = raw.trim();
-          if (!title && line.startsWith("# ")) title = line.slice(2).trim();
-          if (line.startsWith("@date:"))      date = line.replace("@date:", "").trim();
-          if (title && date) break;
+  function updatesCacheKey(index) {
+    const signature = index.map(entry => entry.file || "").join("|");
+    let hash = 0;
+    for (let i = 0; i < signature.length; i += 1) {
+      hash = ((hash << 5) - hash + signature.charCodeAt(i)) | 0;
+    }
+    return `updates-v3-${index.length}-${Math.abs(hash).toString(36)}`;
+  }
+
+  async function fetchUpdates(index) {
+    // 并发拿每个 md 的 title 和 date(单个失败不影响其他)
+    const items = await Promise.all(
+      index.map(async (entry) => {
+        const fallbackDate = (entry.file.match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || "";
+        try {
+          const res = await fetch(entry.file);
+          if (!res.ok) throw new Error(`fetch ${entry.file} failed`);
+          const md = (await res.text()).replace(/\r\n/g, "\n");
+          let title = "";
+          let date = "";
+          for (const raw of md.split("\n")) {
+            const line = raw.trim();
+            if (!title && line.startsWith("# ")) title = line.slice(2).trim();
+            if (line.startsWith("@date:"))      date = line.replace("@date:", "").trim();
+            if (title && date) break;
+          }
+          return { ...entry, title, date: date || fallbackDate };
+        } catch {
+          return { ...entry, title: "", date: fallbackDate };
         }
-        return { ...entry, title, date: date || fallbackDate };
-      } catch {
-        return { ...entry, title: "", date: fallbackDate };
-      }
-    })
-  );
+      })
+    );
 
-  return items;
-}
+    return items;
+  }
 
   async function fetchMood() {
     const url = `https://api.open-meteo.com/v1/forecast`
@@ -388,8 +397,8 @@
     const card = $card("update");
     if (!card) return;
     try {
-      // cache key 升级到 v2，让旧缓存(只有 file 字段的)自动失效
-      const list = await cached("updates-v2", TTL.updates, fetchUpdates);
+      const index = await fetchUpdatesIndex();
+      const list = await cached(updatesCacheKey(index), TTL.updates, () => fetchUpdates(index));
       const recent = list.slice(0, COUNT.update);  // updates-index 已倒序
       const html = recent.map(u => {
         const slug = u.file ? u.file.split("/").pop().replace(/\.md$/, "") : "";

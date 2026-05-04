@@ -184,4 +184,24 @@ const animeData = {
       { text: "观影链接", url: "https://yhdm6.top/v/2132.html"},
     ]
   },
+
+  name: {
+    title: "你的名字",
+    image: "../assets/animes/name-cover.jpg",
+    description: "生活在日本乡下小镇的女高中生宫水三叶，与生活在东京的男高中生立花泷，在梦中互换身体，并逐渐追寻彼此与命运相连的故事。",
+    info: [
+      "题材：青春 / 爱情 / 奇幻",
+      "主角：立花泷，宫水三叶",
+    ],
+    gallery: [
+      "../assets/animes/name-cover.jpg",
+      "../assets/animes/name-2.jpg",
+      "../assets/animes/name-3.webp",
+      "../assets/animes/name-4.webp"
+    ],
+    updateDate: "2026-05-05",
+    links: [
+      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E4%BD%A0%E7%9A%84%E5%90%8D%E5%AD%97&submit=" },
+    ]
+  }
 };

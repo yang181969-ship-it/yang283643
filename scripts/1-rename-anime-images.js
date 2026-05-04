@@ -47,6 +47,10 @@ const ANIME_RENAME_MAP = {
     cover: '魔法少女小圆1.jpg',
     gallery: ['魔法少女小圆.jpg', '魔法少女小圆1.jpg', '魔法少女小圆2.jpg', '魔法少女小圆3.jpg']
   },
+  name: {
+    cover: '你的名字.jpg',
+    gallery: ['你的名字.jpg', '你的名字1.jpg', '你的名字2.jpg', '你的名字3.jpg']
+  },
 };
 
 const MAX_WIDTH = 1920;

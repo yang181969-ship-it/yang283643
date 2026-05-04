@@ -1,4 +1,4 @@
-<!-- anime-detail.js 的复制文本 -->
+<!-- anime-data.js 的复制文本 -->
 
 xxxx: {
     title:"",
