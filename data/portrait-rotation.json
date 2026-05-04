@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "startDate": "2026-05-04",
+  "timezone": "browser-local",
+  "generatedAt": "2026-05-04T15:16:09.220Z",
+  "seed": "portrait-rotation-v1",
+  "sets": {
+    "q": [
+      "assets/portrait/q/q-10.webp",
+      "assets/portrait/q/q-07.webp",
+      "assets/portrait/q/q-02.webp",
+      "assets/portrait/q/q-09.webp",
+      "assets/portrait/q/q-04.webp",
+      "assets/portrait/q/q-11.webp",
+      "assets/portrait/q/q-03.webp",
+      "assets/portrait/q/q-12.webp",
+      "assets/portrait/q/q-05.webp",
+      "assets/portrait/q/q-06.webp",
+      "assets/portrait/q/q-08.webp",
+      "assets/portrait/q/q-01.webp"
+    ],
+    "half": [
+      "assets/portrait/half/half-02.webp",
+      "assets/portrait/half/half-07.webp",
+      "assets/portrait/half/half-10.webp",
+      "assets/portrait/half/half-05.webp",
+      "assets/portrait/half/half-03.webp",
+      "assets/portrait/half/half-09.webp",
+      "assets/portrait/half/half-04.webp",
+      "assets/portrait/half/half-01.webp",
+      "assets/portrait/half/half-08.webp",
+      "assets/portrait/half/half-06.webp",
+      "assets/portrait/half/half-12.webp",
+      "assets/portrait/half/half-11.webp"
+    ]
+  }
+}

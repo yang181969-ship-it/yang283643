@@ -17,6 +17,7 @@
   
     "purgecss": "node scripts/4-purgecss.mjs",
     "music:add": "node scripts/add-music.mjs",
+    "portrait:rotation": "node scripts/generate-portrait-rotation.mjs",
 
     "build:all": "npm run build && npm run build:critical && npm run inline:critical"
   },
