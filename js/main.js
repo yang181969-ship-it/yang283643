@@ -67,6 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return new URLSearchParams(window.location.search).get("page") || "home";
   }
 
+  function syncCurrentPage(page) {
+    const current = page || getCurrentPageFromUrl();
+    document.documentElement.dataset.page = current;
+    if (document.body) document.body.dataset.page = current;
+    window.dispatchEvent(new CustomEvent("y181:pagechange", {
+      detail: { page: current }
+    }));
+  }
+
   function updateHighlight(page) {
     navLinks.forEach((link) => {
       const linkPage = getPageFromHref(link.getAttribute("href"));
@@ -106,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function afterPageLoad(page, push) {
+    syncCurrentPage(page);
     updateHighlight(page);
     setUrl(page, push);
     requestAnimationFrame(() => {
@@ -191,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const page = state.page || getCurrentPageFromUrl();
+    syncCurrentPage(page);
 
     // 笔记详情回退：notes.js 通过 pushState 管理自身历史
     if (page === "notes" && !state.note) {
@@ -234,6 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const initialPage = getCurrentPageFromUrl();
+  syncCurrentPage(initialPage);
   updateHighlight(initialPage);
 
   if (initialPage !== "home") {
