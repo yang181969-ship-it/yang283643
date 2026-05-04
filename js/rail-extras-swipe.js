@@ -12,7 +12,12 @@
     if (!swipe || dots.length === 0) return;
 
     // 拿到所有可见 widget(.rail-widget 都算)
-    const widgets = Array.from(swipe.querySelectorAll('.rail-widget'));
+    const widgets = Array.from(swipe.querySelectorAll('.rail-widget'))
+      .sort((a, b) => {
+        const orderA = Number.parseInt(getComputedStyle(a).order, 10) || 0;
+        const orderB = Number.parseInt(getComputedStyle(b).order, 10) || 0;
+        return orderA - orderB;
+      });
     if (widgets.length === 0) return;
 
     // dot click → 平滑滚到对应 widget

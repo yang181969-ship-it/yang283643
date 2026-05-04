@@ -162,6 +162,8 @@ footer {
   .rail-extras {
     display: flex;
     flex-direction: row;
+    align-items: stretch;
+    --rail-widget-mobile-h: clamp(178px, 34vw, 190px);
     gap: 12px;
     padding: 12px 16px 0;
     overflow-x: auto;
@@ -178,6 +180,7 @@ footer {
       width: auto;
       max-width: none;
       min-width: 0;
+      height: var(--rail-widget-mobile-h);
       box-sizing: border-box;
       overflow: hidden;
       scroll-snap-align: center;
@@ -213,11 +216,11 @@ footer {
   //    这里通过 mobile 段全局抬高 bottom 偏移
   // ============================================================
   #floating-btns {
-    bottom: calc(24px + var(--tab-bar-h, 0px));
+    bottom: calc(92px + var(--tab-bar-h, 0px));
   }
 
   #back-to-top {
-    bottom: calc(80px + var(--tab-bar-h, 0px));
+    bottom: calc(148px + var(--tab-bar-h, 0px));
   }
 }
 

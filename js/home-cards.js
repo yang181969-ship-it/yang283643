@@ -15,6 +15,7 @@
   const NEW_TAG_DAYS   = 7;                                     // anime NEW 阈值
   const TOKYO_LAT      = 35.6762;
   const TOKYO_LNG      = 139.6503;
+  const MOOD_REFRESH_MS = 1000 * 60 * 60;                       // 60 分钟
   const WALINE_API     = "https://yang283643-waline.vercel.app";
   const STORAGE_PREFIX = "y181_";
 
@@ -23,7 +24,7 @@
     notes:    1000 * 60 * 60 * 24,
     updates:  1000 * 60 * 60 * 24,
     moodMap:  1000 * 60 * 60 * 24,
-    mood:     1000 * 60 * 30,        // 30 分钟
+    mood:     MOOD_REFRESH_MS,
     comments: 1000 * 60 * 60,        // 1 小时
   };
 
@@ -37,6 +38,7 @@
 
   // 同会话内存缓存
   const memCache = new Map();
+  let moodRefreshTimer = null;
 
   // ---------------- 缓存核心 ----------------
   /**
@@ -105,6 +107,10 @@
     return String(s ?? "").replace(/[&<>"']/g, c => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
+  }
+  function moodImagePath(image) {
+    const file = String(image || "relaxed.webp").replace(/[^a-z0-9._-]/gi, "");
+    return `assets/mood/${file || "relaxed.webp"}`;
   }
 
   // ---------------- 数据源 ----------------
@@ -190,19 +196,31 @@
         cached("mood-map", TTL.moodMap, fetchMoodMap),
       ]);
       const code  = String(mood.code ?? "default");
-      const entry = map[code] || map.default || { emoji: "🌸", text: "" };
+      const entry = map[code] || map.default || {
+        emoji: "🌸",
+        text: "天气",
+        image: "relaxed.webp",
+        mood: "今天也慢慢来",
+      };
       const temp  = mood.temp != null ? `${Math.round(mood.temp)}°C` : "--°C";
+      const image = moodImagePath(entry.image || map.default?.image);
       setBody(card, `
         <div class="mood-display">
-          <div class="mood-emoji" aria-hidden="true">${entry.emoji}</div>
-          <div class="mood-meta">
-            <div class="mood-temp">${temp}</div>
-            <div class="mood-text">${escapeHTML(entry.text || "")}</div>
+          <div class="mood-info">
+            <div class="mood-weather">
+              <div class="mood-emoji" aria-hidden="true">${escapeHTML(entry.emoji || "🌸")}</div>
+              <div class="mood-meta">
+                <div class="mood-temp">${temp}</div>
+                <div class="mood-weather-text">今日东京：${escapeHTML(entry.text || "天气")}</div>
+              </div>
+            </div>
+            <div class="mood-note">${escapeHTML(entry.mood || "今天也慢慢来")}</div>
           </div>
+          <img class="mood-avatar" src="${escapeHTML(image)}" alt="" loading="lazy">
         </div>
       `);
     } catch {
-      setBody(card, `<p class="bento-text bento-text--muted">心情获取失败</p>`);
+      setBody(card, `<p class="bento-text bento-text--muted">东京天气获取失败</p>`);
     }
   }
 
@@ -405,6 +423,7 @@
   function initHomeCards() {
     renderIntro();
     renderMood();
+    scheduleMoodRefresh();
     renderStats();
     renderNotes();
     renderAnime();
@@ -412,6 +431,14 @@
     renderUpdate();
     renderComment();
     renderAboutMe();
+  }
+
+  function scheduleMoodRefresh() {
+    if (moodRefreshTimer) window.clearInterval(moodRefreshTimer);
+    moodRefreshTimer = window.setInterval(() => {
+      memCache.delete("mood");
+      renderMood();
+    }, MOOD_REFRESH_MS);
   }
 
   window.initHomeCards = initHomeCards;
