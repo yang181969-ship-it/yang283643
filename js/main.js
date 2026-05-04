@@ -264,20 +264,77 @@ document.addEventListener("DOMContentLoaded", () => {
 function initFloatingBtns() {
   const topBtn  = document.getElementById("back-to-top");
   const prevBtn = document.getElementById("back-to-prev");
-  // 详情页用 .content-scroll，index.html SPA 主骨架用 .page-card
-  const scrollContainer = document.querySelector(".content-scroll, .page-card");
-  if (!scrollContainer) return;
+  const mobileQuery = window.matchMedia("(max-width: 900px)");
+  let scrollContainer = null;
 
-  // 滚动时控制按钮显隐（所有页面都要，包括 standalone 详情页）
-  scrollContainer.addEventListener("scroll", () => {
+  function getScrollContainer() {
+    const layout = document.querySelector(".layout");
+    const pageScroller = document.querySelector(".content-scroll, .page-card");
+
+    // Mobile layout scrolls on .layout; desktop/detail views scroll in the page pane.
+    if (mobileQuery.matches && layout) return layout;
+    return pageScroller || layout || document.scrollingElement || document.documentElement;
+  }
+
+  function isHomePage() {
+    if (document.body.dataset.standalone === "true") return false;
+    return (new URLSearchParams(window.location.search).get("page") || "home") === "home";
+  }
+
+  function updateFloatingBtns() {
+    if (!scrollContainer) return;
     const show = scrollContainer.scrollTop > 300;
+    const hidePrev = isHomePage();
+
     topBtn?.classList.toggle("show", show);
-    prevBtn?.classList.toggle("show", show);
-  });
+    if (prevBtn) {
+      prevBtn.hidden = hidePrev;
+      prevBtn.classList.toggle("show", show && !hidePrev);
+    }
+  }
+
+  function bindScrollContainer() {
+    const nextContainer = getScrollContainer();
+    if (!nextContainer) return;
+
+    if (scrollContainer && scrollContainer !== nextContainer) {
+      scrollContainer.removeEventListener("scroll", updateFloatingBtns);
+    }
+
+    if (scrollContainer !== nextContainer) {
+      scrollContainer = nextContainer;
+      scrollContainer.addEventListener("scroll", updateFloatingBtns, { passive: true });
+    }
+
+    updateFloatingBtns();
+  }
+
+  bindScrollContainer();
+  window.addEventListener("resize", bindScrollContainer);
+  window.addEventListener("popstate", () => requestAnimationFrame(updateFloatingBtns));
+  if (typeof mobileQuery.addEventListener === "function") {
+    mobileQuery.addEventListener("change", bindScrollContainer);
+  } else if (typeof mobileQuery.addListener === "function") {
+    mobileQuery.addListener(bindScrollContainer);
+  }
+
+  if (!window.__floatingBtnsHistoryPatched) {
+    window.__floatingBtnsHistoryPatched = true;
+    ["pushState", "replaceState"].forEach((method) => {
+      const original = history[method];
+      history[method] = function (...args) {
+        const result = original.apply(this, args);
+        window.dispatchEvent(new Event("locationchange"));
+        return result;
+      };
+    });
+  }
+  window.addEventListener("locationchange", () => requestAnimationFrame(updateFloatingBtns));
 
   // 返回顶部（所有页面都要）
   topBtn?.addEventListener("click", () => {
-    scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+    const target = scrollContainer || getScrollContainer();
+    target?.scrollTo({ top: 0, behavior: "smooth" });
   });
 
   // 返回上一页：独立详情页（anime-detail.html / notes-detail.html）

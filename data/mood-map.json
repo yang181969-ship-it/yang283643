@@ -1,39 +1,39 @@
 {
-  "0":  { "emoji": "☀️",  "text": "晴" },
-  "1":  { "emoji": "🌤️", "text": "晴间多云" },
-  "2":  { "emoji": "⛅",  "text": "多云" },
-  "3":  { "emoji": "☁️",  "text": "阴" },
+  "0":  { "emoji": "☀️",  "text": "晴", "image": "happy.webp", "mood": "今天亮晶晶的" },
+  "1":  { "emoji": "🌤️", "text": "晴间多云", "image": "happy.webp", "mood": "阳光刚刚好" },
+  "2":  { "emoji": "⛅",  "text": "多云", "image": "relaxed.webp", "mood": "云很多，但心很轻" },
+  "3":  { "emoji": "☁️",  "text": "阴", "image": "sleepy.webp", "mood": "阴天适合慢慢醒来" },
 
-  "45": { "emoji": "🌫️", "text": "雾" },
-  "48": { "emoji": "🌫️", "text": "雾凇" },
+  "45": { "emoji": "🌫️", "text": "雾", "image": "shy.webp", "mood": "世界有点朦胧，先安静一下" },
+  "48": { "emoji": "🌫️", "text": "雾凇", "image": "shy.webp", "mood": "空气像藏起了小秘密" },
 
-  "51": { "emoji": "🌦️", "text": "小毛毛雨" },
-  "53": { "emoji": "🌦️", "text": "毛毛雨" },
-  "55": { "emoji": "🌧️", "text": "大毛毛雨" },
-  "56": { "emoji": "🌧️", "text": "冻毛毛雨" },
-  "57": { "emoji": "🌧️", "text": "强冻毛毛雨" },
+  "51": { "emoji": "🌦️", "text": "小毛毛雨", "image": "calm.webp", "mood": "小雨轻轻落下" },
+  "53": { "emoji": "🌦️", "text": "毛毛雨", "image": "calm.webp", "mood": "听雨也算一种休息" },
+  "55": { "emoji": "🌧️", "text": "大毛毛雨", "image": "sad.webp", "mood": "今天适合把节奏放软" },
+  "56": { "emoji": "🌧️", "text": "冻毛毛雨", "image": "sad.webp", "mood": "冷雨天，先照顾好自己" },
+  "57": { "emoji": "🌧️", "text": "强冻毛毛雨", "image": "scared.webp", "mood": "天气有点凶，出门慢一点" },
 
-  "61": { "emoji": "🌦️", "text": "小雨" },
-  "63": { "emoji": "🌧️", "text": "中雨" },
-  "65": { "emoji": "🌧️", "text": "大雨" },
-  "66": { "emoji": "🌧️", "text": "冻雨" },
-  "67": { "emoji": "🌧️", "text": "强冻雨" },
+  "61": { "emoji": "🌦️", "text": "小雨", "image": "calm.webp", "mood": "小雨轻轻落下" },
+  "63": { "emoji": "🌧️", "text": "中雨", "image": "sad.webp", "mood": "听雨也算一种休息" },
+  "65": { "emoji": "🌧️", "text": "大雨", "image": "sleepy.webp", "mood": "适合躲进温柔的小世界" },
+  "66": { "emoji": "🌧️", "text": "冻雨", "image": "scared.webp", "mood": "天气有点凶，出门慢一点" },
+  "67": { "emoji": "🌧️", "text": "强冻雨", "image": "scared.webp", "mood": "先把安全感放在第一位" },
 
-  "71": { "emoji": "🌨️", "text": "小雪" },
-  "73": { "emoji": "❄️",  "text": "中雪" },
-  "75": { "emoji": "❄️",  "text": "大雪" },
-  "77": { "emoji": "❄️",  "text": "霰" },
+  "71": { "emoji": "🌨️", "text": "小雪", "image": "surprised.webp", "mood": "今天有一点惊喜" },
+  "73": { "emoji": "❄️",  "text": "中雪", "image": "surprised.webp", "mood": "雪把日常变得特别" },
+  "75": { "emoji": "❄️",  "text": "大雪", "image": "surprised.webp", "mood": "窗外像换了一个世界" },
+  "77": { "emoji": "❄️",  "text": "霰", "image": "surprised.webp", "mood": "天空掉下了小惊喜" },
 
-  "80": { "emoji": "🌦️", "text": "小阵雨" },
-  "81": { "emoji": "🌧️", "text": "阵雨" },
-  "82": { "emoji": "⛈️", "text": "强阵雨" },
+  "80": { "emoji": "🌦️", "text": "小阵雨", "image": "calm.webp", "mood": "雨来得轻，心也慢一点" },
+  "81": { "emoji": "🌧️", "text": "阵雨", "image": "sad.webp", "mood": "等一阵雨过去" },
+  "82": { "emoji": "⛈️", "text": "强阵雨", "image": "scared.webp", "mood": "天气有点凶，先躲一躲" },
 
-  "85": { "emoji": "🌨️", "text": "小阵雪" },
-  "86": { "emoji": "❄️",  "text": "强阵雪" },
+  "85": { "emoji": "🌨️", "text": "小阵雪", "image": "surprised.webp", "mood": "雪花来打招呼了" },
+  "86": { "emoji": "❄️",  "text": "强阵雪", "image": "surprised.webp", "mood": "今天有一点戏剧感" },
 
-  "95": { "emoji": "⛈️", "text": "雷阵雨" },
-  "96": { "emoji": "⛈️", "text": "雷阵雨夹冰雹" },
-  "99": { "emoji": "⛈️", "text": "强雷阵雨夹冰雹" },
+  "95": { "emoji": "⛈️", "text": "雷阵雨", "image": "scared.webp", "mood": "先躲进自己的小世界" },
+  "96": { "emoji": "⛈️", "text": "雷阵雨夹冰雹", "image": "scared.webp", "mood": "天气很激烈，别急着出门" },
+  "99": { "emoji": "⛈️", "text": "强雷阵雨夹冰雹", "image": "scared.webp", "mood": "先把安全感放在第一位" },
 
-  "default": { "emoji": "🌸", "text": "" }
+  "default": { "emoji": "🌸", "text": "天气", "image": "relaxed.webp", "mood": "今天也慢慢来" }
 }

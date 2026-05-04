@@ -118,6 +118,51 @@
   }
 }
 
+@media (max-width: 900px) {
+  .rail-widget--calendar {
+    container-type: inline-size;
+    gap: 6px;
+
+    .cal-weekdays,
+    .cal-grid {
+      width: min(100%, 440px);
+      margin-inline: auto;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      justify-content: stretch;
+      gap: clamp(1px, 0.35cqw, 3px);
+    }
+
+    .cal-weekdays {
+      margin-bottom: 1px;
+      font-size: 10px;
+      line-height: 1.2;
+
+      span {
+        padding: 0;
+      }
+    }
+
+    .cal-grid {
+      grid-auto-rows: clamp(20px, 3.8cqw, 22px);
+    }
+
+    .cal-day {
+      aspect-ratio: auto;
+      width: 100%;
+      min-width: 0;
+      min-height: 0;
+      font-size: 11px;
+      line-height: 1;
+      border-radius: 7px;
+    }
+
+    .cal-day--today::before {
+      width: clamp(20px, 3.8cqw, 23px);
+      height: clamp(20px, 3.8cqw, 23px);
+    }
+  }
+}
+
 // 暗色模式微调
 [data-theme="dark"] .rail-widget--calendar {
   .cal-day--today::before {
