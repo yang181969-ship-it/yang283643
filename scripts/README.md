@@ -15,6 +15,7 @@
 | `npm run optimize:gallery` | 处理画廊图片 |
 | `npm run update:refs` | 根据图片重命名映射更新动漫页引用 |
 | `npm run optimize:portraits` | 处理人像、装饰图、心情头像 |
+| `npm run portrait:rotation` | 生成主页人像每日轮换顺序 |
 | `npm run purgecss` | 诊断未使用 CSS |
 | `npm run music:add -- ...` | 添加一首或批量添加音乐到播放器歌单 |
 
@@ -168,6 +169,37 @@ npm run optimize:portraits
 - 原图备份到 `assets/_originals/` 对应目录。
 - 如果 PNG 被转成 WebP,脚本会列出需要检查引用的文件名。
 
+### generate-portrait-rotation.mjs
+
+命令:
+
+```bash
+npm run portrait:rotation
+```
+
+作用:
+
+- 扫描 `assets/portrait/q` 和 `assets/portrait/half`。
+- 为两组主页卡片人像生成一个稳定打乱的每日轮换顺序。
+- 写入 `data/portrait-rotation.json`,供 `js/home-cards.js` 在首页读取。
+- 首页会按浏览器本地日期计算当天图片,并在每天零点后自动刷新。
+
+常用参数:
+
+| 选项 | 说明 |
+| --- | --- |
+| `--start-date YYYY-MM-DD` | 指定轮换起始日。当天使用顺序里的第 1 张图 |
+| `--seed "文本"` | 指定稳定洗牌种子。同一组图片和 seed 会生成同一顺序 |
+| `--dry-run` | 只预览生成结果,不写入文件 |
+
+推荐命令:
+
+```bash
+npm run portrait:rotation -- --start-date 2026-05-04 --seed portrait-rotation-v1
+```
+
+新增、删除或替换 `q` / `half` 图片后,重新运行一次这个命令即可更新轮换数据。
+
 ## CSS 与性能脚本
 
 ### 4-purgecss.mjs
@@ -231,6 +263,16 @@ node scripts/split-notes.mjs
 
 这是 `1-rename-anime-images.js` 生成的图片路径映射文件,不是手写脚本。`3-update-html-references.js` 会读取它来替换动漫页和详情页里的图片引用。
 
+### portrait-rotation.json
+
+这是 `generate-portrait-rotation.mjs` 生成的主页人像每日轮换数据。`js/home-cards.js` 会读取其中的 `startDate` 和 `sets.q` / `sets.half`,按当天日期选择首页卡片右下角的人像图片。
+
+这个文件可以手动检查顺序,但通常不建议手写维护。需要换顺序时重新运行:
+
+```bash
+npm run portrait:rotation -- --start-date 2026-05-04 --seed portrait-rotation-v1
+```
+
 ## 常见工作流
 
 ### 新增主页音乐
@@ -265,6 +307,13 @@ npm run music:add -- "songs" --batch
 2. 运行 `npm run optimize:gallery`。
 3. 运行 `python generate_gallery_data.py`。
 4. 检查画廊页布局和图片加载。
+
+### 更新主页人像每日轮换
+
+1. 把图片放进 `assets/portrait/q/` 或 `assets/portrait/half/`。
+2. 如有需要,先运行 `npm run optimize:portraits` 压缩图片。
+3. 运行 `npm run portrait:rotation -- --start-date 2026-05-04 --seed portrait-rotation-v1`。
+4. 检查 `data/portrait-rotation.json` 和主页卡片图片显示。
 
 ### 重新构建样式与首屏 CSS
 

@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ===== 辉光开关（面板内，可选；HTML 里还没加） ===== */
+  /* ===== 辉光开关（面板内，可选） ===== */
   if (glowToggle) {
     glowToggle.addEventListener("click", () => {
       const current = root.getAttribute("data-glow") || "on";

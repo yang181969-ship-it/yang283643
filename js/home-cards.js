@@ -16,6 +16,7 @@
   const TOKYO_LAT      = 35.6762;
   const TOKYO_LNG      = 139.6503;
   const MOOD_REFRESH_MS = 1000 * 60 * 60;                       // 60 分钟
+  const PORTRAIT_REFRESH_BUFFER_MS = 1000;                      // 零点后 1 秒刷新
   const WALINE_API     = "https://yang283643-waline.vercel.app";
   const STORAGE_PREFIX = "y181_";
 
@@ -39,6 +40,7 @@
   // 同会话内存缓存
   const memCache = new Map();
   let moodRefreshTimer = null;
+  let portraitRefreshTimer = null;
 
   // ---------------- 缓存核心 ----------------
   /**
@@ -112,6 +114,20 @@
     const file = String(image || "relaxed.webp").replace(/[^a-z0-9._-]/gi, "");
     return `assets/mood/${file || "relaxed.webp"}`;
   }
+  function localDayNumber(date) {
+    return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000);
+  }
+  function parseDateKey(key) {
+    const m = String(key || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  function pickDailyImage(images, startDate) {
+    if (!Array.isArray(images) || !images.length) return "";
+    const start = parseDateKey(startDate) || new Date();
+    const offset = Math.max(0, localDayNumber(new Date()) - localDayNumber(start));
+    return images[offset % images.length] || "";
+  }
 
   // ---------------- 数据源 ----------------
   async function fetchJson(url) {
@@ -123,6 +139,7 @@
   const fetchAbout    = () => fetchJson("data/about.json");
   const fetchMoodMap  = () => fetchJson("data/mood-map.json");
   const fetchNotes    = () => fetchJson("data/notes-index.json");
+  const fetchPortraitRotation = () => fetchJson("data/portrait-rotation.json");
 
   async function fetchUpdates() {
   const index = await fetchJson("data/updates-index.json");
@@ -221,6 +238,23 @@
       `);
     } catch {
       setBody(card, `<p class="bento-text bento-text--muted">东京天气获取失败</p>`);
+    }
+  }
+
+  async function renderPortraitRotation() {
+    const qImg = document.querySelector(".bento-card-deco--portrait-q img");
+    const halfImg = document.querySelector(".bento-card-deco--portrait-half img");
+    if (!qImg && !halfImg) return;
+
+    try {
+      const data = await fetchPortraitRotation();
+      const qSrc = pickDailyImage(data.sets?.q, data.startDate);
+      const halfSrc = pickDailyImage(data.sets?.half, data.startDate);
+
+      if (qImg && qSrc && qImg.getAttribute("src") !== qSrc) qImg.src = qSrc;
+      if (halfImg && halfSrc && halfImg.getAttribute("src") !== halfSrc) halfImg.src = halfSrc;
+    } catch (err) {
+      console.warn("[home-cards] portrait rotation fetch failed:", err);
     }
   }
 
@@ -421,6 +455,8 @@
 
   // ---------------- 入口 ----------------
   function initHomeCards() {
+    renderPortraitRotation();
+    schedulePortraitRefresh();
     renderIntro();
     renderMood();
     scheduleMoodRefresh();
@@ -439,6 +475,19 @@
       memCache.delete("mood");
       renderMood();
     }, MOOD_REFRESH_MS);
+  }
+
+  function schedulePortraitRefresh() {
+    if (portraitRefreshTimer) window.clearTimeout(portraitRefreshTimer);
+
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const delay = Math.max(1000, nextMidnight.getTime() - now.getTime() + PORTRAIT_REFRESH_BUFFER_MS);
+
+    portraitRefreshTimer = window.setTimeout(() => {
+      renderPortraitRotation();
+      schedulePortraitRefresh();
+    }, delay);
   }
 
   window.initHomeCards = initHomeCards;
