@@ -16,6 +16,7 @@
     "optimize:portraits": "node scripts/4-optimize-portraits.mjs",
   
     "purgecss": "node scripts/4-purgecss.mjs",
+    "music:add": "node scripts/add-music.mjs",
 
     "build:all": "npm run build && npm run build:critical && npm run inline:critical"
   },

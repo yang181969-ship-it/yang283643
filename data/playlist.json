@@ -34,6 +34,13 @@
       "artist": "R3HAB, Vini Vici, Pangea, Dego",
       "src": "assets/music/alive.mp3",
       "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-006",
+      "title": "倒数",
+      "artist": "G.E.M.邓紫棋",
+      "src": "assets/music/倒数.mp3",
+      "lyric": "歌词待补充"
     }
   ]
 }

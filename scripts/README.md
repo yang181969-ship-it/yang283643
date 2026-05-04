@@ -1,53 +1,275 @@
-# 构建脚本说明
+# 构建与维护脚本说明
 
-## 图片优化工作流(按数字顺序)
+所有命令默认在项目根目录运行。`scripts/` 里的脚本大多会修改项目文件,运行前建议先确认 `git status` 干净,方便回退和对比。
+
+## 常用 npm scripts
+
+| 命令 | 作用 |
+| --- | --- |
+| `npm run dev` | 监听 `css/scss/main.scss`,实时编译到 `css/style.css` |
+| `npm run build` | 编译并压缩完整样式到 `css/style.css` |
+| `npm run build:critical` | 编译首屏关键样式到 `css/critical.css` |
+| `npm run inline:critical` | 把 `css/critical.css` 内联到指定 HTML |
+| `npm run build:all` | 依次执行完整 CSS、critical CSS、critical 内联 |
+| `npm run optimize:animes` | 处理动漫页图片 |
+| `npm run optimize:gallery` | 处理画廊图片 |
+| `npm run update:refs` | 根据图片重命名映射更新动漫页引用 |
+| `npm run optimize:portraits` | 处理人像、装饰图、心情头像 |
+| `npm run purgecss` | 诊断未使用 CSS |
+| `npm run music:add -- ...` | 添加一首或批量添加音乐到播放器歌单 |
+
+## 音乐维护
+
+### add-music.mjs
+
+作用:复制一首或多首音频到 `assets/music/`,并追加到 `data/playlist.json`。
+
+单曲命令:
+
+```bash
+npm run music:add -- "assets/music/new-song.mp3" --title "New Song" --artist "Artist"
+```
+
+多个文件:
+
+```bash
+npm run music:add -- "song-a.mp3" "song-b.mp3" "song-c.mp3"
+```
+
+文件夹批量扫描:
+
+```bash
+npm run music:add -- "songs" --batch
+```
+
+递归扫描文件夹和子文件夹:
+
+```bash
+npm run music:add -- "songs" --batch --recursive
+```
+
+也可以直接运行:
+
+```bash
+node scripts/add-music.mjs "assets/music/new-song.mp3" --title "New Song" --artist "Artist"
+```
+
+常用选项:
+
+| 选项 | 说明 |
+| --- | --- |
+| `--title "歌名"` | 歌名。不填时从文件名推断 |
+| `--artist "歌手"` | 歌手。不填时优先从 `歌手 - 歌名.mp3` 推断,否则为 `未知歌手` |
+| `--id "track-006"` | 自定义歌曲 id。不填时自动生成下一个 `track-xxx` |
+| `--filename "song-name.mp3"` | 指定复制后的文件名。不填时自动生成 |
+| `--batch` | 把传入的文件夹作为歌曲目录扫描 |
+| `--recursive` | 配合 `--batch` 递归扫描子文件夹 |
+| `--dry-run` | 只预览,不复制文件也不修改歌单 |
+
+行为说明:
+
+- 支持 `.mp3`、`.m4a`、`.aac`、`.ogg`、`.wav`、`.flac`,网页播放建议优先用 `.mp3`。
+- 如果音频已经在 `assets/music/`,脚本会直接使用现有文件,不会重复复制。
+- 批量添加时,建议文件名写成 `歌手 - 歌名.mp3`,脚本会自动拆出歌手和歌名。
+- 批量添加时不支持 `--title`、`--id`、`--filename`,因为每首歌都需要不同值。
+- 批量添加时可以使用 `--artist "默认歌手"`,给无法从文件名推断歌手的文件兜底。
+- 自动写入的字段是 `id`、`title`、`artist`、`src`、`lyric`。
+- 歌词暂时统一写成 `"歌词待补充"`。以后确定歌词方案后,再把播放器升级为 `lyricSrc` 按需加载。
+- 自动生成文件名发生冲突时,会追加 `-2`、`-3`；如果手动指定 `--filename` 且冲突,脚本会报错,避免覆盖旧文件。
+
+新增音乐的推荐流程:
+
+1. 准备一个音频文件,优先用 `.mp3`。
+2. 运行 `npm run music:add -- "音频路径" --title "歌名" --artist "歌手"`。
+3. 打开 `data/playlist.json` 简单检查新增条目。
+4. 本地打开主页,测试播放、上一首、下一首和歌单浮层。
+
+批量新增音乐的推荐流程:
+
+1. 把要添加的音乐放进一个临时文件夹,例如 `songs/`。
+2. 尽量把文件名整理成 `歌手 - 歌名.mp3`。
+3. 先运行 `npm run music:add -- "songs" --batch --dry-run` 预览。
+4. 确认无误后运行 `npm run music:add -- "songs" --batch`。
+5. 打开 `data/playlist.json` 和主页播放器检查结果。
+
+## 图片优化脚本
 
 ### 1-rename-anime-images.js
-- 作用:压缩 `assets/animes/` 并按 id 重命名为 `{id}-cover.webp` / `{id}-N.webp`
-- 命令:`npm run optimize:animes`
-- 输出:`rename-mapping.json`(给第 3 步用)
-- 原图备份到 `assets/_originals/`
+
+命令:
+
+```bash
+npm run optimize:animes
+```
+
+作用:
+
+- 处理 `assets/animes/` 中的动漫图片。
+- 根据脚本内的 `ANIME_RENAME_MAP` 把原图重命名为 `{animeId}-cover.webp`、`{animeId}-1.webp` 等。
+- 按图片体积动态选择 WebP 质量。
+- WebP 体积收益不足时回退保留原格式。
+- 原图移动到 `assets/_originals/animes/`。
+- 生成 `scripts/rename-mapping.json`,供 `3-update-html-references.js` 使用。
+
+新增动漫图片时,需要先在脚本里的 `ANIME_RENAME_MAP` 增加条目。
 
 ### 2-optimize-gallery.js
-- 作用:压缩 `assets/gallery/` 的图片,保留原文件名
-- 命令:`npm run optimize:gallery`
+
+命令:
+
+```bash
+npm run optimize:gallery
+```
+
+作用:
+
+- 扫描 `assets/gallery/` 下的 `jpg`、`jpeg`、`png`。
+- 转换为 WebP,保留原文件名主干。
+- 小于 50 KB 的图片会跳过。
+- WebP 收益不足时保留原图。
+- 转换成功的原图移动到 `assets/_originals/gallery/`。
+
+跑完后通常还需要更新画廊数据:
+
+```bash
+python generate_gallery_data.py
+```
 
 ### 3-update-html-references.js
-- 作用:读 `rename-mapping.json`,自动更新 HTML 里的图片引用
-- 命令:`npm run update:refs`
-- 会生成 `.bak` 备份文件,确认无误后手动删
+
+命令:
+
+```bash
+npm run update:refs
+```
+
+作用:
+
+- 读取 `scripts/rename-mapping.json`。
+- 更新 `html/anime.html` 和 `js/anime-detail.js` 里的旧图片路径。
+- 修改前会生成 `.bak` 备份。
+
+这个脚本通常在 `npm run optimize:animes` 之后运行。
 
 ### 4-optimize-portraits.mjs
-- 作用：`assets/decoration/`的图片，保留原文件名
-- 命令：`npm run optimize:portraits`
 
-### 压缩策略(1 和 2 共用)
-- 动态质量:>500KB 用 92,200-500KB 用 85,100-200KB 用 82,<100KB 用 78
-- PNG 透明图用无损
-- webp 反而变大时回退保留原图(.jpg)
+命令:
 
----
+```bash
+npm run optimize:portraits
+```
 
-## 诊断工具
+作用:
+
+- 处理 `assets/portrait/q`、`assets/portrait/half`、`assets/decoration`、`assets/mood`。
+- PNG 带透明通道时使用无损 WebP。
+- 不透明 PNG 使用有损 WebP,质量按体积选择。
+- 已存在的 WebP 会尝试重编码,只有节省超过约 5% 才替换。
+- 原图备份到 `assets/_originals/` 对应目录。
+- 如果 PNG 被转成 WebP,脚本会列出需要检查引用的文件名。
+
+## CSS 与性能脚本
 
 ### 4-purgecss.mjs
-- 作用:扫描 HTML/JS 找未使用的 CSS 选择器
-- 命令:`npm run purgecss`
-- 输出:`css/purged/style.css`(诊断用,不是生产文件)
-- 结论:2026-04 跑过一次,仅节省 2.1%,证明源码已很精炼,不进构建流程
 
----
+命令:
 
-## 新增动漫的标准工作流
+```bash
+npm run purgecss
+```
 
-1. 图片丢进 `assets/animes/`(中文名随意)
-2. 编辑 `1-rename-anime-images.js` 的 `ANIME_RENAME_MAP` 加条目
-3. 编辑 `js/anime-detail.js` 的 `animeData` 加条目
-4. 编辑 `html/anime.html` 加 `anime-item` 卡片
-5. 跑:`npm run optimize:animes` → `npm run update:refs` → `npm run build`
-6. 确认无误后删 `.bak` 文件 → `git push`
+作用:
 
-## 新增画廊图的简化工作流
+- 扫描 `index.html`、`html/**/*.html`、`js/**/*.js`。
+- 对 `css/style.css` 做未使用选择器诊断。
+- 输出到 `css/purged/style.css`。
 
-1. 图片丢进 `assets/gallery/real/` 或 `assets/gallery/anime/`
-2. 跑:`npm run optimize:gallery` → `python generate_gallery_data.py`
+注意:这是诊断工具,不在正式构建链路里。Waline、KaTeX、highlight.js 等动态类名已经做了 safelist。
+
+### 5-inline-critical.mjs
+
+命令:
+
+```bash
+npm run inline:critical
+```
+
+作用:
+
+- 读取 `css/critical.css`。
+- 内联到 `index.html`、`html/anime-detail.html`、`html/notes-detail.html`。
+- 把完整 `css/style.css` 改成异步加载。
+- 修改前会生成 `.bak` 备份。
+- 如果检测到已经内联过,会跳过,避免重复插入。
+
+通常由 `npm run build:all` 间接执行。
+
+## 内容维护脚本
+
+### split-notes.mjs
+
+命令:
+
+```bash
+node scripts/split-notes.mjs
+```
+
+作用:
+
+- 读取 `data/notes-index.json`。
+- 把每个"合集 Markdown"按 `---` 分隔拆成一篇一个文件。
+- 拆出的文件写入原 Markdown 同名子目录。
+- 根据标题生成安全文件名。
+- 重写 `data/notes-index.json`。
+- 删除原合集 Markdown 文件。
+
+注意:这个脚本会删除原合集文件,运行前务必确认当前改动已经提交或有备份。
+
+## 数据文件
+
+### rename-mapping.json
+
+这是 `1-rename-anime-images.js` 生成的图片路径映射文件,不是手写脚本。`3-update-html-references.js` 会读取它来替换动漫页和详情页里的图片引用。
+
+## 常见工作流
+
+### 新增主页音乐
+
+```bash
+npm run music:add -- "assets/music/song.mp3" --title "Song" --artist "Artist"
+```
+
+批量新增:
+
+```bash
+npm run music:add -- "songs" --batch --dry-run
+npm run music:add -- "songs" --batch
+```
+
+然后检查 `data/playlist.json` 和主页播放器。
+
+### 新增动漫图片
+
+1. 图片放进 `assets/animes/`。
+2. 编辑 `scripts/1-rename-anime-images.js` 的 `ANIME_RENAME_MAP`。
+3. 编辑 `js/anime-detail.js` 的动漫数据。
+4. 编辑 `html/anime.html` 的动漫卡片。
+5. 运行 `npm run optimize:animes`。
+6. 运行 `npm run update:refs`。
+7. 运行 `npm run build`。
+8. 检查页面无误后删除 `.bak`。
+
+### 新增画廊图片
+
+1. 图片放进 `assets/gallery/real/` 或 `assets/gallery/anime/`。
+2. 运行 `npm run optimize:gallery`。
+3. 运行 `python generate_gallery_data.py`。
+4. 检查画廊页布局和图片加载。
+
+### 重新构建样式与首屏 CSS
+
+```bash
+npm run build:all
+```
+
+检查无误后,可以删除本次生成的 `.bak` 文件。
