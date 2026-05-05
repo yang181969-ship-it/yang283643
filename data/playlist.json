@@ -9,37 +9,37 @@
     },
     {
       "id": "track-002",
-      "title": "Everyday Normal Guy 2",
-      "artist": "Jon Lajoie",
-      "src": "assets/music/everyday-normal-guy.mp3",
+      "title": "倒数",
+      "artist": "G.E.M.邓紫棋",
+      "src": "assets/music/倒数.mp3",
       "lyric": "歌词待补充"
     },
     {
       "id": "track-003",
-      "title": "Do-Re-Mi",
-      "artist": "Julie Andrews & Cast",
-      "src": "assets/music/do-re-mi.mp3",
+      "title": "鹿 be free",
+      "artist": "尚雯婕",
+      "src": "assets/music/鹿-be-free.mp3",
       "lyric": "歌词待补充"
     },
     {
       "id": "track-004",
-      "title": "From The Start",
-      "artist": "Laufey & Spencer Stewart",
-      "src": "assets/music/from-the-start.mp3",
+      "title": "夏日漱石 (Summer Cozy Rock)",
+      "artist": "橘子海",
+      "src": "assets/music/夏日漱石-summer-cozy-rock.mp3",
       "lyric": "歌词待补充"
     },
     {
       "id": "track-005",
-      "title": "Alive",
-      "artist": "R3HAB, Vini Vici, Pangea, Dego",
-      "src": "assets/music/alive.mp3",
+      "title": "F1",
+      "artist": "Hans Zimmer",
+      "src": "assets/music/F1.mp3",
       "lyric": "歌词待补充"
     },
     {
       "id": "track-006",
-      "title": "倒数",
-      "artist": "G.E.M.邓紫棋",
-      "src": "assets/music/倒数.mp3",
+      "title": "Lose My Mind (feat. Doja Cat)",
+      "artist": "Don Toliver/Doja Cat",
+      "src": "assets/music/Lose My Mind.mp3",
       "lyric": "歌词待补充"
     }
   ]

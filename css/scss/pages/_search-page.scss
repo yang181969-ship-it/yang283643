@@ -1,5 +1,6 @@
 // ============================================================
-// 搜索结果页
+// 搜索结果页（旧入口兼容）
+// 现在首页搜索使用右上角浮层，主体不再被替换。
 // ============================================================
 
 .search-page {
@@ -7,12 +8,7 @@
 }
 
 .search-result-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
-  }
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .search-result-meta {

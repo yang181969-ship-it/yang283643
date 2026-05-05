@@ -18,12 +18,25 @@
 | `npm run portrait:rotation` | 生成主页人像每日轮换顺序 |
 | `npm run purgecss` | 诊断未使用 CSS |
 | `npm run music:add -- ...` | 添加一首或批量添加音乐到播放器歌单 |
+| `npm run music:sync` | 扫描 `assets/music/`,把尚未加入歌单的音频自动追加到播放器歌单 |
 
 ## 音乐维护
 
 ### add-music.mjs
 
 作用:复制一首或多首音频到 `assets/music/`,并追加到 `data/playlist.json`。
+
+同步 `assets/music/` 里的新增文件:
+
+```bash
+npm run music:sync
+```
+
+先预览同步结果,不写入歌单:
+
+```bash
+npm run music:sync -- --dry-run
+```
 
 单曲命令:
 
@@ -63,6 +76,7 @@ node scripts/add-music.mjs "assets/music/new-song.mp3" --title "New Song" --arti
 | `--artist "歌手"` | 歌手。不填时优先从 `歌手 - 歌名.mp3` 推断,否则为 `未知歌手` |
 | `--id "track-006"` | 自定义歌曲 id。不填时自动生成下一个 `track-xxx` |
 | `--filename "song-name.mp3"` | 指定复制后的文件名。不填时自动生成 |
+| `--sync` | 扫描 `assets/music/`,只追加歌单里尚未存在的音频 |
 | `--batch` | 把传入的文件夹作为歌曲目录扫描 |
 | `--recursive` | 配合 `--batch` 递归扫描子文件夹 |
 | `--dry-run` | 只预览,不复制文件也不修改歌单 |
@@ -70,6 +84,7 @@ node scripts/add-music.mjs "assets/music/new-song.mp3" --title "New Song" --arti
 行为说明:
 
 - 支持 `.mp3`、`.m4a`、`.aac`、`.ogg`、`.wav`、`.flac`,网页播放建议优先用 `.mp3`。
+- MP3 会优先读取文件元数据里的标题和歌手；读不到时再从文件名推断。
 - 如果音频已经在 `assets/music/`,脚本会直接使用现有文件,不会重复复制。
 - 批量添加时,建议文件名写成 `歌手 - 歌名.mp3`,脚本会自动拆出歌手和歌名。
 - 批量添加时不支持 `--title`、`--id`、`--filename`,因为每首歌都需要不同值。
@@ -81,9 +96,21 @@ node scripts/add-music.mjs "assets/music/new-song.mp3" --title "New Song" --arti
 新增音乐的推荐流程:
 
 1. 准备一个音频文件,优先用 `.mp3`。
-2. 运行 `npm run music:add -- "音频路径" --title "歌名" --artist "歌手"`。
-3. 打开 `data/playlist.json` 简单检查新增条目。
-4. 本地打开主页,测试播放、上一首、下一首和歌单浮层。
+2. 放进 `assets/music/` 后运行 `npm run music:sync -- --dry-run` 预览。
+3. 确认无误后运行 `npm run music:sync`。
+4. 打开 `data/playlist.json` 简单检查新增条目。
+5. 本地打开主页,测试播放、上一首、下一首和歌单浮层。
+
+如果想从别的位置复制一首歌进来,也可以运行:
+
+```bash
+npm run music:add -- "音频路径" --title "歌名" --artist "歌手"
+```
+
+然后:
+
+1. 打开 `data/playlist.json` 简单检查新增条目。
+2. 本地打开主页,测试播放、上一首、下一首和歌单浮层。
 
 批量新增音乐的推荐流程:
 
@@ -278,7 +305,8 @@ npm run portrait:rotation -- --start-date 2026-05-04 --seed portrait-rotation-v1
 ### 新增主页音乐
 
 ```bash
-npm run music:add -- "assets/music/song.mp3" --title "Song" --artist "Artist"
+npm run music:sync -- --dry-run
+npm run music:sync
 ```
 
 批量新增:

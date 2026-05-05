@@ -31,6 +31,8 @@
     parsedLyrics: [],   // [{ time: number(秒), text: string }] 或 [] 表示纯文本
     plainLyric: '',
     activeLyricIdx: -1,
+    playlistQuery: '',
+    pendingTrackRequest: null,
   };
 
   // ---- DOM ----
@@ -39,7 +41,7 @@
       progressEl, progressBarEl, timeCurEl, timeTotEl,
       loopBtn, prevBtn, playBtn, nextBtn, playlistBtn,
       lyricsToggleBtn, lyricsEl, lyricsInnerEl,
-      modalEl, modalListEl, modalCountEl;
+      modalEl, modalListEl, modalCountEl, modalSearchEl, modalEmptyEl;
 
   function getSiteRootUrl() {
     const script = document.currentScript
@@ -77,6 +79,8 @@
     modalEl   = document.querySelector('[data-music-modal]');
     modalListEl  = modalEl?.querySelector('[data-music-modal-list]');
     modalCountEl = modalEl?.querySelector('[data-music-modal-count]');
+    modalSearchEl = modalEl?.querySelector('[data-music-modal-search]');
+    modalEmptyEl = modalEl?.querySelector('[data-music-modal-empty]');
 
     bindEvents();
     restoreLoop();
@@ -101,6 +105,7 @@
       enableControls();
       renderPlaylistModal();
       restorePlayback();
+      playPendingTrackRequest();
     } catch (err) {
       console.warn('[music] 加载歌单失败:', err);
     }
@@ -180,6 +185,42 @@
         updatePlayingState(false);
       });
     }
+  }
+
+  function getRequestedTrackIndex(detail) {
+    if (!detail || state.tracks.length === 0) return -1;
+
+    if (detail.id) {
+      const idx = state.tracks.findIndex((track) => track.id === detail.id);
+      if (idx >= 0) return idx;
+    }
+
+    if (Number.isInteger(detail.index) && detail.index >= 0 && detail.index < state.tracks.length) {
+      return detail.index;
+    }
+
+    if (detail.title) {
+      return state.tracks.findIndex((track) => track.title === detail.title);
+    }
+
+    return -1;
+  }
+
+  function playRequestedTrack(detail) {
+    const idx = getRequestedTrackIndex(detail);
+    if (idx < 0) {
+      state.pendingTrackRequest = detail;
+      return;
+    }
+
+    state.pendingTrackRequest = null;
+    loadTrack(idx, true);
+    root?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function playPendingTrackRequest() {
+    if (!state.pendingTrackRequest) return;
+    playRequestedTrack(state.pendingTrackRequest);
   }
 
   function prevTrack() {
@@ -346,13 +387,16 @@
     modalListEl.innerHTML = '';
     const frag = document.createDocumentFragment();
     state.tracks.forEach((track, i) => {
+      const title = track.title || '未命名';
+      const artist = track.artist || '—';
       const li = document.createElement('li');
       li.dataset.idx = i;
+      li.dataset.search = normalizeSearchText(`${title} ${artist}`);
       li.innerHTML = `
         <span class="music-modal__index">${String(i + 1).padStart(2, '0')}</span>
         <div class="music-modal__info">
-          <span class="music-modal__name">${escapeHtml(track.title || '未命名')}</span>
-          <span class="music-modal__sub">${escapeHtml(track.artist || '—')}</span>
+          <span class="music-modal__name">${escapeHtml(title)}</span>
+          <span class="music-modal__sub">${escapeHtml(artist)}</span>
         </div>
         <span class="music-modal__playing" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4"  y="10" width="3" height="10" rx="1"><animate attributeName="height" values="4;14;4" dur="0.8s" repeatCount="indefinite"/><animate attributeName="y" values="14;6;14" dur="0.8s" repeatCount="indefinite"/></rect><rect x="10" y="6"  width="3" height="14" rx="1"><animate attributeName="height" values="14;4;14" dur="0.8s" repeatCount="indefinite"/><animate attributeName="y" values="6;14;6"  dur="0.8s" repeatCount="indefinite"/></rect><rect x="16" y="10" width="3" height="10" rx="1"><animate attributeName="height" values="10;4;10" dur="0.6s" repeatCount="indefinite"/><animate attributeName="y" values="10;14;10" dur="0.6s" repeatCount="indefinite"/></rect></svg>
@@ -365,22 +409,63 @@
       frag.appendChild(li);
     });
     modalListEl.appendChild(frag);
-    if (modalCountEl) modalCountEl.textContent = `${state.tracks.length} 首`;
+    applyPlaylistSearch();
     updatePlaylistModalActive();
   }
 
   function updatePlaylistModalActive() {
     if (!modalListEl) return;
-    modalListEl.querySelectorAll('li').forEach((li, i) => {
-      li.classList.toggle('is-current', i === state.currentIndex);
+    modalListEl.querySelectorAll('li').forEach((li) => {
+      li.classList.toggle('is-current', Number(li.dataset.idx) === state.currentIndex);
     });
+  }
+
+  function normalizeSearchText(value) {
+    return String(value || '').normalize('NFKC').toLowerCase();
+  }
+
+  function updatePlaylistModalCount(visibleCount) {
+    if (!modalCountEl) return;
+    const total = state.tracks.length;
+    const query = state.playlistQuery.trim();
+    modalCountEl.textContent = query ? `${visibleCount} / ${total} 首` : `${total} 首`;
+  }
+
+  function applyPlaylistSearch() {
+    if (!modalListEl) {
+      updatePlaylistModalCount(state.tracks.length);
+      return;
+    }
+
+    const query = normalizeSearchText(state.playlistQuery);
+    let visibleCount = 0;
+    modalListEl.querySelectorAll('li').forEach((li) => {
+      const isMatch = !query || (li.dataset.search || '').includes(query);
+      li.hidden = !isMatch;
+      if (isMatch) visibleCount += 1;
+    });
+
+    if (modalEmptyEl) {
+      modalEmptyEl.hidden = visibleCount > 0 || state.tracks.length === 0;
+    }
+    updatePlaylistModalCount(visibleCount);
+  }
+
+  function clearPlaylistSearch() {
+    state.playlistQuery = '';
+    if (modalSearchEl) modalSearchEl.value = '';
+    applyPlaylistSearch();
   }
 
   function openModal() {
     if (!modalEl) return;
     modalEl.hidden = false;
     modalEl.setAttribute('aria-hidden', 'false');
-    requestAnimationFrame(() => modalEl.classList.add('is-visible'));
+    applyPlaylistSearch();
+    requestAnimationFrame(() => {
+      modalEl.classList.add('is-visible');
+      modalSearchEl?.focus({ preventScroll: true });
+    });
   }
 
   function closeModal() {
@@ -389,6 +474,7 @@
     setTimeout(() => {
       modalEl.hidden = true;
       modalEl.setAttribute('aria-hidden', 'true');
+      clearPlaylistSearch();
     }, 240);
   }
 
@@ -473,6 +559,20 @@
     // 浮层关闭
     modalEl?.querySelectorAll('[data-music-modal-close]').forEach((el) => {
       el.addEventListener('click', closeModal);
+    });
+    modalSearchEl?.addEventListener('input', () => {
+      state.playlistQuery = modalSearchEl.value;
+      applyPlaylistSearch();
+    });
+    modalSearchEl?.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      const firstMatch = modalListEl?.querySelector('li:not([hidden])');
+      if (!firstMatch) return;
+      e.preventDefault();
+      firstMatch.click();
+    });
+    window.addEventListener('y181:music-play-track', (event) => {
+      playRequestedTrack(event.detail || {});
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && modalEl?.classList.contains('is-visible')) closeModal();
