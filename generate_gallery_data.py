@@ -14,6 +14,9 @@ CATEGORIES = ["real", "anime"]
 COLUMN_COUNT = 5
 BASE_COLUMN_WIDTH = 300
 
+# 图片文件名编号宽度：001.webp、002.webp ...
+FILENAME_NUMBER_WIDTH = 3
+
 
 def natural_sort_key(text: str):
     parts = re.split(r"(\d+)", text.lower())
@@ -52,6 +55,90 @@ def get_image_key(src: str) -> str:
     return "/".join([*dirs, stem])
 
 
+def get_supported_files(category_dir):
+    return sorted(
+        (
+            file
+            for file in category_dir.iterdir()
+            if file.is_file() and file.suffix.lower() in SUPPORTED_EXTS
+        ),
+        key=lambda file: natural_sort_key(file.name),
+    )
+
+
+def build_numbered_filename(index, suffix):
+    return f"{index:0{FILENAME_NUMBER_WIDTH}d}{suffix.lower()}"
+
+
+def apply_rename_plan(rename_plan):
+    if not rename_plan:
+        return 0
+
+    original_sources = {source for source, _ in rename_plan}
+    target_paths = [target for _, target in rename_plan]
+
+    if len(target_paths) != len(set(target_paths)):
+        raise ValueError("重命名目标出现重复，请检查画廊图片文件名")
+
+    for target in target_paths:
+        if target.exists() and target not in original_sources:
+            raise FileExistsError(f"目标文件已存在，停止重命名: {target}")
+
+    temp_plan = []
+    for index, (source, target) in enumerate(rename_plan, start=1):
+        temp = source.with_name(f".gallery-renumber-tmp-{index:03d}-{source.name}")
+        suffix = 1
+        while temp.exists():
+            temp = source.with_name(f".gallery-renumber-tmp-{index:03d}-{suffix}-{source.name}")
+            suffix += 1
+
+        source.rename(temp)
+        temp_plan.append((temp, target))
+
+    for temp, target in temp_plan:
+        temp.rename(target)
+
+    return len(rename_plan)
+
+
+def renumber_gallery_files():
+    """
+    按分类对图片自然排序，并把文件名补齐为连续编号。
+    返回 new_key -> old_key，用于重命名后继续保持旧的布局顺序。
+    """
+    previous_key_by_current_key = {}
+    total_renamed = 0
+
+    for category in CATEGORIES:
+        category_dir = GALLERY_DIR / category
+        if not category_dir.exists():
+            continue
+
+        files = get_supported_files(category_dir)
+        rename_plan = []
+
+        for index, file in enumerate(files, start=1):
+            target = category_dir / build_numbered_filename(index, file.suffix)
+            old_src = file.relative_to(BASE_DIR).as_posix()
+            new_src = target.relative_to(BASE_DIR).as_posix()
+
+            previous_key_by_current_key[get_image_key(new_src)] = get_image_key(old_src)
+
+            if file != target:
+                rename_plan.append((file, target))
+
+        renamed_count = apply_rename_plan(rename_plan)
+        total_renamed += renamed_count
+
+        if renamed_count:
+            print(f"{category} 已重新编号 {renamed_count} 张图片")
+
+    if total_renamed:
+        print(f"共重新编号 {total_renamed} 张图片")
+
+    return previous_key_by_current_key
+
+
 def collect_images():
     items = []
 
@@ -61,12 +148,7 @@ def collect_images():
             print(f"警告：未找到文件夹 {category_dir}")
             continue
 
-        for file in category_dir.iterdir():
-            if not file.is_file():
-                continue
-            if file.suffix.lower() not in SUPPORTED_EXTS:
-                continue
-
+        for file in get_supported_files(category_dir):
             try:
                 with Image.open(file) as img:
                     width, height = img.size
@@ -170,7 +252,7 @@ def build_arrangement(all_items, existing_order_map):
 
     for item in all_items:
         # 用 key 匹配（real/001 这种），不再用完整 src
-        key = get_image_key(item["src"])
+        key = item.get("previous_key") or get_image_key(item["src"])
         if key in existing_order_map:
             item["old_order"] = existing_order_map[key]
             existing_items.append(item)
@@ -210,8 +292,13 @@ def generate_js(items):
 
 
 def main():
-    all_items = collect_images()
     existing_order_map = parse_existing_gallery_data()
+    previous_key_by_current_key = renumber_gallery_files()
+    all_items = collect_images()
+
+    for item in all_items:
+        current_key = get_image_key(item["src"])
+        item["previous_key"] = previous_key_by_current_key.get(current_key, current_key)
 
     if not all_items:
         OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -229,7 +316,7 @@ def main():
     OUTPUT_FILE.write_text(js_content, encoding="utf-8")
 
     # 基于 key 统计（和 build_arrangement 里的判断一致）
-    all_keys = {get_image_key(item["src"]) for item in all_items}
+    all_keys = {item.get("previous_key") or get_image_key(item["src"]) for item in all_items}
     existing_count = sum(1 for key in all_keys if key in existing_order_map)
     new_count = len(all_keys) - existing_count
 
