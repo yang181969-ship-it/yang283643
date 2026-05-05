@@ -83,12 +83,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function setUrl(page, push = true) {
-    const url = page === "home" ? "index.html" : `index.html?page=${page}`;
+  function setUrl(page, push = true, options = {}) {
+    let url = page === "home" ? "index.html" : `index.html?page=${page}`;
+    const search = options.preserveSearch
+      ? new URLSearchParams(window.location.search).get("search")
+      : "";
+
+    if (search) {
+      const joiner = url.includes("?") ? "&" : "?";
+      url = `${url}${joiner}search=${encodeURIComponent(search)}`;
+    }
+
+    const state = search ? { page, search } : { page };
     if (push) {
-      history.pushState({ page }, "", url);
+      history.pushState(state, "", url);
     } else {
-      history.replaceState({ page }, "", url);
+      history.replaceState(state, "", url);
     }
   }
 
@@ -114,10 +124,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (page === "update"  && typeof window.initUpdatePage === "function") window.initUpdatePage();
   }
 
-  function afterPageLoad(page, push) {
+  function afterPageLoad(page, push, options = {}) {
     syncCurrentPage(page);
     updateHighlight(page);
-    setUrl(page, push);
+    setUrl(page, push, options);
     requestAnimationFrame(() => {
       runPageInit(page);
       if (page === "notes") setTimeout(renderMathSafe, 0);
@@ -129,19 +139,19 @@ document.addEventListener("DOMContentLoaded", () => {
     main.style.pointerEvents = isLoading ? "none" : "";
   }
 
-  async function loadPage(page, push = true) {
+  async function loadPage(page, push = true, options = {}) {
     if (!Object.prototype.hasOwnProperty.call(pageMap, page)) return;
 
     if (page === "home") {
       const html = await getHomeContent();
       main.innerHTML = html;
-      afterPageLoad("home", push);
+      afterPageLoad("home", push, options);
       return;
     }
 
     if (pageCache.has(page)) {
       main.innerHTML = pageCache.get(page);
-      afterPageLoad(page, push);
+      afterPageLoad(page, push, options);
       return;
     }
 
@@ -159,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const content = newMain.innerHTML;
       pageCache.set(page, content);
       main.innerHTML = content;
-      afterPageLoad(page, push);
+      afterPageLoad(page, push, options);
     } catch (err) {
       console.error("页面切换失败：", err);
       main.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444;">
@@ -244,7 +254,9 @@ document.addEventListener("DOMContentLoaded", () => {
     loadPage(page, false);
   });
 
+  const initialParams = new URLSearchParams(window.location.search);
   const initialPage = getCurrentPageFromUrl();
+  const initialSearch = initialParams.get("search");
   syncCurrentPage(initialPage);
   updateHighlight(initialPage);
 
@@ -259,13 +271,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       // 如果连这个都没有，getHomeContent() 会按需 fetch
     }
-    loadPage(initialPage, false);
+    loadPage(initialPage, false, { preserveSearch: !!initialSearch });
   } else {
     // 当前在主页，抓一份骨架缓存起来
     if (homeContent === null) {
       homeContent = main.innerHTML;
     }
-    history.replaceState({ page: "home" }, "", "index.html");
+    if (initialSearch) {
+      history.replaceState({ search: initialSearch }, "", window.location.href);
+    } else {
+      history.replaceState({ page: "home" }, "", "index.html");
+    }
     // 首次进入主页时，home-cards.js 自己的 DOMContentLoaded 会初始化卡片，
     // 这里不再调用 runPageInit("home")，避免双重渲染。
     // SPA 切换回主页时由 loadPage("home") → afterPageLoad → runPageInit("home") 处理。
@@ -420,10 +436,13 @@ function initMobileSearch() {
     setTimeout(() => input?.focus(), 50);
   }
 
-  function close() {
+  function close(options = {}) {
     searchBar.classList.remove("is-open");
     toggleBtn.classList.remove("is-open");
     backdrop?.classList.remove("is-open");
+    if (!options.silent) {
+      window.dispatchEvent(new CustomEvent("site-search:close"));
+    }
   }
 
   // 点击触发按钮：
@@ -441,8 +460,6 @@ function initMobileSearch() {
     if (kw) {
       // 复用 search.js 绑定在 #search-btn 上的逻辑
       document.getElementById("search-btn")?.click();
-      // 搜索完成后自动关闭
-      setTimeout(close, 0);
     } else {
       close();
     }
@@ -464,15 +481,8 @@ function initMobileSearch() {
     if (e.key === "Escape") close();
   });
 
-  // 点击搜索按钮 / 回车后关闭
-  document.getElementById("search-btn")?.addEventListener("click", () => {
-    if (searchBar.classList.contains("is-open")) close();
-  });
-  input?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && searchBar.classList.contains("is-open")) {
-      setTimeout(close, 0);
-    }
-  });
+  window.addEventListener("site-search:open", open);
+  window.addEventListener("site-search:close", () => close({ silent: true }));
 }
 
 document.addEventListener("DOMContentLoaded", initMobileSearch);

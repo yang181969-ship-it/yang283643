@@ -10,6 +10,18 @@ const STATIC_PAGES = [
   { title: "关于",   desc: "关于这个网站和站主",       page: "about",   type: "页面" },
 ];
 
+const SEARCH_SITE_ROOT_URL = getSearchSiteRootUrl();
+
+function getSearchSiteRootUrl() {
+  const script = document.currentScript
+    || document.querySelector('script[src$="search.js"]');
+  return script?.src ? new URL("../", script.src) : new URL("./", document.baseURI);
+}
+
+function resolveSearchUrl(path) {
+  return new URL(path, SEARCH_SITE_ROOT_URL).href;
+}
+
 /* ---------- 动漫数据：优先复用 anime-data.js，缺失时使用兜底 ---------- */
 const ANIME_DATA_FALLBACK = [
   { id: "majo",      title: "魔女之旅",       desc: "魔女伊蕾娜在世界各地旅行，经历相逢与离别", tags: "奇幻 公路 旅行" },
@@ -49,8 +61,43 @@ function highlight(text, kw) {
   );
 }
 
+function normalizeSearchText(value) {
+  return String(value ?? "").normalize("NFKC").toLowerCase();
+}
+
 function match(text, kw) {
-  return String(text ?? "").toLowerCase().includes(kw.toLowerCase());
+  return normalizeSearchText(text).includes(normalizeSearchText(kw));
+}
+
+/* ---------- 音乐搜索 ---------- */
+let _musicCache = null; // [{ id, title, artist, lyric, index }]
+
+async function loadMusicTracks() {
+  if (_musicCache) return _musicCache;
+
+  try {
+    const res = await fetch(resolveSearchUrl("data/playlist.json"), { cache: "no-cache" });
+    if (!res.ok) throw new Error("playlist.json 加载失败");
+
+    const data = await res.json();
+    const tracks = Array.isArray(data) ? data : data.tracks;
+    if (!Array.isArray(tracks)) {
+      _musicCache = [];
+      return _musicCache;
+    }
+
+    _musicCache = tracks.map((track, index) => ({
+      id: track.id || `track-${index + 1}`,
+      title: track.title || "未命名歌曲",
+      artist: track.artist || "",
+      lyric: track.lyric || "",
+      index,
+    }));
+    return _musicCache;
+  } catch {
+    _musicCache = [];
+    return _musicCache;
+  }
 }
 
 /* ---------- 笔记全文搜索 ---------- */
@@ -59,13 +106,13 @@ let _notesCache = null; // [{ title, category, file, content }]
 async function loadAllNotes() {
   if (_notesCache) return _notesCache;
   try {
-    const res = await fetch("data/notes-index.json");
+    const res = await fetch(resolveSearchUrl("data/notes-index.json"));
     if (!res.ok) throw new Error("notes-index.json 加载失败");
     const index = await res.json();
 
     const loaded = await Promise.all(index.map(async item => {
       try {
-        const r = await fetch(item.file);
+        const r = await fetch(resolveSearchUrl(item.file));
         const text = r.ok ? await r.text() : "";
         return { ...item, content: text };
       } catch {
@@ -121,7 +168,32 @@ async function runSearch(kw) {
     }
   });
 
-  /* 3. 笔记（全文） */
+  /* 3. 音乐 */
+  const tracks = await loadMusicTracks();
+  tracks.forEach(track => {
+    const artistDesc = track.artist ? `歌手：${track.artist}` : "音乐播放器里的歌曲";
+    if (match(track.title, q) || match(track.artist, q) || match(track.lyric, q)) {
+      results.push({
+        type: "音乐",
+        title: track.title,
+        desc: artistDesc,
+        tag: "音乐",
+        action: () => {
+          window.dispatchEvent(new CustomEvent("y181:music-play-track", {
+            detail: {
+              id: track.id,
+              index: track.index,
+              title: track.title,
+            },
+          }));
+        },
+        titleHl: highlight(track.title, q),
+        descHl:  highlight(artistDesc, q),
+      });
+    }
+  });
+
+  /* 4. 笔记（全文） */
   const notes = await loadAllNotes();
   notes.forEach(note => {
     // 把 Markdown 拆成多篇（以 --- 分隔）
@@ -180,47 +252,236 @@ async function runSearch(kw) {
   return results;
 }
 
-/* ---------- 渲染结果页 ---------- */
-function renderSearchResults(kw, results) {
-  const main = document.getElementById("main-content");
-  if (!main) return;
+/* ---------- 搜索浮层 ---------- */
+const SEARCH_SUGGESTIONS = ["音乐", "倒数", "F1", "动漫", "笔记", "画廊"];
+const SEARCH_FILTERS = [
+  { key: "all", label: "全部" },
+  { key: "页面", label: "页面" },
+  { key: "动漫", label: "动漫" },
+  { key: "音乐", label: "音乐" },
+  { key: "笔记", label: "笔记" },
+];
 
-  const count = results.length;
-  const isEmpty = count === 0;
+const searchViewState = {
+  keyword: "",
+  results: [],
+  activeType: "all",
+};
 
-  const cardsHtml = results.map((r, i) => `
-    <article class="card search-result-card" data-result-idx="${i}" style="cursor:pointer">
-      <div class="search-result-meta">
-        <span class="note-tag">${escapeHtml(r.tag)}</span>
-        ${r.date ? `<span class="note-date">${escapeHtml(r.date)}</span>` : ""}
+function getSearchPanel() {
+  let panel = document.getElementById("search-popover");
+  if (panel) return panel;
+
+  const control = document.querySelector(".search-control");
+  panel = document.createElement("section");
+  panel.id = "search-popover";
+  panel.className = "search-popover";
+  panel.hidden = true;
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "搜索结果");
+  panel.innerHTML = `
+    <header class="search-popover__header">
+      <div>
+        <p class="search-popover__eyebrow">搜索结果</p>
+        <h2 class="search-popover__title" data-search-panel-title></h2>
       </div>
-      <h2 class="search-result-title">${r.titleHl}</h2>
-      <p class="search-result-desc">${r.descHl}</p>
-    </article>
-  `).join("");
-
-  main.innerHTML = `
-    <section class="no-card search-page">
-      <div class="home-hero">
-        <h2 class="page-title">搜索结果</h2>
-        <p class="page-desc">
-          关键词「<strong>${escapeHtml(kw)}</strong>」共找到 ${count} 条结果
-        </p>
-      </div>
-      ${isEmpty
-        ? `<div class="card search-empty">
-             <p>没有找到相关内容，试试其他关键词？</p>
-           </div>`
-        : cardsHtml
-      }
-    </section>
+      <button class="search-popover__close" type="button" data-search-panel-close aria-label="关闭搜索结果" title="关闭">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+        </svg>
+      </button>
+    </header>
+    <div class="search-popover__filters" data-search-panel-filters></div>
+    <div class="search-popover__body" data-search-panel-body></div>
   `;
 
-  // 绑定点击
-  results.forEach((r, i) => {
-    const el = main.querySelector(`[data-result-idx="${i}"]`);
-    el?.addEventListener("click", () => r.action());
+  panel.addEventListener("click", (event) => {
+    event.stopPropagation();
+
+    const filterBtn = event.target.closest("[data-search-filter]");
+    if (filterBtn) {
+      searchViewState.activeType = filterBtn.dataset.searchFilter || "all";
+      renderSearchPanel();
+      return;
+    }
+
+    const suggestionBtn = event.target.closest("[data-search-suggestion]");
+    if (suggestionBtn) {
+      const input = document.getElementById("search-input");
+      input.value = suggestionBtn.dataset.searchSuggestion || "";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      doSearchFromInput();
+      return;
+    }
+
+    const resultBtn = event.target.closest("[data-result-idx]");
+    if (resultBtn) {
+      const idx = Number(resultBtn.dataset.resultIdx);
+      const result = searchViewState.results[idx];
+      if (result?.action) {
+        closeSearchPanel();
+        window.dispatchEvent(new CustomEvent("site-search:close"));
+        result.action();
+      }
+    }
   });
+
+  panel.querySelector("[data-search-panel-close]")?.addEventListener("click", () => {
+    closeSearchPanel();
+    window.dispatchEvent(new CustomEvent("site-search:close"));
+  });
+
+  (control || document.body).appendChild(panel);
+  return panel;
+}
+
+function openSearchControl() {
+  document.querySelector(".search-bar")?.classList.add("is-open");
+  document.getElementById("search-toggle")?.classList.add("is-open");
+  document.getElementById("search-backdrop")?.classList.add("is-open");
+}
+
+function openSearchPanel() {
+  const panel = getSearchPanel();
+  panel.hidden = false;
+  requestAnimationFrame(() => panel.classList.add("is-open"));
+}
+
+function closeSearchPanel() {
+  const panel = document.getElementById("search-popover");
+  if (!panel) return;
+
+  panel.classList.remove("is-open");
+  window.setTimeout(() => {
+    if (!panel.classList.contains("is-open")) panel.hidden = true;
+  }, 180);
+}
+
+function getCounts(results) {
+  return results.reduce((counts, item) => {
+    counts.all += 1;
+    counts[item.type] = (counts[item.type] || 0) + 1;
+    return counts;
+  }, { all: 0 });
+}
+
+function getFilteredResults() {
+  if (searchViewState.activeType === "all") return searchViewState.results;
+  return searchViewState.results.filter(item => item.type === searchViewState.activeType);
+}
+
+function renderSearchPanelLoading(kw) {
+  searchViewState.keyword = kw;
+  searchViewState.results = [];
+  searchViewState.activeType = "all";
+  openSearchPanel();
+
+  const panel = getSearchPanel();
+  panel.querySelector("[data-search-panel-title]").textContent = `正在搜索「${kw}」`;
+  panel.querySelector("[data-search-panel-filters]").innerHTML = "";
+  panel.querySelector("[data-search-panel-body]").innerHTML = `
+    <div class="search-loading">
+      <span class="search-loading__dot"></span>
+      <span>搜索中...</span>
+    </div>
+  `;
+}
+
+function renderSearchPanel() {
+  const panel = getSearchPanel();
+  const kw = searchViewState.keyword;
+  const counts = getCounts(searchViewState.results);
+
+  if (searchViewState.activeType !== "all" && !counts[searchViewState.activeType]) {
+    searchViewState.activeType = "all";
+  }
+
+  const filtered = getFilteredResults();
+  panel.querySelector("[data-search-panel-title]").textContent =
+    `关键词「${kw}」共找到 ${searchViewState.results.length} 条结果`;
+
+  panel.querySelector("[data-search-panel-filters]").innerHTML = SEARCH_FILTERS.map(filter => {
+    const count = counts[filter.key] || 0;
+    const active = searchViewState.activeType === filter.key ? " is-active" : "";
+    return `
+      <button class="search-filter${active}" type="button" data-search-filter="${escapeHtml(filter.key)}" ${count ? "" : "disabled"}>
+        <span>${escapeHtml(filter.label)}</span>
+        <strong>${count}</strong>
+      </button>
+    `;
+  }).join("");
+
+  if (!searchViewState.results.length) {
+    panel.querySelector("[data-search-panel-body]").innerHTML = `
+      <div class="search-empty">
+        <p>没有找到相关内容</p>
+        <div class="search-empty__suggestions">
+          ${SEARCH_SUGGESTIONS.map(item => `
+            <button type="button" data-search-suggestion="${escapeHtml(item)}">${escapeHtml(item)}</button>
+          `).join("")}
+        </div>
+      </div>
+    `;
+    openSearchPanel();
+    return;
+  }
+
+  panel.querySelector("[data-search-panel-body]").innerHTML = `
+    <div class="search-results-list">
+      ${filtered.map((r) => {
+        const originalIndex = searchViewState.results.indexOf(r);
+        return `
+          <button class="search-result-card" type="button" data-result-idx="${originalIndex}">
+            <span class="search-result-meta">
+              <span class="search-result-tag">${escapeHtml(r.tag)}</span>
+              ${r.date ? `<span class="search-result-date">${escapeHtml(r.date)}</span>` : ""}
+            </span>
+            <span class="search-result-title">${r.titleHl}</span>
+            <span class="search-result-desc">${r.descHl}</span>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+  openSearchPanel();
+}
+
+function renderSearchResults(kw, results) {
+  searchViewState.keyword = kw;
+  searchViewState.results = results;
+  renderSearchPanel();
+}
+
+function updateSearchUrl(kw) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("search", kw);
+  history.pushState({ search: kw }, "", url.toString());
+}
+
+function clearSearchUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("search");
+  history.replaceState({ page: url.searchParams.get("page") || "home" }, "", url.toString());
+}
+
+function doSearchFromInput() {
+  const input = document.getElementById("search-input");
+  const clear = document.getElementById("search-clear");
+  if (!input) return;
+
+  const kw = input.value.trim();
+  if (!kw) return;
+
+  updateSearchUrl(kw);
+  renderSearchPanelLoading(kw);
+  openSearchControl();
+
+  runSearch(kw).then(results => {
+    renderSearchResults(kw, results);
+  });
+
+  if (clear) clear.style.display = "flex";
 }
 
 /* ---------- 初始化搜索框 ---------- */
@@ -234,52 +495,21 @@ function initSearch() {
   // main.js 在 DOMContentLoaded 后把 loadPage 挂到 window._loadPage
   // 这里直接用即可（search.js 在 main.js 之后加载）
 
-  function doSearch() {
-    const kw = input.value.trim();
-    if (!kw) return;
-
-    // 更新 URL（不走 SPA，只改 search 参数）
-    const url = new URL(window.location.href);
-    url.searchParams.set("search", kw);
-    url.searchParams.delete("page");
-    history.pushState({ search: kw }, "", url.toString());
-
-    // 显示 loading
-    const main = document.getElementById("main-content");
-    if (main) {
-      main.innerHTML = `
-        <section class="no-card search-page">
-          <div class="home-hero">
-            <h2 class="page-title">搜索中…</h2>
-          </div>
-        </section>`;
-    }
-
-    runSearch(kw).then(results => {
-      renderSearchResults(kw, results);
-    });
-
-    // 更新 clear 按钮可见性
-    clear.style.display = kw ? "flex" : "none";
-  }
-
   // 回车触发
   input.addEventListener("keydown", e => {
-    if (e.key === "Enter") doSearch();
+    if (e.key === "Enter") doSearchFromInput();
   });
 
   // 按钮触发
-  btn.addEventListener("click", doSearch);
+  btn.addEventListener("click", doSearchFromInput);
 
   // 清空
   clear.addEventListener("click", () => {
     input.value = "";
     clear.style.display = "none";
     input.focus();
-    // 回到主页
-    if (typeof window._loadPage === "function") {
-      window._loadPage("home");
-    }
+    closeSearchPanel();
+    clearSearchUrl();
   });
 
   // 实时显示清空按钮
@@ -292,8 +522,34 @@ function initSearch() {
   if (urlKw) {
     input.value = urlKw;
     clear.style.display = "flex";
+    openSearchControl();
+    renderSearchPanelLoading(urlKw);
     runSearch(urlKw).then(results => renderSearchResults(urlKw, results));
   }
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".search-control")) closeSearchPanel();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeSearchPanel();
+  });
+
+  window.addEventListener("site-search:close", closeSearchPanel);
+
+  window.addEventListener("popstate", () => {
+    const kw = new URLSearchParams(window.location.search).get("search");
+    if (!kw) {
+      closeSearchPanel();
+      return;
+    }
+
+    input.value = kw;
+    clear.style.display = "flex";
+    openSearchControl();
+    renderSearchPanelLoading(kw);
+    runSearch(kw).then(results => renderSearchResults(kw, results));
+  });
 }
 
 document.addEventListener("DOMContentLoaded", initSearch);
