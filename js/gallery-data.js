@@ -14,4 +14,7 @@ const galleryData = [
   { src: "assets/gallery/anime/007.webp", category: "anime", width: 1920, height: 1080, order: 12 },
   { src: "assets/gallery/real/006.webp", category: "real", width: 1920, height: 2558, order: 13 },
   { src: "assets/gallery/real/005.webp", category: "real", width: 1920, height: 1281, order: 14 },
+  { src: "assets/gallery/anime/008.webp", category: "anime", width: 1068, height: 1500, order: 15 },
+  { src: "assets/gallery/anime/009.webp", category: "anime", width: 1920, height: 1132, order: 16 },
+  { src: "assets/gallery/anime/010.webp", category: "anime", width: 1920, height: 1300, order: 17 },
 ];
