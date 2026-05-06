@@ -1,7 +1,8 @@
 // ============================================================
 // 搜索框(胶囊版)
 // 桌面端:在 .header-capsule 内,搜索按钮固定在右,输入框从其左侧展开
-// 手机端:fixed 横贯式浮层(沿用旧实现)
+// 手机端:同步桌面端胶囊逻辑,搜索展开后顶部横向铺开
+// 搜索结果框:强制使用不透明实色背景,避免后方卡片透出
 // ============================================================
 
 @use '../abstracts/variables' as *;
@@ -10,6 +11,7 @@
 // ============================================================
 // 桌面端:胶囊内搜索结构
 // ============================================================
+
 .search-control {
   position: relative;
   display: flex;
@@ -20,7 +22,7 @@
 }
 
 // ----- 搜索按钮:样式由 _header-capsule.scss 的 .capsule-btn 接管 -----
-// 这里只处理图标尺寸 fallback(用于胶囊外的旧场景,避免漏掉)
+// 这里只处理图标尺寸 fallback,用于胶囊外的旧场景,避免漏掉
 .search-toggle {
   flex-shrink: 0;
 
@@ -30,7 +32,8 @@
   }
 }
 
-// ----- 搜索框容器(默认隐藏,展开时宽度 0 → auto) -----
+// ----- 搜索框容器:默认隐藏,展开时宽度 0 → auto -----
+
 .search-bar {
   display: flex;
   align-items: center;
@@ -52,6 +55,7 @@
 }
 
 // ----- 输入框包裹 -----
+
 .search-input-wrap {
   position: relative;
   display: flex;
@@ -62,6 +66,7 @@
 }
 
 // ----- 左侧放大镜图标 -----
+
 .search-icon {
   position: absolute;
   left: 14px;
@@ -79,7 +84,8 @@
   }
 }
 
-// ----- 输入框(透明,和胶囊融为一体) -----
+// ----- 输入框:透明,和胶囊融为一体 -----
+
 .search-input {
   width: 100%;
   height: 100%;
@@ -105,12 +111,14 @@
 }
 
 // 输入框 focus 时,左侧放大镜变 primary
+
 .search-bar.is-open .search-input:focus + .search-icon,
 .search-bar.is-open:focus-within .search-icon {
   color: var(--primary);
 }
 
 // ----- 清除按钮 -----
+
 .search-clear {
   position: absolute;
   right: 8px !important;
@@ -137,7 +145,10 @@
   }
 }
 
-// ----- 右上角搜索结果浮层(不变) -----
+// ============================================================
+// 搜索结果浮层
+// ============================================================
+
 .search-popover {
   position: absolute;
   top: calc(100% + 12px);
@@ -147,14 +158,19 @@
   display: flex;
   flex-direction: column;
   padding: 16px;
-  border: var(--glass-border-subtle);
+  border: 1px solid rgba(148, 163, 184, 0.28);
   border-radius: 18px;
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(145%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(145%);
+
+  // 不透明实色背景,不要使用 glass / bg-card 变量,避免后方卡片透出
+  background: #f8fbff;
+
+  // 搜索浮层不使用毛玻璃
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
   box-shadow:
-    0 18px 44px rgba(15, 23, 42, 0.16),
-    var(--glass-highlight);
+    0 24px 60px rgba(15, 23, 42, 0.18),
+    0 8px 22px rgba(15, 23, 42, 0.08);
   transform: translateY(-8px) scale(0.98);
   transform-origin: top right;
   opacity: 0;
@@ -225,6 +241,10 @@
   }
 }
 
+// ============================================================
+// 搜索分类筛选
+// ============================================================
+
 .search-popover__filters {
   display: flex;
   gap: 8px;
@@ -246,7 +266,10 @@
   padding: 0 12px;
   border: 1px solid transparent;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.12);
+
+  // 不透明筛选按钮
+  background: #edf4fc;
+
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 700;
@@ -261,7 +284,7 @@
 
   &:hover:not(:disabled),
   &.is-active {
-    background: var(--primary-soft);
+    background: #dcebff;
     border-color: hsla(var(--primary-hue), 75%, 60%, 0.28);
     color: var(--primary-dark);
   }
@@ -271,6 +294,10 @@
     opacity: 0.46;
   }
 }
+
+// ============================================================
+// 搜索结果主体
+// ============================================================
 
 .search-popover__body {
   min-height: 0;
@@ -293,14 +320,16 @@
   align-items: flex-start;
   gap: 6px;
   padding: 14px 16px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 14px;
-  background: var(--bg-card);
-  background: color-mix(in srgb, var(--bg-card) 92%, transparent);
+
+  // 不透明结果卡片
+  background: #eef5ff;
+
   color: var(--text-main);
   text-align: left;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045);
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -310,7 +339,7 @@
   &:hover {
     transform: translateY(-1px);
     border-color: hsla(var(--primary-hue), 75%, 60%, 0.34);
-    background: var(--glass-bg);
+    background: #e8f2ff;
     box-shadow: 0 12px 26px rgba(15, 23, 42, 0.1);
   }
 }
@@ -366,6 +395,10 @@
   color: var(--primary-dark);
 }
 
+// ============================================================
+// 空状态 / 加载状态
+// ============================================================
+
 .search-empty,
 .search-loading {
   padding: 22px 14px 18px;
@@ -390,7 +423,7 @@
     padding: 0 12px;
     border: 1px solid rgba(148, 163, 184, 0.18);
     border-radius: 999px;
-    background: rgba(148, 163, 184, 0.12);
+    background: #edf4fc;
     color: var(--primary-dark);
     font-size: 13px;
     font-weight: 700;
@@ -398,7 +431,7 @@
     transition: background 0.18s ease, border-color 0.18s ease;
 
     &:hover {
-      background: var(--primary-soft);
+      background: #dcebff;
       border-color: hsla(var(--primary-hue), 75%, 60%, 0.28);
     }
   }
@@ -420,7 +453,8 @@
 }
 
 @keyframes search-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(0.88);
     opacity: 0.65;
   }
@@ -430,6 +464,10 @@
     opacity: 1;
   }
 }
+
+// ============================================================
+// 旧结构兼容
+// ============================================================
 
 // 嵌入式搜索按钮:已废弃
 .search-btn {
@@ -443,8 +481,51 @@
 }
 
 // ============================================================
+// 深色模式:同样保持不透明
+// ============================================================
+
+html[data-theme="dark"] {
+  .search-popover {
+    background: #111827;
+    border-color: rgba(148, 163, 184, 0.24);
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.36),
+      0 8px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .search-filter {
+    background: #1b2538;
+
+    &:hover:not(:disabled),
+    &.is-active {
+      background: #203553;
+      border-color: hsla(var(--primary-hue), 75%, 60%, 0.32);
+      color: var(--primary);
+    }
+  }
+
+  .search-result-card {
+    background: #172033;
+    border-color: rgba(148, 163, 184, 0.2);
+
+    &:hover {
+      background: #1d2940;
+    }
+  }
+
+  .search-empty__suggestions button {
+    background: #1b2538;
+
+    &:hover {
+      background: #203553;
+    }
+  }
+}
+
+// ============================================================
 // 笔记本断点:输入框宽度收紧
 // ============================================================
+
 @include laptop {
   .search-bar.is-open {
     max-width: 280px;
@@ -461,89 +542,98 @@
 }
 
 // ============================================================
-// 手机端 (≤$bp-mobile):fixed 横贯式浮层
-// 胶囊已通过 _header-capsule.scss 拆为独立按钮
+// 手机端 (≤$bp-mobile):同步桌面端胶囊搜索逻辑
+// 默认:[搜索 | 调色盘]
+// 展开:胶囊横向铺开,输入框从左侧展开,搜索按钮保留在右侧
 // ============================================================
+
 @media (max-width: $bp-mobile) {
   .search-control {
-    display: block !important;
     position: relative;
+    display: flex !important;
+    align-items: center;
+    flex-direction: row-reverse;
+    height: 100%;
+    min-width: 0;
     z-index: $z-theme-panel;
   }
 
-  // 搜索框改为 fixed 横贯 header
   .search-bar {
-    position: fixed;
-    top: 11px;
-    right: 60px;
-    left: auto;
-    width: calc(100vw - 74px);
-    height: 46px;
-    z-index: $z-search-mobile;
+    position: static;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 0;
+    max-width: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
     margin: 0;
-    padding: 0 0 0 14px;
+    padding: 0;
     background: transparent;
     border: none;
     border-radius: 0;
     box-shadow: none;
     transition:
-      max-width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.28s ease;
-    overflow: hidden;
+      max-width 0.34s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.24s ease;
 
     &.is-open {
-      max-width: calc(100vw - 74px);
+      flex: 1;
+      width: auto;
+      max-width: calc(100vw - 84px);
+      opacity: 1;
+      pointer-events: auto;
     }
   }
 
   .search-input-wrap {
-    width: 100%;
-    height: 44px;
-    flex: 1;
+    width: calc(100vw - 84px);
+    height: 48px;
+    flex: 0 0 auto;
   }
 
   .search-input {
     width: 100%;
-    height: 44px;
-    padding: 0 42px 0 40px;
-    border: 1px solid var(--border-soft) !important;
-    border-right: none !important;
+    height: 48px;
+    padding: 0 38px 0 18px;
+    border: none !important;
     border-radius: 999px 0 0 999px;
-    background: var(--bg-panel) !important;
+    background: transparent !important;
+    color: var(--text-main);
+    box-shadow: none !important;
 
     &:focus {
-      border-color: var(--primary) !important;
+      border: none !important;
+      box-shadow: none !important;
     }
   }
 
-  .search-clear {
-    right: 10px !important;
+  .search-icon {
+    display: none;
   }
 
-  // 手机端搜索按钮:展开时 fixed 到右上角并变实色
+  .search-clear {
+    right: 8px !important;
+  }
+
+  // 不再使用旧的 fixed 独立搜索按钮
   .header-capsule .search-toggle.is-open,
   .search-toggle.is-open {
-    position: fixed;
-    top: 11px;
-    right: 14px;
-    z-index: $z-search-toggle;
-    width: 46px;
-    height: 46px;
-    border-radius: 0 999px 999px 0 !important;
-    background: var(--primary) !important;
-    color: #fff !important;
-    border-color: var(--primary) !important;
+    position: relative;
+    top: auto;
+    right: auto;
+    z-index: auto;
+    border-radius: 999px !important;
+    background: transparent !important;
+    border-color: transparent !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-
-    svg { color: #fff; }
   }
 
-  // 展开态:调色盘 + logo 淡出
-  header:has(.search-bar.is-open) .theme-control,
-  header:has(.search-bar.is-open) .logo,
-  header:has(.search-bar.is-open) .capsule-divider {
+  // 搜索展开时,隐藏 logo,避免顶部横向挤压
+  header:has(.search-bar.is-open) .logo {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
@@ -551,13 +641,14 @@
 
   .search-popover {
     position: fixed;
-    top: 66px;
-    right: 14px;
-    left: 14px;
+    top: 68px;
+    right: 12px;
+    left: 12px;
     width: auto;
-    max-height: calc(100dvh - 136px);
+    max-height: calc(100dvh - 142px);
     padding: 14px;
     border-radius: 16px;
+    transform-origin: top right;
   }
 
   .search-popover__header {
