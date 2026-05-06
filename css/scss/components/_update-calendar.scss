@@ -1,0 +1,269 @@
+// ============================================================
+// 更新日历 popover / 移动端 bottom sheet
+// 触发器是 Hero 里的 #update-calendar-trigger
+// 桌面端:popover 锚定触发器下方
+// 移动端:从屏幕底部滑入的 sheet,带遮罩
+// ============================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// ============================================================
+// Popover 主体(桌面端默认)
+// ============================================================
+.update-calendar {
+  position: absolute;
+  z-index: $z-theme-panel;
+  width: 320px;
+  padding: 16px;
+  border: var(--glass-border-subtle);
+  border-radius: 18px;
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(145%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(145%);
+  box-shadow:
+    0 18px 44px rgba(15, 23, 42, 0.16),
+    var(--glass-highlight);
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top center;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s var(--ease-glass);
+
+  &[hidden] { display: none; }
+
+  &.is-open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+// 移动端遮罩(只在移动端显示)
+.update-calendar-backdrop {
+  display: none;
+}
+
+// ============================================================
+// Header:< 月份 >
+// ============================================================
+.update-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.update-calendar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.update-calendar-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+  }
+
+  &:disabled {
+    opacity: 0.32;
+    cursor: not-allowed;
+  }
+
+  &:focus { outline: none; }
+  &:focus-visible {
+    outline: 2px solid hsla(var(--primary-hue), 75%, 60%, 0.45);
+    outline-offset: 1px;
+  }
+}
+
+// ============================================================
+// 周表头
+// ============================================================
+.update-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+
+  span {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+  }
+}
+
+// ============================================================
+// 日期格子 6 × 7
+// ============================================================
+.update-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.update-calendar-cell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+// 当前月份的日期(默认态)
+.update-calendar-cell--current {
+  color: var(--text-main);
+}
+
+// 上/下个月的灰色填充日期
+.update-calendar-cell--outside {
+  opacity: 0.32;
+}
+
+// 今天
+.update-calendar-cell--today {
+  border-color: hsla(var(--primary-hue), 75%, 60%, 0.42);
+  color: var(--primary-dark);
+  font-weight: 800;
+}
+
+// 有更新的日子(可点击)
+.update-calendar-cell--has-update {
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 2px 6px hsla(var(--primary-hue), 75%, 60%, 0.32);
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px hsla(var(--primary-hue), 75%, 60%, 0.5);
+  }
+
+  // 「有更新 + 今天」叠加
+  &.update-calendar-cell--today {
+    border-color: var(--primary-dark);
+    box-shadow:
+      0 2px 6px hsla(var(--primary-hue), 75%, 60%, 0.42),
+      0 0 0 2px hsla(var(--primary-hue), 75%, 60%, 0.18);
+  }
+}
+
+// ============================================================
+// 底部说明
+// ============================================================
+.update-calendar-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--border-soft) 70%, transparent);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.update-calendar-hint-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px hsla(var(--primary-hue), 75%, 60%, 0.18);
+}
+
+// ============================================================
+// 移动端:bottom sheet 模式
+// ============================================================
+@include small {
+  // 遮罩出场
+  .update-calendar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: $z-theme-panel;
+    background: rgba(15, 23, 42, 0.36);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+
+    &.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .update-calendar {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+    border-radius: 22px 22px 0 0;
+    transform: translateY(100%);
+    transform-origin: bottom center;
+    transition:
+      transform 0.28s cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 0.18s ease;
+
+    &.is-open {
+      transform: translateY(0);
+    }
+  }
+
+  .update-calendar-grid {
+    gap: 6px;
+  }
+
+  .update-calendar-cell {
+    font-size: 14px;
+    border-radius: 12px;
+  }
+}

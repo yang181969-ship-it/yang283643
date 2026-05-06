@@ -6,23 +6,25 @@
   "scripts": {
     "dev": "sass css/scss/main.scss:css/style.css --watch",
     "build": "sass css/scss/main.scss:css/style.css --style=compressed --no-source-map",
-  
+
     "build:critical": "sass css/scss/critical.scss:css/critical.css --style=compressed --no-source-map",
     "inline:critical": "node scripts/5-inline-critical.mjs",
-  
+
+    "aggregate:updates": "node scripts/6-aggregate-updates.mjs",
+
     "optimize:animes": "node scripts/1-rename-anime-images.js",
     "optimize:gallery": "node scripts/2-optimize-gallery.js",
     "update:refs": "node scripts/3-update-html-references.js",
     "optimize:portraits": "node scripts/4-optimize-portraits.mjs",
-  
+
     "purgecss": "node scripts/4-purgecss.mjs",
     "music:add": "node scripts/add-music.mjs",
     "music:sync": "node scripts/add-music.mjs --sync",
     "portrait:rotation": "node scripts/generate-portrait-rotation.mjs",
 
-    "build:all": "npm run build && npm run build:critical && npm run inline:critical"
+    "build:all": "npm run aggregate:updates && npm run build && npm run build:critical && npm run inline:critical"
   },
- 
+
   "devDependencies": {
     "glob": "^13.0.6",
     "purgecss": "^8.0.0",
