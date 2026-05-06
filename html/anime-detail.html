@@ -472,6 +472,13 @@
     <div class="music-modal__panel" role="dialog" aria-modal="true" aria-label="歌单">
       <header class="music-modal__header">
         <h3 class="music-modal__title">歌单</h3>
+        <div class="music-modal__search" role="search">
+          <svg class="music-modal__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+          </svg>
+          <input class="music-modal__search-input" type="search" data-music-modal-search placeholder="搜索歌曲或歌手" aria-label="搜索歌单" autocomplete="off">
+        </div>
         <span class="music-modal__count" data-music-modal-count>0 首</span>
         <button type="button" class="music-modal__close" data-music-modal-close aria-label="关闭歌单">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -480,13 +487,6 @@
           </svg>
         </button>
       </header>
-      <div class="music-modal__search" role="search">
-        <svg class="music-modal__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="7"></circle>
-          <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-        </svg>
-        <input class="music-modal__search-input" type="search" data-music-modal-search placeholder="搜索歌曲或歌手" aria-label="搜索歌单" autocomplete="off">
-      </div>
       <p class="music-modal__empty" data-music-modal-empty hidden>没有找到匹配的音乐</p>
       <ul class="music-modal__list" data-music-modal-list></ul>
     </div>
