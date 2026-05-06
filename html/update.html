@@ -130,13 +130,45 @@
          筛选 + 排序
          ================================================= -->
     <div class="update-filterbar">
-      <div class="update-chips" data-update-chips role="tablist" aria-label="按类型筛选更新">
-        <button class="update-chip is-active" type="button" data-chip="all" role="tab" aria-selected="true">全部</button>
-        <button class="update-chip" type="button" data-chip="feature" role="tab" aria-selected="false">功能更新</button>
-        <button class="update-chip" type="button" data-chip="visual"  role="tab" aria-selected="false">视觉优化</button>
-        <button class="update-chip" type="button" data-chip="perf"    role="tab" aria-selected="false">性能优化</button>
-        <button class="update-chip" type="button" data-chip="fix"     role="tab" aria-selected="false">修复问题</button>
-        <button class="update-chip" type="button" data-chip="mobile"  role="tab" aria-selected="false">移动端适配</button>
+      <div class="update-filter" data-update-filter>
+        <button class="update-filter-toggle"
+                id="update-filter-toggle"
+                type="button"
+                data-active-chip="all"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="update-filter-menu"
+                aria-label="当前筛选：全部，点击展开筛选选项">
+          <svg class="update-filter-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+            <path d="M3 4h18"></path>
+            <path d="M7 4v2.6a2 2 0 0 0 .48 1.3L10 10.9V19l4 2v-10.1l2.52-3A2 2 0 0 0 17 6.6V4"></path>
+          </svg>
+          <span class="update-filter-label">全部</span>
+          <svg class="update-filter-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="4 6 8 10 12 6"></polyline>
+          </svg>
+        </button>
+
+        <div class="update-chips update-filter-menu"
+             id="update-filter-menu"
+             data-update-chips
+             role="listbox"
+             aria-label="按类型筛选更新"
+             hidden>
+          <button class="update-chip is-active" type="button" data-chip="all" role="option" aria-selected="true">全部</button>
+          <button class="update-chip" type="button" data-chip="feature" role="option" aria-selected="false">功能更新</button>
+          <button class="update-chip" type="button" data-chip="visual"  role="option" aria-selected="false">视觉优化</button>
+          <button class="update-chip" type="button" data-chip="perf"    role="option" aria-selected="false">性能优化</button>
+          <button class="update-chip" type="button" data-chip="fix"     role="option" aria-selected="false">修复问题</button>
+          <button class="update-chip" type="button" data-chip="mobile"  role="option" aria-selected="false">移动端适配</button>
+        </div>
       </div>
 
       <button class="update-sort"

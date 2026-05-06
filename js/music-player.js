@@ -275,11 +275,6 @@
 
     let idx = state.currentIndex + 1;
     if (idx >= state.tracks.length) {
-      // 末尾处理:sequential 自然结束停止;手动点 next(force=true)总是跳回头
-      if (state.loopMode === 'sequential' && !force) {
-        audio.pause();
-        return;
-      }
       idx = 0;
     }
     loadTrack(idx, true);

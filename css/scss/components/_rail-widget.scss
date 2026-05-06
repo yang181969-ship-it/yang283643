@@ -564,14 +564,16 @@
     &[data-loop-mode="shuffle"]    .music-icon-loop-shuffle    { display: block; }
     &[data-loop-mode="one"]        .music-icon-loop-one        { display: block; }
 
-    // 随机 / 单曲循环:primary 高亮
+    &[data-loop-mode="sequential"],
     &[data-loop-mode="shuffle"],
     &[data-loop-mode="one"] {
-      color: var(--accent, var(--primary));
-    }
-    // 顺序播放:灰色
-    &[data-loop-mode="sequential"] {
       color: var(--text-muted);
+    }
+
+    &[data-loop-mode="sequential"]:hover:not(:disabled),
+    &[data-loop-mode="shuffle"]:hover:not(:disabled),
+    &[data-loop-mode="one"]:hover:not(:disabled) {
+      color: var(--text, var(--text-main));
     }
   }
 }

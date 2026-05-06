@@ -54,6 +54,11 @@ document.addEventListener("DOMContentLoaded", () => {
     about: "html/about.html",
   };
 
+  const navContextLabels = {
+    update: "主页：更新",
+    stats: "主页：统计",
+  };
+
   function getPageFromHref(href) {
     if (!href) return null;
     if (href === "index.html" || href === "./" || href === "/") return "home";
@@ -67,6 +72,21 @@ document.addEventListener("DOMContentLoaded", () => {
     return new URLSearchParams(window.location.search).get("page") || "home";
   }
 
+  function getNavDisplayPage(page) {
+    return Object.prototype.hasOwnProperty.call(navContextLabels, page)
+      ? "home"
+      : page;
+  }
+
+  function resetNavLabel(link) {
+    const label = link.querySelector(".nav-label");
+    if (!label) return;
+    if (!link.dataset.navBaseLabel) {
+      link.dataset.navBaseLabel = label.textContent.trim();
+    }
+    label.textContent = link.dataset.navBaseLabel;
+  }
+
   function syncCurrentPage(page) {
     const current = page || getCurrentPageFromUrl();
     document.documentElement.dataset.page = current;
@@ -77,9 +97,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateHighlight(page) {
+    const displayPage = getNavDisplayPage(page);
+
     navLinks.forEach((link) => {
       const linkPage = getPageFromHref(link.getAttribute("href"));
-      link.classList.toggle("active", linkPage === page);
+      resetNavLabel(link);
+      link.classList.toggle("active", linkPage === displayPage);
+
+      if (linkPage === "home" && navContextLabels[page]) {
+        const label = link.querySelector(".nav-label");
+        if (label) label.textContent = navContextLabels[page];
+      }
     });
   }
 
@@ -94,7 +122,19 @@ document.addEventListener("DOMContentLoaded", () => {
       url = `${url}${joiner}search=${encodeURIComponent(search)}`;
     }
 
-    const state = search ? { page, search } : { page };
+    const update = page === "update" && options.preserveUpdate
+      ? new URLSearchParams(window.location.search).get("update")
+      : "";
+
+    if (update) {
+      const joiner = url.includes("?") ? "&" : "?";
+      url = `${url}${joiner}update=${encodeURIComponent(update)}`;
+    }
+
+    const state = { page };
+    if (search) state.search = search;
+    if (update) state.update = update;
+
     if (push) {
       history.pushState(state, "", url);
     } else {
@@ -232,6 +272,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 更新详情回退：update.js 自己会响应 popstate，但如果 DOM 里已经
     // 没有 .update-page（从别的页面回来），还是需要重新加载更新页。
+    if (page === "update" && state.update) {
+      const openUpdateDetail = () => {
+        if (typeof window.openUpdateDetail === "function") {
+          window.openUpdateDetail(state.update, { pushHistory: false });
+        } else if (typeof window.initUpdatePage === "function") {
+          window.initUpdatePage({ force: false });
+        }
+      };
+
+      if (!document.querySelector(".update-page")) {
+        loadPage("update", false, { preserveUpdate: true });
+      } else {
+        updateHighlight("update");
+        requestAnimationFrame(openUpdateDetail);
+      }
+      return;
+    }
+
     if (page === "update" && !state.update) {
       // 如果当前 DOM 里没有更新页骨架 / 有详情视图，需要重新加载列表骨架
       const hasUpdateSkeleton = document.getElementById("update-list");
@@ -257,6 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const initialParams = new URLSearchParams(window.location.search);
   const initialPage = getCurrentPageFromUrl();
   const initialSearch = initialParams.get("search");
+  const initialUpdate = initialParams.get("update");
   syncCurrentPage(initialPage);
   updateHighlight(initialPage);
 
@@ -271,7 +330,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       // 如果连这个都没有，getHomeContent() 会按需 fetch
     }
-    loadPage(initialPage, false, { preserveSearch: !!initialSearch });
+    loadPage(initialPage, false, {
+      preserveSearch: !!initialSearch,
+      preserveUpdate: !!initialUpdate,
+    });
   } else {
     // 当前在主页，抓一份骨架缓存起来
     if (homeContent === null) {
@@ -371,6 +433,13 @@ function initFloatingBtns() {
   if (document.body.dataset.standalone === "true") return;
 
   prevBtn?.addEventListener("click", () => {
+    if (document.querySelector(".update-detail-page")) {
+      if (typeof window._loadPage === "function") {
+        window._loadPage("update", false);
+        return;
+      }
+    }
+
     history.back();
   });
 }
