@@ -41,6 +41,48 @@
       "artist": "Don Toliver/Doja Cat",
       "src": "assets/music/Lose My Mind.mp3",
       "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-007",
+      "title": "童话镇",
+      "artist": "陈一发儿",
+      "src": "assets/music/童话镇.mp3",
+      "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-008",
+      "title": "❀ (纯音乐)",
+      "artist": "MappleHY",
+      "src": "assets/music/❀.mp3",
+      "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-009",
+      "title": "鳥の詩 (鸟之诗)",
+      "artist": "Lia",
+      "src": "assets/music/鳥の詩 (鸟之诗).mp3",
+      "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-010",
+      "title": "泡沫",
+      "artist": "G.E.M.邓紫棋",
+      "src": "assets/music/泡沫.mp3",
+      "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-011",
+      "title": "起风了",
+      "artist": "买辣椒也用券",
+      "src": "assets/music/起风了.mp3",
+      "lyric": "歌词待补充"
+    },
+    {
+      "id": "track-012",
+      "title": "平凡之路",
+      "artist": "朴树",
+      "src": "assets/music/朴树 - 平凡之路.mp3",
+      "lyric": "歌词待补充"
     }
   ]
 }
