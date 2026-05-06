@@ -10,7 +10,8 @@
 | `npm run build` | 编译并压缩完整样式到 `css/style.css` |
 | `npm run build:critical` | 编译首屏关键样式到 `css/critical.css` |
 | `npm run inline:critical` | 把 `css/critical.css` 内联到指定 HTML |
-| `npm run build:all` | 依次执行完整 CSS、critical CSS、critical 内联 |
+| `npm run build:all` | 依次执行更新索引聚合、完整 CSS、critical CSS、critical 内联 |
+| `npm run aggregate:updates` | 扫描更新日志 Markdown,生成更新页索引数据 |
 | `npm run optimize:animes` | 处理动漫页图片 |
 | `npm run optimize:gallery` | 处理画廊图片 |
 | `npm run update:refs` | 根据图片重命名映射更新动漫页引用 |
@@ -265,6 +266,35 @@ npm run inline:critical
 
 ## 内容维护脚本
 
+### 6-aggregate-updates.mjs
+
+命令:
+
+```bash
+npm run aggregate:updates
+```
+
+作用:
+
+- 扫描 `content/updates/*.md`。
+- 解析每篇更新日志里的标题、`@category`、`@meta`、`@date`、`@summary`、`@tags` 和 `@primary`。
+- 老日志没有显式声明 `@summary` / `@tags` / `@primary` 时,会根据标题和 `@meta` 自动推断摘要、标签和主分类。
+- 按日期倒序写入 `data/updates-index.json`,供更新页读取。
+- 运行结束会输出更新数量、日期范围、tag 分布和 primary 分布,方便检查分类是否合理。
+
+常用 metadata:
+
+| 字段 | 说明 |
+| --- | --- |
+| `@category: 建站日志` | 更新所属栏目。不填时默认为 `建站日志` |
+| `@meta: 新增 / 优化 / 修复...` | 用于展示和自动推断标签的简短说明 |
+| `@date: YYYY-MM-DD` | 更新日期。不填时会尝试从文件名推断 |
+| `@summary: 文本` | 更新摘要。不填时从正文自动截取 |
+| `@tags: feature, mobile` | 细分标签,可用 `feature`、`visual`、`perf`、`fix`、`mobile` |
+| `@primary: feature` | 主分类,可用 `feature`、`optimization`、`fix` |
+
+新增或修改 `content/updates/` 里的日志后,重新运行一次这个命令即可刷新更新页索引。
+
 ### split-notes.mjs
 
 命令:
@@ -300,7 +330,25 @@ node scripts/split-notes.mjs
 npm run portrait:rotation -- --start-date 2026-05-04 --seed portrait-rotation-v1
 ```
 
+### updates-index.json
+
+这是 `6-aggregate-updates.mjs` 生成的更新页索引数据。更新页会读取其中的 `title`、`date`、`category`、`meta`、`summary`、`tags` 和 `primary` 来渲染列表、筛选和统计。
+
+这个文件通常不手写维护。需要刷新时重新运行:
+
+```bash
+npm run aggregate:updates
+```
+
 ## 常见工作流
+
+### 新增更新日志
+
+1. 在 `content/updates/` 新增一篇 `YYYY-MM-DD.md`。
+2. 写入标题和必要 metadata,例如 `@category`、`@meta`、`@date`。
+3. 如需精确控制列表展示,补充 `@summary`、`@tags`、`@primary`。
+4. 运行 `npm run aggregate:updates`。
+5. 检查 `data/updates-index.json` 和更新页展示。
 
 ### 新增主页音乐
 
@@ -349,4 +397,4 @@ npm run music:add -- "songs" --batch
 npm run build:all
 ```
 
-检查无误后,可以删除本次生成的 `.bak` 文件。
+这会先刷新 `data/updates-index.json`,再构建完整样式和首屏 CSS。检查无误后,可以删除本次生成的 `.bak` 文件。

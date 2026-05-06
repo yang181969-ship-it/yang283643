@@ -223,6 +223,7 @@ function parseUpdateMarkdown(md, fallback = {}) {
     category: category || "建站日志",
     date:     date || "",
     content:  contentLines.join("\n").trim(),
+    file:     fallback.file || "",
   };
 }
 
@@ -232,12 +233,51 @@ async function loadUpdateMarkdown(file) {
   return res.text();
 }
 
+function getUpdateRouteToken(itemOrFile) {
+  const file = typeof itemOrFile === 'string' ? itemOrFile : itemOrFile?.file;
+  if (!file) return '';
+  return String(file).split('/').pop().replace(/\.md$/i, '');
+}
+
+function findUpdateByRouteToken(token) {
+  const raw = decodeURIComponent(String(token || ''));
+  if (!raw) return null;
+
+  return updateState.items.find((item) => {
+    const file = item.file || '';
+    return raw === file || raw === getUpdateRouteToken(file);
+  }) || null;
+}
+
+function pushUpdateDetailHistory(item) {
+  const token = getUpdateRouteToken(item);
+  if (!token) return;
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('page', 'update');
+  url.searchParams.set('update', token);
+
+  const stateUpdate = item.file || token;
+  const currentState = history.state || {};
+  if (
+    currentState.page === 'update' &&
+    currentState.update === stateUpdate &&
+    new URLSearchParams(window.location.search).get('update') === token
+  ) {
+    return;
+  }
+
+  history.pushState({ page: 'update', update: stateUpdate }, '', url.toString());
+}
+
 /* =============================================================
  * 详情视图 (沿用旧版,SPA 内替换 #main-content)
  * ============================================================= */
-async function renderUpdateDetailView(item) {
+async function renderUpdateDetailView(item, options = {}) {
   const main = document.getElementById("main-content");
   if (!main) return;
+
+  const shouldPushHistory = options.pushHistory !== false;
 
   // item 是来自富索引的元数据,正文要现 fetch
   let detail = item;
@@ -253,6 +293,7 @@ async function renderUpdateDetailView(item) {
 
   const wrapper = document.createElement("section");
   wrapper.className = "update-page update-detail-page no-card";
+  wrapper.dataset.updateToken = getUpdateRouteToken(item);
   wrapper.innerHTML = `
     <article class="update-detail-card">
       <div class="update-detail-top">
@@ -271,6 +312,8 @@ async function renderUpdateDetailView(item) {
 
   const scrollEl = document.querySelector(".content-scroll");
   if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (shouldPushHistory) pushUpdateDetailHistory(item);
 }
 
 /* =============================================================
@@ -342,6 +385,25 @@ function getVisibleItems() {
     return updateState.sortOrder === 'newest' ? -cmp : cmp;
   });
   return list;
+}
+
+async function openUpdateDetail(tokenOrFile, options = {}) {
+  await loadUpdatesIndex();
+  const item = findUpdateByRouteToken(tokenOrFile);
+  if (!item) return false;
+
+  await renderUpdateDetailView(item, options);
+  return true;
+}
+
+async function openRoutedUpdateDetail(options = {}) {
+  const token = new URLSearchParams(window.location.search).get('update');
+  if (!token) return false;
+
+  const currentDetail = document.querySelector('.update-detail-page');
+  if (currentDetail?.dataset.updateToken === token) return true;
+
+  return openUpdateDetail(token, options);
 }
 
 // ============================================================
@@ -447,30 +509,99 @@ function renderTimeline() {
 // ============================================================
 // chips + sort 绑定
 // ============================================================
+function getUpdateFilterLabel(value) {
+  return value === 'all' ? '全部' : (TAG_LABELS[value] || value || '全部');
+}
+
+function setUpdateFilterMenuOpen(open) {
+  const filter = document.querySelector('[data-update-filter]');
+  const toggle = document.getElementById('update-filter-toggle');
+  const menu = document.getElementById('update-filter-menu') || document.querySelector('[data-update-chips]');
+  if (!filter || !toggle || !menu) return;
+
+  filter.classList.toggle('is-open', open);
+  toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  menu.hidden = !open;
+}
+
+function syncUpdateFilterControl(value) {
+  const labelText = getUpdateFilterLabel(value);
+  const toggle = document.getElementById('update-filter-toggle');
+  const label = toggle?.querySelector('.update-filter-label');
+
+  if (toggle) {
+    toggle.dataset.activeChip = value;
+    toggle.setAttribute('aria-label', `当前筛选：${labelText}，点击展开筛选选项`);
+  }
+  if (label) label.textContent = labelText;
+
+  document.querySelectorAll('[data-update-chips] .update-chip')
+    .forEach(c => {
+      const active = c.dataset.chip === value;
+      c.classList.toggle('is-active', active);
+      c.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+}
+
+function applyUpdateFilter(value, options = {}) {
+  if (!value) return;
+  const shouldRender = options.render !== false;
+  const changed = value !== updateState.activeChip;
+
+  updateState.activeChip = value;
+  syncUpdateFilterControl(value);
+
+  if (shouldRender && changed) {
+    renderTimeline();
+
+    // 日历开着的话，重新渲染让色块跟筛选走
+    if (updateState.calOpen) renderCalendar();
+  }
+}
+
 function initChipsAndSort() {
+  const filterToggle = document.getElementById('update-filter-toggle');
+  syncUpdateFilterControl(updateState.activeChip);
+
+  if (filterToggle && filterToggle.dataset.bound !== '1') {
+    filterToggle.dataset.bound = '1';
+    filterToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const expanded = filterToggle.getAttribute('aria-expanded') === 'true';
+      setUpdateFilterMenuOpen(!expanded);
+    });
+  }
+
   document.querySelectorAll('[data-update-chips] .update-chip').forEach(chip => {
     if (chip.dataset.bound === '1') return;
     chip.dataset.bound = '1';
 
-    chip.addEventListener('click', () => {
+    chip.addEventListener('click', (e) => {
+      e.stopPropagation();
       const value = chip.dataset.chip;
-      if (!value || value === updateState.activeChip) return;
-
-      updateState.activeChip = value;
-
-      document.querySelectorAll('[data-update-chips] .update-chip')
-        .forEach(c => {
-          const active = c.dataset.chip === value;
-          c.classList.toggle('is-active', active);
-          c.setAttribute('aria-selected', active ? 'true' : 'false');
-        });
-
-      renderTimeline();
-
-      // 日历开着的话，重新渲染让色块跟筛选走
-      if (updateState.calOpen) renderCalendar();
+      if (!value) return;
+      applyUpdateFilter(value);
+      setUpdateFilterMenuOpen(false);
+      filterToggle?.focus({ preventScroll: true });
     });
   });
+
+  if (document.documentElement.dataset.updateFilterOutsideBound !== '1') {
+    document.documentElement.dataset.updateFilterOutsideBound = '1';
+
+    document.addEventListener('click', (e) => {
+      if (!document.querySelector('[data-update-filter].is-open')) return;
+      if (e.target.closest('[data-update-filter]')) return;
+      setUpdateFilterMenuOpen(false);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (!document.querySelector('[data-update-filter].is-open')) return;
+      setUpdateFilterMenuOpen(false);
+      document.getElementById('update-filter-toggle')?.focus({ preventScroll: true });
+    });
+  }
 
   const sortBtn = document.getElementById('update-sort-toggle');
   const sortText = sortBtn?.querySelector('.update-sort-text');
@@ -817,6 +948,7 @@ async function initUpdatePage(options = {}) {
 
   // 如果 HTML 版本没有放 update-list，直接在控制台报清楚，避免静默失败。
   if (!listEl) {
+    if (page.classList.contains('update-detail-page')) return;
     console.warn('[update] 初始化中止：当前 update.html 里没有 #update-list。请确认 html/update.html 是完整版本。');
     return;
   }
@@ -838,6 +970,8 @@ async function initUpdatePage(options = {}) {
     initChipsAndSort();
     initCalendar();
     renderTimeline();
+
+    await openRoutedUpdateDetail({ pushHistory: false });
 
     page.dataset.updateInitialized = '1';
     console.info(`[update] 初始化完成：${updateState.items.length} 条更新`);
@@ -899,6 +1033,7 @@ if (document.readyState === 'loading') {
 
 window.initUpdatePage = initUpdatePage;
 window.forceInitUpdatePage = () => initUpdatePage({ force: true });
+window.openUpdateDetail = openUpdateDetail;
 window.__updateDebug = () => ({
   hasMain: !!document.getElementById('main-content'),
   hasPage: !!document.querySelector('.update-page'),

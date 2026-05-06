@@ -51,7 +51,7 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 // ============================================================
 .update-filterbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   margin: 0 0 18px;
@@ -59,11 +59,101 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 }
 
 // ----- chips -----
+.update-filter {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 156px;
+  z-index: 10;
+}
+
+.update-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 156px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--border-soft) 78%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+
+  &:hover,
+  .update-filter.is-open & {
+    border-color: hsla(var(--primary-hue), 75%, 60%, 0.34);
+    color: var(--primary-dark);
+    background: var(--primary-soft);
+  }
+
+  &:focus { outline: none; }
+  &:focus-visible {
+    outline: 2px solid hsla(var(--primary-hue), 75%, 60%, 0.45);
+    outline-offset: 2px;
+  }
+}
+
+.update-filter-label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.update-filter-icon,
+.update-filter-chevron {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+}
+
+.update-filter-chevron {
+  transition: transform 0.2s ease;
+}
+
+.update-filter.is-open .update-filter-chevron {
+  transform: rotate(180deg);
+}
+
 .update-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
+}
+
+.update-filter-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 4px;
+  min-width: 180px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--border-soft) 78%, transparent);
+  border-radius: 14px;
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14), var(--glass-highlight);
+}
+
+.update-filter-menu[hidden] {
+  display: none;
 }
 
 .update-chip {
@@ -103,6 +193,16 @@ $tag-opt:     ('visual', 'perf', 'mobile');
     outline: 2px solid hsla(var(--primary-hue), 75%, 60%, 0.45);
     outline-offset: 2px;
   }
+}
+
+.update-filter-menu .update-chip {
+  width: 100%;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  box-shadow: none;
 }
 
 // ----- 排序下拉 -----
@@ -155,7 +255,9 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 // ============================================================
 .update-timeline {
   position: relative;
-  padding-left: 28px;
+  --update-timeline-pad: 28px;
+  --update-line-center: 7px;
+  padding-left: var(--update-timeline-pad);
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -166,7 +268,7 @@ $tag-opt:     ('visual', 'perf', 'mobile');
     position: absolute;
     top: 6px;
     bottom: 6px;
-    left: 6px;
+    left: calc(var(--update-line-center) - 1px);
     width: 2px;
     border-radius: 1px;
     background: linear-gradient(
@@ -192,13 +294,10 @@ $tag-opt:     ('visual', 'perf', 'mobile');
   font-weight: 800;
   color: var(--primary-dark);
   letter-spacing: 0.02em;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--bg-main) 88%, transparent) 0%,
-    color-mix(in srgb, var(--bg-main) 78%, transparent) 100%
-  );
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--bg-main) 72%, transparent);
 
   // 第一个 month-header 不要顶部 margin
   &:first-child {
@@ -218,7 +317,7 @@ $tag-opt:     ('visual', 'perf', 'mobile');
     content: "";
     position: absolute;
     top: 28px;
-    left: -28px;
+    left: calc(var(--update-line-center) - var(--update-timeline-pad));
     width: 14px;
     height: 14px;
     border-radius: 50%;
@@ -226,6 +325,7 @@ $tag-opt:     ('visual', 'perf', 'mobile');
     border: 3px solid var(--primary);
     box-shadow: 0 0 0 4px var(--bg-main);
     z-index: 1;
+    transform: translateX(-50%);
     transition:
       transform 0.2s ease,
       border-color 0.2s ease,
@@ -234,7 +334,7 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 
   // hover 时圆点放大 + 加光晕
   &:hover::before {
-    transform: scale(1.18);
+    transform: translateX(-50%) scale(1.18);
     box-shadow:
       0 0 0 4px var(--bg-main),
       0 0 12px hsla(var(--primary-hue), 80%, 60%, 0.4);
@@ -710,11 +810,12 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 
   // 时间线竖线/圆点在移动端依然显示但收紧
   .update-timeline {
-    padding-left: 22px;
+    --update-timeline-pad: 22px;
+    padding-left: var(--update-timeline-pad);
   }
 
   .update-card-wrap::before {
-    left: -22px;
+    left: calc(var(--update-line-center) - var(--update-timeline-pad));
     width: 12px;
     height: 12px;
     border-width: 2.5px;
@@ -726,29 +827,22 @@ $tag-opt:     ('visual', 'perf', 'mobile');
     font-size: 13px;
   }
 
-  // 筛选栏单行变多行
   .update-filterbar {
-    flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 10px;
   }
 
-  .update-chips {
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    margin: 0 -16px;
-    padding: 0 16px;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar { display: none; }
+  .update-filter,
+  .update-filter-toggle {
+    min-width: 148px;
   }
 
-  .update-chip {
-    flex-shrink: 0;
+  .update-filter-menu {
+    min-width: 170px;
   }
 
   .update-sort {
-    align-self: flex-end;
+    align-self: flex-start;
   }
 
   // 详情页
@@ -795,4 +889,3 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 .update-sort.is-oldest .update-sort-icon {
   transform: rotate(180deg);
 }
-
