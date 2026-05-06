@@ -157,16 +157,18 @@
   max-height: min(640px, calc(100vh - 88px));
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 16px !important;
   border: 1px solid rgba(148, 163, 184, 0.28);
   border-radius: 18px;
 
   // 不透明实色背景,不要使用 glass / bg-card 变量,避免后方卡片透出
-  background: #f8fbff;
+  background: #f8fbff !important;
+  background-color: #f8fbff !important;
+  background-image: none !important;
 
   // 搜索浮层不使用毛玻璃
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 
   box-shadow:
     0 24px 60px rgba(15, 23, 42, 0.18),
@@ -185,7 +187,7 @@
 }
 
 .search-popover.is-open {
-  transform: translateY(0) scale(1);
+  transform: translateY(0) scale(1) !important;
   opacity: 1;
   pointer-events: auto;
 }
@@ -325,6 +327,8 @@
 
   // 不透明结果卡片
   background: #eef5ff;
+  background-color: #eef5ff;
+  background-image: none;
 
   color: var(--text-main);
   text-align: left;
@@ -340,6 +344,7 @@
     transform: translateY(-1px);
     border-color: hsla(var(--primary-hue), 75%, 60%, 0.34);
     background: #e8f2ff;
+    background-color: #e8f2ff;
     box-shadow: 0 12px 26px rgba(15, 23, 42, 0.1);
   }
 }
@@ -486,7 +491,9 @@
 
 html[data-theme="dark"] {
   .search-popover {
-    background: #111827;
+    background: #111827 !important;
+    background-color: #111827 !important;
+    background-image: none !important;
     border-color: rgba(148, 163, 184, 0.24);
     box-shadow:
       0 24px 60px rgba(0, 0, 0, 0.36),
@@ -506,10 +513,13 @@ html[data-theme="dark"] {
 
   .search-result-card {
     background: #172033;
+    background-color: #172033;
+    background-image: none;
     border-color: rgba(148, 163, 184, 0.2);
 
     &:hover {
       background: #1d2940;
+      background-color: #1d2940;
     }
   }
 
@@ -646,7 +656,7 @@ html[data-theme="dark"] {
     left: 12px;
     width: auto;
     max-height: calc(100dvh - 142px);
-    padding: 14px;
+    padding: 14px !important;
     border-radius: 16px;
     transform-origin: top right;
   }
