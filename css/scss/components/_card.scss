@@ -15,7 +15,7 @@
 //
 // 额外排除 :has(.gallery-controls), :has(.anime-tabs) —— 这些是工具栏容器,
 // 不该被渲染成卡片。用 :has() 做 CSS 层 opt-out,避免动 HTML。
-section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
   @include card-surface;
   @include card-hover;
   padding: 24px;
@@ -56,7 +56,7 @@ section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.c
   .note-card,
   .update-card,
   .update-detail-card,
-  section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+  section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 20px;
     border-radius: var(--radius-card);
   }
@@ -68,7 +68,7 @@ section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.c
   .note-card,
   .update-card,
   .update-detail-card,
-  section:not(.no-card):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+  section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 18px;
   }
 }

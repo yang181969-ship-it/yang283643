@@ -215,6 +215,11 @@
 
     state.pendingTrackRequest = null;
     loadTrack(idx, true);
+    if (detail?.revealPlaylist) {
+      revealPlaylistTrack(idx);
+      return;
+    }
+
     root?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
@@ -415,6 +420,25 @@
     });
   }
 
+  function scrollPlaylistItemIntoView(index) {
+    const currentItem = modalListEl?.querySelector(`li[data-idx="${index}"]`);
+    if (!currentItem || currentItem.hidden) return;
+
+    currentItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function revealPlaylistTrack(index) {
+    if (!modalEl || !modalListEl) return;
+
+    clearPlaylistSearch();
+    updatePlaylistModalActive();
+    openModal();
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => scrollPlaylistItemIntoView(index));
+    });
+  }
+
   function normalizeSearchText(value) {
     return String(value || '').normalize('NFKC').toLowerCase();
   }
@@ -457,8 +481,8 @@
     modalEl.hidden = false;
     modalEl.setAttribute('aria-hidden', 'false');
     applyPlaylistSearch();
+    modalEl.classList.add('is-visible');
     requestAnimationFrame(() => {
-      modalEl.classList.add('is-visible');
       modalSearchEl?.focus({ preventScroll: true });
     });
   }

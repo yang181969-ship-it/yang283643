@@ -184,6 +184,7 @@ async function runSearch(kw) {
               id: track.id,
               index: track.index,
               title: track.title,
+              revealPlaylist: true,
             },
           }));
         },
