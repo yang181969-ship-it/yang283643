@@ -22,14 +22,14 @@ function resolveSearchUrl(path) {
   return new URL(path, SEARCH_SITE_ROOT_URL).href;
 }
 
-/* ---------- 动漫数据：优先复用 anime-data.js，缺失时使用兜底 ---------- */
+/* ---------- 动漫数据:优先复用 anime-data.js,缺失时使用兜底 ---------- */
 const ANIME_DATA_FALLBACK = [
-  { id: "majo",      title: "魔女之旅",       desc: "魔女伊蕾娜在世界各地旅行，经历相逢与离别", tags: "奇幻 公路 旅行" },
-  { id: "frieren",   title: "葬送的芙莉莲",   desc: "精灵魔法使芙莉莲重新踏上旅程，理解生命意义", tags: "奇幻 冒险 治愈" },
+  { id: "majo",      title: "魔女之旅",       desc: "魔女伊蕾娜在世界各地旅行,经历相逢与离别", tags: "奇幻 公路 旅行" },
+  { id: "frieren",   title: "葬送的芙莉莲",   desc: "精灵魔法使芙莉莲重新踏上旅程,理解生命意义", tags: "奇幻 冒险 治愈" },
   { id: "garden",    title: "紫罗兰永恒花园", desc: "薇尔莉特·伊芙加登的故事",                   tags: "治愈 奇幻 日常" },
   { id: "slayer",    title: "鬼灭之刃",       desc: "炭治郎为让妹妹恢复原状踏上旅程",            tags: "热血 战斗 奇幻" },
   { id: "spy",       title: "间谍过家家",     desc: "间谍黄昏、超能力少女阿尼亚、暗杀者约尔的家庭喜剧", tags: "战斗 搞笑 日常" },
-  { id: "titan",     title: "进击的巨人",     desc: "那一天，人类想起了被他们支配的恐惧",        tags: "热血 奇幻 神作" },
+  { id: "titan",     title: "进击的巨人",     desc: "那一天,人类想起了被他们支配的恐惧",        tags: "热血 奇幻 神作" },
   { id: "datebattle",title: "约会大作战",     desc: "间谍为拯救精灵与其约会的故事",              tags: "奇幻 战斗 后宫" },
   { id: "suzuya",    title: "铃芽之旅",       desc: "铃芽与闭门师宗像草太一起关闭灾难源头之门",  tags: "青春 恋爱 治愈 电影" },
   { id: "xiaoyuan",  title: "魔法少女小圆",   desc: "鹿目圆与晓美焰面对魔法少女命运的故事",      tags: "奇幻 战斗 百合" },
@@ -171,7 +171,7 @@ async function runSearch(kw) {
   /* 3. 音乐 */
   const tracks = await loadMusicTracks();
   tracks.forEach(track => {
-    const artistDesc = track.artist ? `歌手：${track.artist}` : "音乐播放器里的歌曲";
+    const artistDesc = track.artist ? `歌手:${track.artist}` : "音乐播放器里的歌曲";
     if (match(track.title, q) || match(track.artist, q) || match(track.lyric, q)) {
       results.push({
         type: "音乐",
@@ -193,10 +193,10 @@ async function runSearch(kw) {
     }
   });
 
-  /* 4. 笔记（全文） */
+  /* 4. 笔记(全文) */
   const notes = await loadAllNotes();
   notes.forEach(note => {
-    // 把 Markdown 拆成多篇（以 --- 分隔）
+    // 把 Markdown 拆成多篇(以 --- 分隔)
     const blocks = note.content.split(/\n---+\n/g).filter(Boolean);
     blocks.forEach((block, idx) => {
       // 提取标题
@@ -207,7 +207,7 @@ async function runSearch(kw) {
       const dateMatch  = block.match(/@date:\s*(.+)/);
       const dateStr    = dateMatch ? dateMatch[1].trim() : "";
 
-      // 提取正文摘要（去掉 metadata 行和公式）
+      // 提取正文摘要(去掉 metadata 行和公式)
       const bodyLines  = block.split("\n")
         .filter(l => !l.startsWith("#") && !l.startsWith("@") && !l.startsWith("$$") && l.trim())
         .slice(0, 4)
@@ -223,7 +223,7 @@ async function runSearch(kw) {
           tag:   note.category,
           date:  dateStr,
           action: () => {
-            // 跳转笔记详情（复用 main.js 的 SPA 路由 + notes.js 的详情渲染）
+            // 跳转笔记详情(复用 main.js 的 SPA 路由 + notes.js 的详情渲染)
             if (typeof window._loadPage === "function") {
               window._loadPage("notes");
               // 等笔记页加载完毕后再打开详情
@@ -321,6 +321,7 @@ function getSearchPanel() {
       const result = searchViewState.results[idx];
       if (result?.action) {
         closeSearchPanel();
+        closeSearchControl();
         window.dispatchEvent(new CustomEvent("site-search:close"));
         result.action();
       }
@@ -329,6 +330,7 @@ function getSearchPanel() {
 
   panel.querySelector("[data-search-panel-close]")?.addEventListener("click", () => {
     closeSearchPanel();
+    closeSearchControl();
     window.dispatchEvent(new CustomEvent("site-search:close"));
   });
 
@@ -340,6 +342,12 @@ function openSearchControl() {
   document.querySelector(".search-bar")?.classList.add("is-open");
   document.getElementById("search-toggle")?.classList.add("is-open");
   document.getElementById("search-backdrop")?.classList.add("is-open");
+}
+
+function closeSearchControl() {
+  document.querySelector(".search-bar")?.classList.remove("is-open");
+  document.getElementById("search-toggle")?.classList.remove("is-open");
+  document.getElementById("search-backdrop")?.classList.remove("is-open");
 }
 
 function openSearchPanel() {
@@ -486,56 +494,95 @@ function doSearchFromInput() {
 
 /* ---------- 初始化搜索框 ---------- */
 function initSearch() {
-  const input  = document.getElementById("search-input");
-  const btn    = document.getElementById("search-btn");
-  const clear  = document.getElementById("search-clear");
+  const input    = document.getElementById("search-input");
+  const toggle   = document.getElementById("search-toggle");
+  const clear    = document.getElementById("search-clear");
+  const legacyBtn = document.getElementById("search-btn"); // 旧的隐藏提交按钮(如果存在)
   if (!input) return;
 
   // 暴露给 main.js 使用的 loadPage 引用
   // main.js 在 DOMContentLoaded 后把 loadPage 挂到 window._loadPage
-  // 这里直接用即可（search.js 在 main.js 之后加载）
 
-  // 回车触发
+  // 回车触发提交
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") doSearchFromInput();
   });
 
-  // 按钮触发
-  btn.addEventListener("click", doSearchFromInput);
+  // 旧的隐藏 search-btn(兼容,可能不存在)
+  if (legacyBtn) {
+    legacyBtn.addEventListener("click", doSearchFromInput);
+  }
+
+  // 主搜索按钮:三段逻辑
+  // - 未展开 → 展开 + focus
+  // - 已展开 + 有内容 → 提交搜索
+  // - 已展开 + 无内容 → 收起
+  if (toggle) {
+    toggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isOpen = document.querySelector(".search-bar")?.classList.contains("is-open");
+
+      if (!isOpen) {
+        openSearchControl();
+        // 展开动画结束后再 focus,避免抖动
+        setTimeout(() => input.focus(), 60);
+      } else if (input.value.trim()) {
+        doSearchFromInput();
+      } else {
+        closeSearchControl();
+        closeSearchPanel();
+      }
+    });
+  }
 
   // 清空
-  clear.addEventListener("click", () => {
-    input.value = "";
-    clear.style.display = "none";
-    input.focus();
-    closeSearchPanel();
-    clearSearchUrl();
-  });
+  if (clear) {
+    clear.addEventListener("click", () => {
+      input.value = "";
+      clear.style.display = "none";
+      input.focus();
+      closeSearchPanel();
+      clearSearchUrl();
+    });
+  }
 
   // 实时显示清空按钮
   input.addEventListener("input", () => {
-    clear.style.display = input.value ? "flex" : "none";
+    if (clear) clear.style.display = input.value ? "flex" : "none";
   });
 
-  // 页面加载时如果 URL 带 search 参数，自动执行
+  // 页面加载时如果 URL 带 search 参数,自动执行
   const urlKw = new URLSearchParams(window.location.search).get("search");
   if (urlKw) {
     input.value = urlKw;
-    clear.style.display = "flex";
+    if (clear) clear.style.display = "flex";
     openSearchControl();
     renderSearchPanelLoading(urlKw);
     runSearch(urlKw).then(results => renderSearchResults(urlKw, results));
   }
 
+  // 点击外部:同时关闭浮层和搜索框
   document.addEventListener("click", (event) => {
-    if (!event.target.closest(".search-control")) closeSearchPanel();
+    if (!event.target.closest(".search-control")) {
+      closeSearchPanel();
+      closeSearchControl();
+    }
   });
 
+  // Esc:关闭浮层和搜索框,焦点回到搜索按钮
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeSearchPanel();
+    if (event.key === "Escape") {
+      const wasOpen = document.querySelector(".search-bar")?.classList.contains("is-open");
+      closeSearchPanel();
+      closeSearchControl();
+      if (wasOpen) toggle?.focus();
+    }
   });
 
-  window.addEventListener("site-search:close", closeSearchPanel);
+  window.addEventListener("site-search:close", () => {
+    closeSearchPanel();
+    closeSearchControl();
+  });
 
   window.addEventListener("popstate", () => {
     const kw = new URLSearchParams(window.location.search).get("search");
@@ -545,7 +592,7 @@ function initSearch() {
     }
 
     input.value = kw;
-    clear.style.display = "flex";
+    if (clear) clear.style.display = "flex";
     openSearchControl();
     renderSearchPanelLoading(kw);
     runSearch(kw).then(results => renderSearchResults(kw, results));

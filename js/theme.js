@@ -1,13 +1,13 @@
 /* ============================================================
    主题系统
-   - 色相：滑块 + 8 个预设
-   - 模式：light / dark / auto（跟随系统）
-   - 辉光：on / off（ambient glow 开关）
-   - 持久化：localStorage
+   - 色相:滑块 + 8 个预设
+   - 模式:light / dark / auto(跟随系统)—— 仅在调色盘面板内切换
+   - 辉光:on / off(ambient glow 开关)
+   - 持久化:localStorage
    ============================================================ */
 
 (function initThemeBootstrap() {
-  // 尽早应用，避免刷新时闪白屏
+  // 尽早应用,避免刷新时闪白屏
   const root = document.documentElement;
 
   const savedHue = localStorage.getItem("primary-hue");
@@ -16,7 +16,7 @@
   const savedMode = localStorage.getItem("theme-mode") || "auto";
   applyMode(savedMode, root);
 
-  // 辉光开关：默认开启，只有显式存 "off" 才关
+  // 辉光开关:默认开启,只有显式存 "off" 才关
   const savedGlow = localStorage.getItem("ambient-glow") === "off" ? "off" : "on";
   root.setAttribute("data-glow", savedGlow);
 
@@ -48,10 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const themeToggle  = document.getElementById("theme-toggle");
   const themePanel   = document.getElementById("theme-panel");
   const hueSlider    = document.getElementById("hue-slider");
-  const modeToggle   = document.getElementById("mode-toggle");
   const modeBtns     = document.querySelectorAll(".theme-mode-btn");
   const presetBtns   = document.querySelectorAll(".theme-preset");
-  const glowToggle   = document.getElementById("glow-toggle");   // 面板内辉光开关（可选）
+  const glowToggle   = document.getElementById("glow-toggle");
   const root         = document.documentElement;
 
   if (!themeToggle || !themePanel || !hueSlider) return;
@@ -109,14 +108,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const hue = btn.dataset.hue;
       root.style.setProperty("--primary-hue", hue);
       hueSlider.value = hue;
-      // 派发 input 事件，让 main.js 里 hue-picker 的反向同步逻辑更新色条 thumb 位置
+      // 派发 input 事件,让 main.js 里 hue-picker 的反向同步逻辑更新色条 thumb 位置
       hueSlider.dispatchEvent(new Event("input", { bubbles: true }));
       localStorage.setItem("primary-hue", hue);
       syncPresetActive();
     });
   });
 
-  /* ===== 模式按钮（面板内） ===== */
+  /* ===== 模式按钮(面板内) ===== */
   modeBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       const mode = btn.dataset.mode;
@@ -126,20 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ===== 快捷模式按钮（调色盘右边）：light -> dark -> auto 循环 ===== */
-  if (modeToggle) {
-    modeToggle.addEventListener("click", () => {
-      const current = localStorage.getItem("theme-mode") || "auto";
-      const next = current === "light" ? "dark"
-                 : current === "dark"  ? "auto"
-                                       : "light";
-      localStorage.setItem("theme-mode", next);
-      window.__applyMode(next);
-      syncModeActive();
-    });
-  }
-
-  /* ===== 辉光开关（面板内，可选） ===== */
+  /* ===== 辉光开关(面板内,可选) ===== */
   if (glowToggle) {
     glowToggle.addEventListener("click", () => {
       const current = root.getAttribute("data-glow") || "on";
@@ -149,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ===== 监听系统主题变化（auto 模式下实时跟随） ===== */
+  /* ===== 监听系统主题变化(auto 模式下实时跟随) ===== */
   const mql = window.matchMedia("(prefers-color-scheme: dark)");
   const onSystemChange = () => {
     if ((localStorage.getItem("theme-mode") || "auto") === "auto") {

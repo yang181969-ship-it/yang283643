@@ -485,7 +485,7 @@ function initMobileSearch() {
   window.addEventListener("site-search:close", () => close({ silent: true }));
 }
 
-document.addEventListener("DOMContentLoaded", initMobileSearch);
+// Search open/close is owned by js/search.js for the header capsule.
 
 /* ===== 侧边栏卡片折叠（分类卡 + TOC 卡） ===== */
 function initSidebarCollapse() {

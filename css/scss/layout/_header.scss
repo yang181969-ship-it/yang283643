@@ -1,6 +1,7 @@
 // ============================================================
-// Header —— Phase 3.5 透明 + 窄化版 (v2)
-// 三主控按钮(search-toggle / theme-toggle / mode-toggle)在 .header-right
+// Header —— Phase 3.5 透明 + 窄化版 (v3,胶囊版)
+// 顶栏右侧的搜索 + 调色盘合并为一个胶囊(.header-capsule)
+// 胶囊视觉/按钮见 _header-capsule.scss
 // ============================================================
 
 @use '../abstracts/variables' as *;
@@ -65,28 +66,6 @@
   min-width: 0;
 }
 
-// ============================================================
-// 搜索框毛玻璃底:浅深色都加
-// ============================================================
-.search-toggle {
-  background: var(--glass-bg-weak);
-  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
-  border: var(--glass-border-subtle);
-}
-
-.search-input {
-  background: var(--glass-bg-weak) !important;
-  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
-  border: var(--glass-border-subtle) !important;
-  border-right: none !important;
-}
-
-[data-theme="dark"] .search-input {
-  background: var(--glass-bg) !important;
-}
-
 @include laptop {
   .layout > header {
     height: 52px;
@@ -108,4 +87,3 @@
     span { font-size: 15px; }
   }
 }
-
