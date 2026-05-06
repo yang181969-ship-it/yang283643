@@ -690,8 +690,8 @@
 .music-modal__header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 18px 22px 16px;
+  gap: 12px;
+  padding: 16px 22px;
   border-bottom: 1px solid var(--border-soft, rgba(255, 255, 255, 0.08));
 }
 
@@ -700,15 +700,18 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--text-main, var(--text));
-  flex: 1;
+  flex: 0 0 auto;
 }
 
 .music-modal__count {
+  flex-shrink: 0;
   font-size: 13px;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .music-modal__close {
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
   border: none;
@@ -731,8 +734,8 @@
 
 .music-modal__search {
   position: relative;
-  margin: 14px 22px 8px;
-  flex-shrink: 0;
+  flex: 1 1 220px;
+  min-width: 180px;
 }
 
 .music-modal__search-icon {
@@ -748,7 +751,7 @@
 
 .music-modal__search-input {
   width: 100%;
-  height: 44px;
+  height: 40px;
   padding: 0 14px 0 42px;
   border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.08));
   border-radius: 12px;
@@ -905,11 +908,18 @@
   }
 
   .music-modal__header {
+    flex-wrap: wrap;
     padding: 16px 18px 14px;
   }
 
   .music-modal__search {
-    margin: 12px 18px 8px;
+    order: 1;
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
+  .music-modal__count {
+    margin-left: auto;
   }
 
   .music-modal__list {
