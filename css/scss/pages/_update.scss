@@ -1,10 +1,41 @@
 // ============================================================
-// 更新日志页(列表 + 详情,md 驱动后的重写版)
+// 更新日志页(列表 timeline + 详情)
+// 列表:Hero 在 _update-hero.scss,日历在 _update-calendar.scss
+//      这里只管 chips/sort/timeline/卡片/月份分组
+// 详情:沿用旧版样式(detail-card / detail-title / markdown-full / table)
 // ============================================================
 
+@use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
+// ============================================================
+// 三大类 type 颜色变量(在统计页饼图也复用,所以放 :root 而非局部)
+// ============================================================
+:root {
+  --update-feature:       hsl(212, 88%, 58%);   // 蓝
+  --update-feature-soft:  hsl(212, 88%, 95%);
+  --update-optimization:      hsl(150, 58%, 46%);   // 绿
+  --update-optimization-soft: hsl(150, 58%, 94%);
+  --update-fix:           hsl(28, 92%, 56%);    // 橙
+  --update-fix-soft:      hsl(28, 92%, 95%);
+}
+
+[data-theme="dark"] {
+  --update-feature-soft:      hsla(212, 70%, 55%, 0.18);
+  --update-optimization-soft: hsla(150, 50%, 50%, 0.18);
+  --update-fix-soft:          hsla(28, 80%, 60%, 0.18);
+}
+
+// 5 个细分 tag 归到 3 大类色
+$tag-feature: ('feature');
+$tag-fix:     ('fix');
+$tag-opt:     ('visual', 'perf', 'mobile');
+
+// ============================================================
+// 页面外壳
+// ============================================================
 .update-page {
+  position: relative;
   width: 100%;
   margin: 0;
   padding: 0 !important;
@@ -16,77 +47,423 @@
 }
 
 // ============================================================
-// 列表
+// 筛选 + 排序 工具栏
 // ============================================================
-.update-list {
+.update-filterbar {
   display: flex;
-  flex-direction: column;
-  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 18px;
+  padding: 10px 4px;
+}
+
+// ----- chips -----
+.update-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.update-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid color-mix(in srgb, var(--border-soft) 78%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+
+  &:hover {
+    color: var(--primary-dark);
+    border-color: hsla(var(--primary-hue), 75%, 60%, 0.34);
+    background: var(--primary-soft);
+  }
+
+  &.is-active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 10px hsla(var(--primary-hue), 75%, 60%, 0.28);
+  }
+
+  &:focus { outline: none; }
+  &:focus-visible {
+    outline: 2px solid hsla(var(--primary-hue), 75%, 60%, 0.45);
+    outline-offset: 2px;
+  }
+}
+
+// ----- 排序下拉 -----
+.update-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  height: 36px;
+  border: 1px solid color-mix(in srgb, var(--border-soft) 78%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+
+  &:hover {
+    border-color: hsla(var(--primary-hue), 75%, 60%, 0.34);
+    color: var(--primary-dark);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.update-sort-select {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding-right: 4px;
+  font-family: inherit;
+
+  &:focus { outline: none; }
+
+  // 隐藏原生箭头(我们用 svg 代替)
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+// ============================================================
+// Timeline 容器(列表本体)
+// ============================================================
+.update-timeline {
+  position: relative;
+  padding-left: 28px;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  padding: 0;
-  margin: 0;
+
+  // 左侧竖线
+  &::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 6px;
+    width: 2px;
+    border-radius: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in srgb, var(--border-soft) 80%, transparent) 8%,
+      color-mix(in srgb, var(--border-soft) 80%, transparent) 92%,
+      transparent
+    );
+  }
 }
 
-// ----- 卡片 -----
-// Phase 2: background 交给 _card.scss 的 card-surface 统一管(毛玻璃)
+// ============================================================
+// 月份分组 sticky header
+// ============================================================
+.update-month-header {
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+  margin: 22px 0 14px -28px;  // 反向负 margin 让 header 跨过 timeline 竖线
+  padding: 8px 0 8px 28px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary-dark);
+  letter-spacing: 0.02em;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--bg-main) 88%, transparent) 0%,
+    color-mix(in srgb, var(--bg-main) 78%, transparent) 100%
+  );
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  // 第一个 month-header 不要顶部 margin
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+// ============================================================
+// 时间线节点(圆点)
+// ============================================================
+.update-card-wrap {
+  position: relative;
+  margin: 0 0 14px;
+
+  // 节点圆点(左侧)
+  &::before {
+    content: "";
+    position: absolute;
+    top: 28px;
+    left: -28px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 0 4px var(--bg-main);
+    z-index: 1;
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  // hover 时圆点放大 + 加光晕
+  &:hover::before {
+    transform: scale(1.18);
+    box-shadow:
+      0 0 0 4px var(--bg-main),
+      0 0 12px hsla(var(--primary-hue), 80%, 60%, 0.4);
+  }
+
+  // 按 primary 上不同节点色
+  &[data-primary="feature"]::before      { border-color: var(--update-feature); }
+  &[data-primary="optimization"]::before { border-color: var(--update-optimization); }
+  &[data-primary="fix"]::before          { border-color: var(--update-fix); }
+}
+
+// ============================================================
+// 更新卡片(列表项)
+// ============================================================
 .update-card {
-  width: 100%;
-  border: 1px solid var(--border-soft);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: var(--shadow-soft);
+  display: grid;
+  grid-template-columns: 88px 1fr auto;
+  align-items: start;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid color-mix(in srgb, var(--border-soft) 78%, transparent);
+  border-radius: 16px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  background: color-mix(in srgb, var(--bg-card) 92%, transparent);
+  box-shadow: var(--shadow-soft);
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+    transform: translateY(-2px);
+    border-color: hsla(var(--primary-hue), 75%, 60%, 0.32);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.1);
+  }
 
-    .update-read-more {
-      color: var(--primary-dark);
-    }
+  // 闪光效果(从日历点击日期跳转过来时,临时高亮)
+  &.is-flash {
+    animation: update-card-flash 1.5s ease;
   }
 }
 
-.update-card-header {
-  padding: 14px 18px;
-  background: var(--primary);
-  color: #fff;
-  font-weight: 700;
-  font-size: 16px;
-}
-
-.update-card-body {
-  padding: 18px;
-
-  h3 {
-    margin: 0;
-    color: var(--text-main);
-    font-size: 20px;
-    line-height: 1.4;
+@keyframes update-card-flash {
+  0%, 100% {
+    box-shadow: var(--shadow-soft);
+    border-color: color-mix(in srgb, var(--border-soft) 78%, transparent);
+  }
+  20%, 70% {
+    box-shadow:
+      0 0 0 3px hsla(var(--primary-hue), 75%, 60%, 0.32),
+      0 12px 26px rgba(15, 23, 42, 0.12);
+    border-color: var(--primary);
   }
 }
 
-// ----- "查看详情 →"提示条 -----
-.update-read-more {
-  display: block;
-  margin-top: 14px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: 0.02em;
-  transition: color 0.2s ease;
+// ----- 左侧日期块 -----
+.update-card-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
   user-select: none;
 }
 
+.update-card-date-mmdd {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.update-card-date-year {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+// ----- 中部:NEW 徽章 + 标题 + 摘要 -----
+.update-card-main {
+  min-width: 0;
+}
+
+.update-card-titlerow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+// NEW 徽章(7 天阈值由 JS 控制添加)
+.update-new-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px hsla(var(--primary-hue), 75%, 60%, 0.32);
+}
+
+.update-card-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-main);
+  min-width: 0;
+}
+
+.update-card-summary {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ----- 右侧:type 徽章 + 查看详情按钮 -----
+.update-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.update-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  max-width: 240px;
+}
+
+.update-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+
+  // feature → 蓝
+  &[data-tag="feature"] {
+    background: var(--update-feature-soft);
+    color: var(--update-feature);
+  }
+
+  // visual / perf / mobile → 绿
+  &[data-tag="visual"],
+  &[data-tag="perf"],
+  &[data-tag="mobile"] {
+    background: var(--update-optimization-soft);
+    color: var(--update-optimization);
+  }
+
+  // fix → 橙
+  &[data-tag="fix"] {
+    background: var(--update-fix-soft);
+    color: var(--update-fix);
+  }
+}
+
+.update-card-detail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--border-soft) 70%, var(--primary) 30%);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+
+  &:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+// 整卡可点 → 详情按钮只是视觉冗余 + 拇指更易点击,实际点击逻辑由整卡处理
+// 这里阻止 button 默认 focus 和事件冒泡的处理交给 JS
+
 // ============================================================
-// 详情页
+// 空态/加载态
+// ============================================================
+.update-empty {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+
+  p { margin: 0 0 8px; }
+}
+
+// ============================================================
+// 详情页 (沿用旧样式,完整保留)
 // ============================================================
 
-// ----- 详情卡片 -----
-// Phase 2: background 交给 _card.scss 的 card-surface 统一管(毛玻璃)
 .update-detail-card {
   border: 1px solid var(--border-soft);
   border-radius: 18px;
@@ -133,9 +510,6 @@
   color: var(--primary-dark);
 }
 
-// ============================================================
-// Markdown 正文
-// ============================================================
 .update-markdown-full {
   font-size: 15px;
   line-height: 1.9;
@@ -178,7 +552,6 @@
     border-top: 1px solid var(--border-soft);
   }
 
-  // ----- 代码块 -----
   pre {
     margin: 16px 0;
     padding: 18px 20px;
@@ -188,8 +561,6 @@
     overflow-x: auto;
     font-size: 14px;
     line-height: 1.7;
-
-    // 细窄滚动条(与公式块一致)
     scrollbar-width: thin;
     scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
 
@@ -201,9 +572,7 @@
       background: rgba(128, 128, 128, 0.35);
       border-radius: 999px;
 
-      &:hover {
-        background: rgba(128, 128, 128, 0.55);
-      }
+      &:hover { background: rgba(128, 128, 128, 0.55); }
     }
   }
 
@@ -211,7 +580,6 @@
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   }
 
-  // 行内 code
   p > code,
   li > code {
     padding: 2px 6px;
@@ -221,23 +589,19 @@
     font-size: 0.92em;
   }
 
-  // ----- 加粗 -----
   strong {
     color: var(--primary-dark);
     font-weight: 700;
   }
 }
 
-// ============================================================
-// 表格(用于 2026-04-22 里程碑日志的汇总表)
-// ============================================================
+// 详情页表格
 .update-table-wrap {
   margin: 20px 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border-soft);
   border-radius: 12px;
-
   scrollbar-width: thin;
   scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
 
@@ -257,9 +621,7 @@
   font-size: 14px;
   line-height: 1.7;
 
-  thead {
-    background: var(--primary-soft);
-  }
+  thead { background: var(--primary-soft); }
 
   th, td {
     padding: 10px 14px;
@@ -272,32 +634,13 @@
     font-weight: 700;
   }
 
-  tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  tbody tr:hover {
-    background: var(--bg-panel);
-  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-panel); }
 }
 
 // ============================================================
 // 响应式
 // ============================================================
-@include tablet {
-  .update-card {
-    border-radius: 16px;
-  }
-
-  .update-card-header {
-    font-size: 15px;
-  }
-
-  .update-card-body h3 {
-    font-size: 18px;
-  }
-}
-
 @include laptop {
   .update-detail-card {
     padding: 24px 22px;
@@ -307,16 +650,108 @@
   .update-detail-title {
     font-size: 26px;
   }
+
+  .update-card {
+    grid-template-columns: 76px 1fr auto;
+    padding: 16px 18px;
+    gap: 14px;
+  }
+
+  .update-card-date-mmdd {
+    font-size: 20px;
+  }
+
+  .update-card-title {
+    font-size: 16px;
+  }
 }
 
 @include small {
   .update-card {
-    // 移动端取消 hover 抬升(手机没 hover 概念,防止 tap 时闪)
-    &:hover {
-      transform: none;
-    }
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "main"
+      "side";
+    gap: 10px;
+    padding: 16px;
+
+    &:hover { transform: none; }
   }
 
+  .update-card-date {
+    grid-area: header;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+
+    .update-card-date-mmdd { font-size: 15px; }
+    .update-card-date-year { font-size: 11px; }
+  }
+
+  .update-card-main { grid-area: main; }
+  .update-card-side {
+    grid-area: side;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .update-card-tags {
+    justify-content: flex-start;
+    max-width: none;
+  }
+
+  .update-card-summary {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  // 时间线竖线/圆点在移动端依然显示但收紧
+  .update-timeline {
+    padding-left: 22px;
+  }
+
+  .update-card-wrap::before {
+    left: -22px;
+    width: 12px;
+    height: 12px;
+    border-width: 2.5px;
+  }
+
+  .update-month-header {
+    margin-left: -22px;
+    padding-left: 22px;
+    font-size: 13px;
+  }
+
+  // 筛选栏单行变多行
+  .update-filterbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .update-chips {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    margin: 0 -16px;
+    padding: 0 16px;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .update-chip {
+    flex-shrink: 0;
+  }
+
+  .update-sort {
+    align-self: flex-end;
+  }
+
+  // 详情页
   .update-detail-card {
     padding: 20px 16px;
     border-radius: 14px;
@@ -338,8 +773,26 @@
   .update-table {
     font-size: 13px;
 
-    th, td {
-      padding: 8px 10px;
-    }
+    th, td { padding: 8px 10px; }
   }
 }
+
+.update-sort-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.22s ease;
+}
+
+
+.update-sort-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.22s ease;
+  transform-origin: 50% 50%;
+}
+
+/* 最早优先时，四条横线整体旋转 180° */
+.update-sort.is-oldest .update-sort-icon {
+  transform: rotate(180deg);
+}
+

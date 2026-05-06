@@ -1,10 +1,101 @@
 [
-  { "file": "content/updates/2026-05-04.md" },
-  { "file": "content/updates/2026-04-22.md" },
-  { "file": "content/updates/2026-04-20.md" },
-  { "file": "content/updates/2026-04-17.md" },
-  { "file": "content/updates/2026-04-16.md" },
-  { "file": "content/updates/2026-04-15.md" },
-  { "file": "content/updates/2026-04-14.md" },
-  { "file": "content/updates/2026-04-13.md" }
+  {
+    "file": "content/updates/2026-05-04.md",
+    "title": "移动端加灵动岛,调色盘补上光晕开关",
+    "date": "2026-05-04",
+    "category": "建站日志",
+    "meta": "移动端体验",
+    "summary": "今天主要补了两个偏「体感」的功能:一个是移动端顶部的灵动岛,另一个是调色盘里的背景光晕开关。 都不是什么内容型更新,但会让网站用起来更像一个完整的小系统,而不是几页静态页面拼在一起。",
+    "tags": [
+      "mobile",
+      "feature"
+    ],
+    "primary": "feature"
+  },
+  {
+    "file": "content/updates/2026-04-22.md",
+    "title": "性能优化五步收官 —— 从「能看」到「真的快」",
+    "date": "2026-04-22",
+    "category": "建站日志",
+    "meta": "性能优化",
+    "summary": "今天把拖了好几天的网站性能优化一口气做完了。前几天已经把 ①CSS 压缩和 ②图片 WebP 化搞定,今天从第③步开始一路推到第⑤步,整个站点的加载体验有了肉眼可见的提升。",
+    "tags": [
+      "perf"
+    ],
+    "primary": "optimization"
+  },
+  {
+    "file": "content/updates/2026-04-20.md",
+    "title": "主页加全局搜索,新增明暗主题切换",
+    "date": "2026-04-20",
+    "category": "建站日志",
+    "meta": "搜索与暗色模式",
+    "summary": "今天加了两个早就想做的功能——全站搜索和明暗主题切换。都不算复杂,但对日常使用体验影响都挺大。 主页顶部现在多了个搜索框。",
+    "tags": [
+      "visual",
+      "feature"
+    ],
+    "primary": "feature"
+  },
+  {
+    "file": "content/updates/2026-04-17.md",
+    "title": "换域名,留言板加了 VPN 提示弹窗",
+    "date": "2026-04-17",
+    "category": "建站日志",
+    "meta": "域名与小提示",
+    "summary": "小修小补的一天,但都是「体感有别」的那种小事。 原来这个网站的地址是: yang181969-ship-it.github.io/yang283643/ 长、难记、还带一股临时的味道。",
+    "tags": [
+      "feature"
+    ],
+    "primary": "feature"
+  },
+  {
+    "file": "content/updates/2026-04-16.md",
+    "title": "留言板接入 Waline,统一页面结构,开通笔记和关于,砍掉日记",
+    "date": "2026-04-16",
+    "category": "建站日志",
+    "meta": "Waline 与样式统一",
+    "summary": "今天是改动比较密的一天,几件事一起做了。核心围绕两个目标:让留言板真正能用,以及把页面结构统一起来。 之前的留言板只是个纯前端表单,刷新就没了。",
+    "tags": [
+      "visual"
+    ],
+    "primary": "optimization"
+  },
+  {
+    "file": "content/updates/2026-04-15.md",
+    "title": "手机端适配起步,画廊功能上线,增加悬浮按钮",
+    "date": "2026-04-15",
+    "category": "建站日志",
+    "meta": "移动端适配",
+    "summary": "今天的工作比较杂,但方向一致:让这个网站在手机上也能看、也好用。顺带把画廊和一个体验小细节做了。 桌面端那套「左侧竖直导航」搬到手机上直接裂开——屏幕太窄,挤不下那么多按钮。",
+    "tags": [
+      "mobile",
+      "feature"
+    ],
+    "primary": "feature"
+  },
+  {
+    "file": "content/updates/2026-04-14.md",
+    "title": "新增留言板,调整滑动方式",
+    "date": "2026-04-14",
+    "category": "建站日志",
+    "meta": "留言板与滚动",
+    "summary": "昨天把骨架搭完,今天开始塞一点能让访客动手的东西。主要是两件事:加了个留言板,还有重做了页面滚动的方式。 访客现在可以填用户名、留言内容、上传图片,最后还能给个星级评分。",
+    "tags": [
+      "feature"
+    ],
+    "primary": "feature"
+  },
+  {
+    "file": "content/updates/2026-04-13.md",
+    "title": "网站正式开张 —— 从零搭起第一版骨架",
+    "date": "2026-04-13",
+    "category": "建站日志",
+    "meta": "建站起步",
+    "summary": "今天把这个网站的第一版骨架搭起来了。虽然离「完整」还差得远,但总算有一个可以打开、可以导航、看得过去的雏形。记一下起点的样子。",
+    "tags": [
+      "feature"
+    ],
+    "primary": "feature"
+  }
 ]

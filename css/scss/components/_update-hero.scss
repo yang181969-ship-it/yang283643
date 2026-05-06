@@ -1,0 +1,341 @@
+// ============================================================
+// 更新页 Hero 区域
+// 大标题 + 副标题 + 3 张 stat 卡 + 右侧 SVG 装饰环
+// 装饰环用 currentColor 跟随主题
+// ============================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// ============================================================
+// Hero 容器
+// ============================================================
+.update-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 40px;
+  margin: 0 0 24px;
+  padding: 36px 40px;
+  border-radius: 24px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--bg-card) 92%, var(--primary-soft) 8%),
+    color-mix(in srgb, var(--bg-panel) 86%, var(--primary-soft) 14%)
+  );
+  border: var(--glass-border-subtle);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+}
+
+// 文本列
+.update-hero-text {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+}
+
+.update-hero-title {
+  margin: 0 0 8px;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.update-hero-subtitle {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+// ============================================================
+// Stat 卡片(3 张并列)
+// ============================================================
+.update-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 640px;
+}
+
+.update-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--border-soft) 72%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--bg-card) 78%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-decoration: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: default;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+// 按钮型 stat(更新日历触发器)
+.update-stat-card--button {
+  cursor: pointer;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: hsla(var(--primary-hue), 75%, 60%, 0.32);
+    background: color-mix(in srgb, var(--bg-card) 90%, var(--primary-soft) 10%);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  // 展开态:卡片高亮 + 阴影变深
+  &.is-open {
+    border-color: hsla(var(--primary-hue), 75%, 60%, 0.5);
+    background: var(--primary-soft);
+    box-shadow:
+      0 8px 18px rgba(15, 23, 42, 0.1),
+      0 0 0 3px hsla(var(--primary-hue), 75%, 60%, 0.12);
+  }
+
+  &:focus { outline: none; }
+  &:focus-visible {
+    outline: 2px solid hsla(var(--primary-hue), 75%, 60%, 0.45);
+    outline-offset: 2px;
+  }
+}
+
+// stat 内的图标
+.update-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// stat 内的文字栈
+.update-stat-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.update-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.update-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  // 大数字用 tabular-nums,避免抖动
+  font-variant-numeric: tabular-nums;
+}
+
+// chevron(只在按钮型 stat 出现)
+.update-stat-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.2s ease, color 0.2s ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.update-stat-card--button.is-open .update-stat-chevron {
+  transform: rotate(180deg);
+  color: var(--primary-dark);
+}
+
+// ============================================================
+// 装饰环(右侧 SVG,currentColor 跟随主题)
+// ============================================================
+.update-hero-decoration {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  flex-shrink: 0;
+  color: var(--primary); // SVG 内部 currentColor 用这个
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+  }
+
+  // 主环慢速旋转
+  .update-hero-ring--main {
+    transform-origin: center;
+    animation: update-hero-ring-rotate 22s linear infinite;
+  }
+
+  // 副环反向慢速旋转
+  .update-hero-ring--accent {
+    transform-origin: center;
+    animation: update-hero-ring-rotate-rev 32s linear infinite;
+  }
+
+  // 中心球轻微脉动
+  .update-hero-orb {
+    transform-origin: center;
+    animation: update-hero-orb-pulse 4s ease-in-out infinite;
+  }
+
+  // 漂浮粒子
+  .update-hero-particle {
+    transform-origin: center;
+    animation: update-hero-orb-pulse 3s ease-in-out infinite;
+  }
+}
+
+@keyframes update-hero-ring-rotate {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes update-hero-ring-rotate-rev {
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes update-hero-orb-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.06); }
+}
+
+// 用户开启了 reduce motion → 不旋转
+@media (prefers-reduced-motion: reduce) {
+  .update-hero-decoration .update-hero-ring--main,
+  .update-hero-decoration .update-hero-ring--accent,
+  .update-hero-decoration .update-hero-orb,
+  .update-hero-decoration .update-hero-particle {
+    animation: none;
+  }
+}
+
+// ============================================================
+// 笔记本断点:Hero 收紧
+// ============================================================
+@include laptop {
+  .update-hero {
+    padding: 28px 28px;
+    gap: 28px;
+  }
+
+  .update-hero-title {
+    font-size: 30px;
+  }
+
+  .update-hero-subtitle {
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+
+  .update-hero-decoration {
+    width: 220px;
+    height: 220px;
+  }
+
+  .update-stat-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .update-stat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .update-stat-value {
+    font-size: 15px;
+  }
+}
+
+// ============================================================
+// 移动端:装饰环隐藏,Hero 单列,stat 横滑
+// ============================================================
+@include small {
+  .update-hero {
+    grid-template-columns: 1fr;
+    padding: 22px 18px;
+    gap: 0;
+    border-radius: 18px;
+  }
+
+  .update-hero-title {
+    font-size: 24px;
+  }
+
+  .update-hero-subtitle {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  // 装饰环隐藏(移动端 Hero 收成纯文字 + stats)
+  .update-hero-decoration {
+    display: none;
+  }
+
+  // stats 改横滑
+  .update-hero-stats {
+    display: flex;
+    grid-template-columns: none;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin: 0 -18px;
+    padding: 4px 18px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .update-stat-card {
+    flex: 0 0 auto;
+    min-width: 200px;
+    max-width: 240px;
+    scroll-snap-align: start;
+  }
+}
