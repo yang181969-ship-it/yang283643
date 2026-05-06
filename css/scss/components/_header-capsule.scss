@@ -1,0 +1,225 @@
+// ============================================================
+// Header Capsule —— 顶栏右侧 [搜索 | 调色盘] 二合一胶囊
+// 桌面端:统一胶囊;手机端 (≤$bp-mobile):拆为两个独立圆形按钮
+// ============================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// ============================================================
+// 胶囊外壳
+// ============================================================
+.header-capsule {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 46px;
+  padding: 0;
+  border: var(--glass-border-subtle);
+  border-radius: 999px;
+  background: var(--glass-bg-weak);
+  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition:
+    box-shadow var(--dur-glass) var(--ease-glass),
+    border-color var(--dur-glass) var(--ease-glass);
+
+  // 搜索展开态:加深阴影 + 边框微调向 primary 倾斜
+  &:has(.search-bar.is-open) {
+    box-shadow:
+      0 12px 26px rgba(15, 23, 42, 0.1),
+      0 4px 10px hsla(var(--primary-hue), 70%, 60%, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    border-color: color-mix(in srgb, var(--border-soft) 60%, var(--primary) 40%);
+  }
+}
+
+// 胶囊内的两个 control 容器
+.header-capsule .search-control,
+.header-capsule .theme-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+// ============================================================
+// 胶囊内通用按钮(.capsule-btn)
+// ============================================================
+.header-capsule .capsule-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+
+  // hover/focus 高亮:内嵌圆点
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: transparent;
+    transform: translate(-50%, -50%);
+    transition: background 0.18s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &:hover::before,
+  &:focus-visible::before {
+    background: hsla(var(--primary-hue), 75%, 60%, 0.14);
+  }
+
+  &:active::before {
+    background: hsla(var(--primary-hue), 75%, 60%, 0.22);
+  }
+
+  &:focus { outline: none; }
+  &:focus-visible {
+    outline: 2px solid hsla(var(--primary-hue), 75%, 60%, 0.45);
+    outline-offset: 2px;
+  }
+
+  svg {
+    position: relative;
+    z-index: 1;
+    width: 22px;
+    height: 22px;
+    display: block;
+    color: var(--primary);
+  }
+
+  // 左端按钮(搜索):圆角左侧
+  &.search-toggle {
+    border-radius: 999px 0 0 999px;
+  }
+
+  // 右端按钮(调色盘):圆角右侧
+  &#theme-toggle {
+    border-radius: 0 999px 999px 0;
+  }
+}
+
+// 搜索展开时:搜索按钮持续 highlight
+.header-capsule:has(.search-bar.is-open) .search-toggle::before {
+  background: hsla(var(--primary-hue), 75%, 60%, 0.14);
+}
+
+// ============================================================
+// 中间分隔线
+// ============================================================
+.capsule-divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 22px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--border-soft) 80%, transparent),
+    transparent
+  );
+  transition: opacity 0.2s ease;
+}
+
+// 搜索展开时,分隔线淡化(让胶囊视觉更连贯)
+.header-capsule:has(.search-bar.is-open) .capsule-divider {
+  opacity: 0.4;
+}
+
+// ============================================================
+// 笔记本断点
+// ============================================================
+@include laptop {
+  .header-capsule {
+    height: 42px;
+  }
+
+  .header-capsule .capsule-btn {
+    width: 42px;
+    height: 42px;
+
+    &::before {
+      width: 34px;
+      height: 34px;
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// ============================================================
+// 手机端 (≤$bp-mobile):拆为两个独立圆形按钮
+// 去掉胶囊视觉,按钮恢复 circle-icon-btn 风格
+// ============================================================
+@media (max-width: $bp-mobile) {
+  .header-capsule {
+    height: auto;
+    padding: 0;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    &:has(.search-bar.is-open) {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+  }
+
+  .capsule-divider {
+    display: none;
+  }
+
+  // 按钮恢复独立圆形
+  .header-capsule .capsule-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 50% !important;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+    backdrop-filter: blur(var(--glass-blur-weak)) saturate(128%);
+    -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(128%);
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+
+    &::before { display: none; }
+
+    &:hover {
+      transform: translateY(-1px);
+      border-color: hsla(var(--primary-hue), 75%, 60%, 0.32);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // 搜索按钮的 fixed 浮层逻辑由 _search.scss 的手机端块负责
+}

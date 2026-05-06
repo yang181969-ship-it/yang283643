@@ -17,9 +17,9 @@
 
 // 3. 首屏组件
 @use 'components/card';          // .card(卡片,首屏第一张可见)
+@use 'components/header-capsule';
 @use 'components/search';        // 搜索按钮
 @use 'components/theme-panel';   // 色板按钮
-@use 'components/mode-toggle';   // 深浅切换
 @use 'components/floating-btns'; // 右下浮动按钮
 
 // 4. 暗色主题(必须最后,防闪烁的核心)
