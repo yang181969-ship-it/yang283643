@@ -10,8 +10,9 @@
 | `npm run build` | 编译并压缩完整样式到 `css/style.css` |
 | `npm run build:critical` | 编译首屏关键样式到 `css/critical.css` |
 | `npm run inline:critical` | 把 `css/critical.css` 内联到指定 HTML |
-| `npm run build:all` | 依次执行更新索引聚合、完整 CSS、critical CSS、critical 内联 |
+| `npm run build:all` | 依次执行更新索引聚合、站点统计聚合、完整 CSS、critical CSS、critical 内联 |
 | `npm run aggregate:updates` | 扫描更新日志 Markdown,生成更新页索引数据 |
+| `npm run aggregate:stats` | 聚合站点统计页数据和 Hero 区单点指标 |
 | `npm run optimize:animes` | 处理动漫页图片 |
 | `npm run optimize:gallery` | 处理画廊图片 |
 | `npm run update:refs` | 根据图片重命名映射更新动漫页引用 |
@@ -295,6 +296,24 @@ npm run aggregate:updates
 
 新增或修改 `content/updates/` 里的日志后,重新运行一次这个命令即可刷新更新页索引。
 
+### 7-aggregate-stats.mjs
+
+命令:
+
+```bash
+npm run aggregate:stats
+```
+
+作用:
+
+- 读取 `data/notes-index.json`、`js/anime-data.js`、画廊数据、`data/updates-index.json` 和可选的 `data/music-stats.json`。
+- 写入 `data/stats.json`,供统计页主图和详情卡片读取。
+- 写入 `data/site-meta.json`,供统计页 Hero 区展示总内容数、建站天数、最新更新等单点指标。
+- 生成笔记分类、番剧状态、番剧题材、画廊分类、更新月份、音乐歌手和评论分布这几组统计源。
+- 同一个月份重复运行时会覆盖当月快照,不会重复追加。
+
+注意:评论 / Waline 数据不在脚本里聚合,统计页前端会运行时实时拉取。通常需要先运行 `npm run aggregate:updates`,再运行这个脚本；也可以直接用 `npm run build:all` 一并刷新。
+
 ### split-notes.mjs
 
 命令:
@@ -340,6 +359,30 @@ npm run portrait:rotation -- --start-date 2026-05-04 --seed portrait-rotation-v1
 npm run aggregate:updates
 ```
 
+### stats.json
+
+这是 `7-aggregate-stats.mjs` 生成的统计页数据。`js/stats.js` 会读取其中的 `snapshots` 和 `breakdowns`,用于渲染顶部累计图和各类详情卡片。
+
+这个文件通常不手写维护。需要刷新时重新运行:
+
+```bash
+npm run aggregate:stats
+```
+
+### site-meta.json
+
+这是 `7-aggregate-stats.mjs` 生成的站点单点指标数据。统计页会读取其中的 `siteBirthday`、`totalDays`、`totalContent`、`totals`、`latestUpdate` 和 `newAnimeCount`。
+
+这个文件通常不手写维护。需要刷新时重新运行:
+
+```bash
+npm run aggregate:stats
+```
+
+### music-stats.json
+
+这是音乐统计的可选来源文件。`7-aggregate-stats.mjs` 会读取其中的 `topArtists`,并透传到 `data/stats.json` 的 `musicTopArtists`。
+
 ## 常见工作流
 
 ### 新增更新日志
@@ -349,6 +392,15 @@ npm run aggregate:updates
 3. 如需精确控制列表展示,补充 `@summary`、`@tags`、`@primary`。
 4. 运行 `npm run aggregate:updates`。
 5. 检查 `data/updates-index.json` 和更新页展示。
+
+### 更新站点统计页
+
+```bash
+npm run aggregate:updates
+npm run aggregate:stats
+```
+
+然后检查 `data/stats.json`、`data/site-meta.json` 和统计页展示。如果只改了笔记、番剧、画廊或音乐统计来源,可以只运行 `npm run aggregate:stats`。
 
 ### 新增主页音乐
 
@@ -397,4 +449,4 @@ npm run music:add -- "songs" --batch
 npm run build:all
 ```
 
-这会先刷新 `data/updates-index.json`,再构建完整样式和首屏 CSS。检查无误后,可以删除本次生成的 `.bak` 文件。
+这会先刷新 `data/updates-index.json`、`data/stats.json` 和 `data/site-meta.json`,再构建完整样式和首屏 CSS。检查无误后,可以删除本次生成的 `.bak` 文件。
