@@ -1,406 +1,577 @@
 // ============================================================
 // js/stats.js
-// 站点统计页 ── Phase F
-//
-// 渲染策略:
-//   1) 拉 data/site-meta.json → 灌 hero 区指标
-//   2) 拉 data/stats.json     → 主图(堆叠柱+累计折线) + 6 张静态饼
-//   3) 拉 Waline /api/comment → 评论按角色 (admin/guest) 实时饼
-//   4) 监听 'theme:change' 事件 ── 主题/色相切换时重渲染所有图表的颜色
-//
-// 缓存层:与 home-cards.js 同款,y181_ 前缀
-// 失败兜底:每张卡独立报错,不影响其他卡
+// 站点统计页:轻量 SVG/HTML 渲染
 // ============================================================
 
 (function () {
   "use strict";
 
-  // ---------------- 常量 ----------------
-  const STORAGE_PREFIX = "y181_";
-  const WALINE_API     = "https://yang283643-waline.vercel.app";
+  const SVG_NS = "http://www.w3.org/2000/svg";
 
-  // 聚合数据每月由 CI 跑一次,1 天 TTL 已足够;
-  // 建站日靠 site-meta 透传,不写死避免双源
-  const TTL = {
-    meta:     1000 * 60 * 60 * 24,        // 1 天
-    stats:    1000 * 60 * 60 * 24,        // 1 天
-    comments: 1000 * 60 * 60,             // 1 小时
+  const statsData = {
+    summary: {
+      total: 45,
+      days: 24,
+      lastUpdated: "5月6日",
+    },
+    growth: [
+      { month: "2026-02", notes: 4, anime: 3, gallery: 3, updates: 2, total: 12 },
+      { month: "2026-03", notes: 6, anime: 6, gallery: 6, updates: 3, total: 21 },
+      { month: "2026-04", notes: 8, anime: 7, gallery: 8, updates: 5, total: 28 },
+      { month: "2026-05", notes: 9, anime: 9, gallery: 10, updates: 9, total: 37 },
+      { month: "2026-06", notes: 11, anime: 11, gallery: 11, updates: 12, total: 45 },
+    ],
+    recentChanges: [
+      { date: "05-06", title: "更新页大改,右上角三个按钮合并成两个", type: "更新" },
+      { date: "05-04", title: "移动端加灵动岛,调色盘补上光晕开关", type: "更新" },
+      { date: "05-01", title: "主页大改:从静态欢迎页到 Bento 仪表盘", type: "笔记" },
+      { date: "04-22", title: "性能优化五步收官,让站点加载更轻快", type: "优化" },
+    ],
+    activity: [
+      { date: "2026-04-07", count: 0 },
+      { date: "2026-04-08", count: 1 },
+      { date: "2026-04-09", count: 2 },
+      { date: "2026-04-10", count: 0 },
+      { date: "2026-04-11", count: 1 },
+      { date: "2026-04-12", count: 2 },
+      { date: "2026-04-13", count: 1 },
+      { date: "2026-04-14", count: 0 },
+      { date: "2026-04-15", count: 3 },
+      { date: "2026-04-16", count: 1 },
+      { date: "2026-04-17", count: 0 },
+      { date: "2026-04-18", count: 2 },
+      { date: "2026-04-19", count: 1 },
+      { date: "2026-04-20", count: 1 },
+      { date: "2026-04-21", count: 3 },
+      { date: "2026-04-22", count: 0 },
+      { date: "2026-04-23", count: 1 },
+      { date: "2026-04-24", count: 2 },
+      { date: "2026-04-25", count: 1 },
+      { date: "2026-04-26", count: 0 },
+      { date: "2026-04-27", count: 2 },
+      { date: "2026-04-28", count: 1 },
+      { date: "2026-04-29", count: 3 },
+      { date: "2026-04-30", count: 0 },
+      { date: "2026-05-01", count: 1 },
+      { date: "2026-05-02", count: 2 },
+      { date: "2026-05-03", count: 1 },
+      { date: "2026-05-04", count: 0 },
+      { date: "2026-05-05", count: 2 },
+      { date: "2026-05-06", count: 3 },
+    ],
+    categories: [
+      { name: "笔记", value: 18 },
+      { name: "动漫", value: 14 },
+      { name: "画廊", value: 9 },
+      { name: "更新", value: 7 },
+      { name: "留言", value: 5 },
+    ],
+    archive: {
+      siteBirthday: "2026年4月13日",
+      lastUpdated: "2026年5月6日 13:44",
+      version: "v1.1.0",
+      stack: [
+        "HTML · CSS/SCSS · JavaScript",
+        "Waline · KaTeX · 原生 SVG",
+      ],
+    },
   };
 
-  // 同会话内存缓存
-  const memCache = new Map();
+  const growthSeries = [
+    { key: "notes", label: "笔记", color: "#4f8cff" },
+    { key: "anime", label: "动漫", color: "#9b7cff" },
+    { key: "gallery", label: "画廊", color: "#7bdff2" },
+    { key: "updates", label: "更新", color: "#f6b26b" },
+  ];
 
-  // 注册过的图表实例 (id → Chart),供主题切换时统一重渲染
-  const charts = new Map();
+  const categoryColors = ["#4f8cff", "#9b7cff", "#7bdff2", "#f6b26b", "#75d6a5"];
 
-  // 7 张卡 + 1 张主图共用的源数据快照(主题切换重绘时复用,免重新 fetch)
-  const dataState = { meta: null, stats: null, comments: null };
-  let chartLoadPromise = null;
-  let themeListenerBound = false;
+  let heroFrame = 0;
+  let pageChangeBound = false;
 
-  // ============================================================
-  // 缓存
-  // ============================================================
-  async function cached(key, ttl, fetcher) {
-    if (memCache.has(key)) return memCache.get(key);
-    const fullKey = STORAGE_PREFIX + key;
-    const stored = readStorage(fullKey);
-    if (stored && Date.now() - stored.t < ttl) {
-      memCache.set(key, stored.v);
-      return stored.v;
-    }
-    try {
-      const v = await fetcher();
-      writeStorage(fullKey, v);
-      memCache.set(key, v);
-      return v;
-    } catch (err) {
-      console.warn(`[stats] ${key} fetch failed, falling back to stale:`, err);
-      if (stored) { memCache.set(key, stored.v); return stored.v; }
-      throw err;
-    }
-  }
-  function readStorage(k)  { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } catch { return null; } }
-  function writeStorage(k, v) { try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), v })); } catch {} }
-
-  async function fetchJson(url, opt) {
-    const res = await fetch(url, opt);
-    if (!res.ok) throw new Error(`${url} → ${res.status}`);
-    return res.json();
-  }
-
-  function dataUrl(file) {
-    const inHtmlDir = window.location.pathname.replace(/\\/g, "/").includes("/html/");
-    return `${inHtmlDir ? "../" : ""}data/${file}`;
-  }
-
-  function loadChartJs() {
-    if (typeof Chart !== "undefined") return Promise.resolve();
-    if (chartLoadPromise) return chartLoadPromise;
-
-    chartLoadPromise = new Promise(resolve => {
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4/dist/chart.umd.min.js";
-      script.async = true;
-      script.dataset.statsChartjs = "1";
-      script.onload = resolve;
-      script.onerror = resolve;
-      document.head.appendChild(script);
-    });
-
-    return chartLoadPromise;
-  }
-
-  function escapeHTML(s) {
-    return String(s ?? "").replace(/[&<>"']/g, c => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
     }[c]));
   }
 
-  // ============================================================
-  // 主题色解析 ── 把 CSS 变量翻成 Chart.js 能吃的具体值
-  // 每次重绘都重新读,所以滑色相、切明暗都会生效
-  // ============================================================
-  function readThemeColors() {
-    const cs   = getComputedStyle(document.documentElement);
-    const hue  = parseFloat(cs.getPropertyValue('--primary-hue')) || 330;
-    const text = (cs.getPropertyValue('--text-main')  || '#1f2937').trim();
-    const muted = (cs.getPropertyValue('--text-muted') || '#6b7280').trim();
-    const border = (cs.getPropertyValue('--border-soft') || '#d9e2ef').trim();
-
-    // 从主色相均匀偏移 9 个色,饼图最多用得着这么多;
-    // 偏移用奇数权重避免相邻 slice 撞色
-    const offsets = [0, 60, 180, 240, 30, 120, 200, 300, 90];
-    const series = offsets.map((d, i) => `hsl(${(hue + d) % 360}, ${72 - (i % 3) * 4}%, ${68 - (i % 4) * 3}%)`);
-
-    return { hue, text, muted, border, series };
-  }
-
-  // ============================================================
-  // Hero 区指标灌入
-  // ============================================================
-  function hydrateHero(meta) {
-    document.querySelectorAll('[data-meta]').forEach(el => {
-      const key = el.dataset.meta;
-      const v = meta?.[key];
-      if (v == null) return;
-      if (key === 'latestUpdate' && typeof v === 'string') {
-        // 2026-05-06 → 5 月 6 日
-        const m = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
-        el.textContent = m ? `${parseInt(m[2], 10)}月${parseInt(m[3], 10)}日` : v;
-      } else {
-        el.textContent = String(v);
-      }
+  function svgEl(tag, attrs = {}) {
+    const el = document.createElementNS(SVG_NS, tag);
+    Object.entries(attrs).forEach(([key, value]) => {
+      if (value != null) el.setAttribute(key, String(value));
     });
+    return el;
   }
 
-  // ============================================================
-  // 主图:堆叠柱(月度增量) + 累计折线
-  // snapshots 是每月末的累积总数,需要 diff 出"本月新增"作为柱
-  // ============================================================
-  function buildMainChartData(snapshots) {
-    if (!snapshots || !snapshots.length) return null;
+  function stopHeroAnimation() {
+    if (!heroFrame) return;
+    window.cancelAnimationFrame(heroFrame);
+    heroFrame = 0;
+  }
 
-    // 同月可能多个快照(临时跑了多次),只保留每月最新
-    const byMonth = new Map();
-    snapshots.forEach(s => byMonth.set(s.month, s));
-    const months = [...byMonth.keys()].sort();
+  function renderSummary() {
+    document.querySelector('[data-stats-summary="total"]')?.replaceChildren(
+      document.createTextNode(String(statsData.summary.total))
+    );
+    document.querySelector('[data-stats-summary="days"]')?.replaceChildren(
+      document.createTextNode(String(statsData.summary.days))
+    );
+    document.querySelector('[data-stats-summary="lastUpdated"]')?.replaceChildren(
+      document.createTextNode(statsData.summary.lastUpdated)
+    );
+  }
 
-    let prev = { notes: 0, anime: 0, gallery: 0, updates: 0 };
-    const delta = { notes: [], anime: [], gallery: [], updates: [] };
-    const cumulative = [];
+  function renderGrowthLegend() {
+    const host = document.querySelector("[data-stats-growth-legend]");
+    if (!host) return;
 
-    months.forEach(m => {
-      const cur = byMonth.get(m);
-      delta.notes.push(Math.max(0, cur.notes - prev.notes));
-      delta.anime.push(Math.max(0, cur.anime - prev.anime));
-      delta.gallery.push(Math.max(0, cur.gallery - prev.gallery));
-      delta.updates.push(Math.max(0, cur.updates - prev.updates));
-      cumulative.push(cur.total);
-      prev = cur;
+    const items = [
+      ...growthSeries.map(item => ({ ...item, kind: "bar" })),
+      { key: "total", label: "累计", color: "#4f8cff", kind: "line" },
+    ];
+
+    host.innerHTML = items.map(item => `
+      <span class="stats-legend-item">
+        <span class="stats-legend-mark stats-legend-mark--${item.kind}" style="--legend-color:${item.color}"></span>
+        <span>${escapeHTML(item.label)}</span>
+      </span>
+    `).join("");
+  }
+
+  function renderGrowthChart() {
+    const host = document.querySelector("[data-stats-growth-chart]");
+    if (!host) return;
+
+    renderGrowthLegend();
+
+    const data = statsData.growth;
+    const width = 780;
+    const height = 320;
+    const margin = { top: 28, right: 44, bottom: 42, left: 38 };
+    const plotW = width - margin.left - margin.right;
+    const plotH = height - margin.top - margin.bottom;
+    const bottom = margin.top + plotH;
+    const maxValue = Math.ceil(Math.max(...data.map(item => item.total)) / 10) * 10;
+    const groupGap = plotW / data.length;
+    const barW = Math.min(62, groupGap * 0.44);
+
+    const svg = svgEl("svg", {
+      viewBox: `0 0 ${width} ${height}`,
+      role: "img",
+      "aria-label": "内容增长总览图表",
+      class: "stats-growth-svg",
     });
 
-    return { months, delta, cumulative };
-  }
+    const defs = svgEl("defs");
+    growthSeries.forEach(item => {
+      const gradient = svgEl("linearGradient", {
+        id: `stats-bar-${item.key}`,
+        x1: "0",
+        y1: "0",
+        x2: "0",
+        y2: "1",
+      });
+      gradient.append(
+        svgEl("stop", { offset: "0%", "stop-color": item.color, "stop-opacity": "0.78" }),
+        svgEl("stop", { offset: "100%", "stop-color": item.color, "stop-opacity": "0.42" })
+      );
+      defs.appendChild(gradient);
+    });
+    const lineGradient = svgEl("linearGradient", {
+      id: "stats-total-line",
+      x1: "0",
+      y1: "0",
+      x2: "1",
+      y2: "0",
+    });
+    lineGradient.append(
+      svgEl("stop", { offset: "0%", "stop-color": "#4f8cff" }),
+      svgEl("stop", { offset: "100%", "stop-color": "#9b7cff" })
+    );
+    defs.appendChild(lineGradient);
+    svg.appendChild(defs);
 
-  function renderMainChart(snapshots) {
-    const canvas = document.getElementById('stats-main-chart');
-    if (!canvas) return;
-    const empty = document.querySelector('.stats-chart-empty');
-
-    const built = buildMainChartData(snapshots);
-    if (!built || !built.months.length) {
-      if (empty) empty.hidden = false;
-      canvas.style.display = 'none';
-      return;
+    for (let i = 0; i <= 5; i += 1) {
+      const value = (maxValue / 5) * i;
+      const y = bottom - (value / maxValue) * plotH;
+      svg.appendChild(svgEl("line", {
+        x1: margin.left,
+        y1: y,
+        x2: width - margin.right,
+        y2: y,
+        class: "stats-grid-line",
+      }));
+      svg.appendChild(svgEl("text", {
+        x: margin.left - 10,
+        y: y + 4,
+        "text-anchor": "end",
+        class: "stats-chart-label",
+      })).textContent = String(value);
     }
 
-    const colors = readThemeColors();
+    const linePoints = [];
 
-    // 销毁旧实例(主题切换会走这条路径)
-    const old = charts.get('main');
-    if (old) old.destroy();
+    data.forEach((item, index) => {
+      const xCenter = margin.left + groupGap * index + groupGap / 2;
+      let yCursor = bottom;
 
-    const chart = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: built.months,
-        datasets: [
-          { type: 'bar', label: '笔记',   data: built.delta.notes,    backgroundColor: colors.series[0], stack: 'add', borderRadius: 4, borderSkipped: false },
-          { type: 'bar', label: '番剧',   data: built.delta.anime,    backgroundColor: colors.series[1], stack: 'add', borderRadius: 4, borderSkipped: false },
-          { type: 'bar', label: '画廊',   data: built.delta.gallery,  backgroundColor: colors.series[2], stack: 'add', borderRadius: 4, borderSkipped: false },
-          { type: 'bar', label: '更新',   data: built.delta.updates,  backgroundColor: colors.series[3], stack: 'add', borderRadius: 4, borderSkipped: false },
-          {
-            type: 'line', label: '累计',  data: built.cumulative,
-            borderColor: colors.series[4], backgroundColor: 'transparent',
-            borderWidth: 2.5, tension: 0.32, pointRadius: 4, pointHoverRadius: 6,
-            pointBackgroundColor: colors.series[4], yAxisID: 'y2', order: -1,
-          },
-        ],
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        animation: { duration: 600 },
-        scales: {
-          x: { stacked: true, ticks: { color: colors.muted }, grid: { display: false } },
-          y: { stacked: true, beginAtZero: true, ticks: { color: colors.muted, precision: 0 }, grid: { color: colors.border } },
-          y2: {
-            position: 'right', beginAtZero: true,
-            ticks: { color: colors.muted, precision: 0 }, grid: { display: false },
-          },
-        },
-        plugins: {
-          legend: { display: false },           // 用自定义图例
-          tooltip: {
-            backgroundColor: 'rgba(28, 34, 48, 0.92)', padding: 10, titleColor: '#fff', bodyColor: '#fff',
-            borderColor: colors.series[0], borderWidth: 1, cornerRadius: 10,
-          },
-        },
-      },
+      growthSeries.forEach(series => {
+        const value = item[series.key] || 0;
+        const rectH = Math.max(2, (value / maxValue) * plotH);
+        yCursor -= rectH;
+        svg.appendChild(svgEl("rect", {
+          x: xCenter - barW / 2,
+          y: yCursor,
+          width: barW,
+          height: rectH,
+          rx: 7,
+          ry: 7,
+          fill: `url(#stats-bar-${series.key})`,
+          class: "stats-bar-segment",
+        }));
+      });
+
+      const lineY = bottom - (item.total / maxValue) * plotH;
+      linePoints.push([xCenter, lineY]);
+
+      svg.appendChild(svgEl("text", {
+        x: xCenter,
+        y: height - 13,
+        "text-anchor": "middle",
+        class: "stats-chart-label stats-chart-month",
+      })).textContent = item.month;
     });
-    charts.set('main', chart);
 
-    // 自定义图例
-    const legendEl = document.getElementById('stats-main-legend');
-    if (legendEl) {
-      legendEl.innerHTML = chart.data.datasets.map((ds, i) => `
-        <span class="stats-chart-legend-item">
-          <span class="stats-legend-dot" style="background:${ds.backgroundColor || ds.borderColor}"></span>
-          <span>${escapeHTML(ds.label)}</span>
-        </span>
-      `).join('');
-    }
+    const linePath = linePoints.map((point, index) => {
+      const [x, y] = point;
+      return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    }).join(" ");
+
+    svg.appendChild(svgEl("path", {
+      d: linePath,
+      fill: "none",
+      stroke: "url(#stats-total-line)",
+      "stroke-width": "3",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      class: "stats-total-path",
+    }));
+
+    linePoints.forEach(([x, y], index) => {
+      svg.appendChild(svgEl("circle", {
+        cx: x,
+        cy: y,
+        r: 5,
+        class: "stats-total-point",
+      }));
+      svg.appendChild(svgEl("text", {
+        x,
+        y: y - 12,
+        "text-anchor": "middle",
+        class: "stats-total-value",
+      })).textContent = String(data[index].total);
+    });
+
+    host.replaceChildren(svg);
   }
 
-  // ============================================================
-  // 饼图通用渲染(7 张卡共用)
-  // ============================================================
-  function renderPie(key, items) {
-    const canvas  = document.querySelector(`canvas[data-pie="${key}"]`);
-    const legend  = document.querySelector(`[data-legend="${key}"]`);
-    const wrapper = canvas?.closest('.stats-card');
-    if (!canvas || !legend) return;
+  function renderRecentChanges() {
+    const list = document.querySelector("[data-stats-recent]");
+    if (!list) return;
 
-    if (!Array.isArray(items) || !items.length) {
-      legend.innerHTML = `<li class="stats-legend-empty">暂无数据</li>`;
-      canvas.style.display = 'none';
-      return;
-    }
-    canvas.style.display = '';
+    list.innerHTML = statsData.recentChanges.slice(0, 4).map(item => `
+      <li class="stats-change-item" data-type="${escapeHTML(item.type)}">
+        <time>${escapeHTML(item.date)}</time>
+        <span class="stats-change-dot" aria-hidden="true"></span>
+        <span class="stats-change-title">${escapeHTML(item.title)}</span>
+        <span class="stats-change-type">${escapeHTML(item.type)}</span>
+      </li>
+    `).join("");
+  }
 
-    const colors = readThemeColors();
-    const total = items.reduce((s, it) => s + (it.value || 0), 0);
+  function renderHeatmap() {
+    const host = document.querySelector("[data-stats-heatmap]");
+    if (!host) return;
 
-    const old = charts.get(key);
-    if (old) old.destroy();
-
-    const chart = new Chart(canvas, {
-      type: 'doughnut',
-      data: {
-        labels: items.map(it => it.label),
-        datasets: [{
-          data: items.map(it => it.value),
-          backgroundColor: items.map((_, i) => colors.series[i % colors.series.length]),
-          borderColor: 'transparent', borderWidth: 0, hoverOffset: 6,
-        }],
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        cutout: '62%', animation: { duration: 600 },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(28, 34, 48, 0.92)', padding: 10,
-            titleColor: '#fff', bodyColor: '#fff', cornerRadius: 10,
-            callbacks: {
-              label: ctx => `${ctx.label}: ${ctx.parsed} (${total ? ((ctx.parsed / total) * 100).toFixed(1) : 0}%)`,
-            },
-          },
-        },
-      },
-    });
-    charts.set(key, chart);
-
-    legend.innerHTML = items.map((it, i) => {
-      const pct = total ? (it.value / total) * 100 : 0;
-      const color = colors.series[i % colors.series.length];
+    host.innerHTML = statsData.activity.map(item => {
+      const level = Math.max(0, Math.min(3, Number(item.count) || 0));
+      const date = item.date.slice(5).replace("-", "/");
+      const label = `${item.date}: ${item.count} 次更新`;
       return `
-        <li class="stats-legend-row" data-idx="${i}">
-          <span class="stats-legend-dot" style="background:${color}"></span>
-          <span class="stats-legend-label" title="${escapeHTML(it.label)}">${escapeHTML(it.label)}</span>
-          <span class="stats-legend-value">${it.value}</span>
-          <span class="stats-legend-pct">${pct.toFixed(1)}%</span>
-        </li>
+        <span class="stats-heat-cell" data-level="${level}" title="${escapeHTML(label)}" aria-label="${escapeHTML(label)}">
+          <span>${escapeHTML(date)}</span>
+        </span>
       `;
-    }).join('');
+    }).join("");
+  }
 
-    // 图例 hover ↔ 高亮对应饼图扇区(轻量 UX 加分项)
-    legend.querySelectorAll('.stats-legend-row').forEach(row => {
-      row.addEventListener('mouseenter', () => {
-        const idx = Number(row.dataset.idx);
-        chart.setActiveElements([{ datasetIndex: 0, index: idx }]);
-        chart.tooltip.setActiveElements([{ datasetIndex: 0, index: idx }], { x: 0, y: 0 });
-        chart.update();
+  function renderCategories() {
+    const host = document.querySelector("[data-stats-categories]");
+    if (!host) return;
+
+    const max = Math.max(...statsData.categories.map(item => item.value), 1);
+    host.innerHTML = statsData.categories.map((item, index) => {
+      const pct = Math.max(6, (item.value / max) * 100);
+      const color = categoryColors[index % categoryColors.length];
+      return `
+        <div class="stats-category-row">
+          <span class="stats-category-name">${escapeHTML(item.name)}</span>
+          <span class="stats-category-track">
+            <span class="stats-category-fill" style="--bar-width:${pct.toFixed(1)}%;--bar-color:${color}"></span>
+          </span>
+          <strong>${item.value}</strong>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderArchive() {
+    const host = document.querySelector("[data-stats-archive]");
+    if (!host) return;
+
+    const items = [
+      { label: "建站日期", value: statsData.archive.siteBirthday, icon: "calendar" },
+      { label: "最后更新", value: statsData.archive.lastUpdated, icon: "clock" },
+      { label: "当前版本", value: statsData.archive.version, icon: "version" },
+      { label: "技术栈", value: statsData.archive.stack.join("<br>"), icon: "stack" },
+    ];
+
+    host.innerHTML = items.map(item => `
+      <div class="stats-archive-item" data-icon="${item.icon}">
+        <dt>${escapeHTML(item.label)}</dt>
+        <dd>${item.icon === "stack" ? item.value : escapeHTML(item.value)}</dd>
+      </div>
+    `).join("");
+  }
+
+  function columnPoints(x, y, h, w, d) {
+    const top = [
+      [x, y - h],
+      [x + w, y - h + d],
+      [x, y - h + d * 2],
+      [x - w, y - h + d],
+    ];
+    const left = [
+      [x - w, y - h + d],
+      [x, y - h + d * 2],
+      [x, y + d * 2],
+      [x - w, y + d],
+    ];
+    const right = [
+      [x + w, y - h + d],
+      [x, y - h + d * 2],
+      [x, y + d * 2],
+      [x + w, y + d],
+    ];
+
+    const fmt = points => points.map(point => point.map(v => v.toFixed(2)).join(",")).join(" ");
+    return { top: fmt(top), left: fmt(left), right: fmt(right) };
+  }
+
+  function renderHeroVisual() {
+    const host = document.querySelector("[data-stats-hero-visual]");
+    if (!host) return;
+
+    stopHeroAnimation();
+    host.innerHTML = "";
+
+    const svg = svgEl("svg", {
+      viewBox: "0 0 640 280",
+      class: "stats-hero-svg",
+      "aria-hidden": "true",
+      focusable: "false",
+    });
+
+    const defs = svgEl("defs");
+    const glow = svgEl("filter", {
+      id: "stats-column-glow",
+      x: "-35%",
+      y: "-35%",
+      width: "170%",
+      height: "170%",
+    });
+    glow.append(
+      svgEl("feGaussianBlur", { stdDeviation: "4", result: "blur" }),
+      svgEl("feColorMatrix", {
+        in: "blur",
+        type: "matrix",
+        values: "0 0 0 0 0.31 0 0 0 0 0.55 0 0 0 0 1 0 0 0 0.75 0",
+        result: "glow",
+      }),
+      svgEl("feMerge")
+    );
+    glow.querySelector("feMerge").append(
+      svgEl("feMergeNode", { in: "glow" }),
+      svgEl("feMergeNode", { in: "SourceGraphic" })
+    );
+    defs.appendChild(glow);
+
+    const left = svgEl("linearGradient", { id: "stats-column-left", x1: "0", y1: "0", x2: "1", y2: "1" });
+    left.append(
+      svgEl("stop", { offset: "0%", "stop-color": "#86c5ff", "stop-opacity": "0.44" }),
+      svgEl("stop", { offset: "100%", "stop-color": "#4f8cff", "stop-opacity": "0.7" })
+    );
+    defs.appendChild(left);
+
+    const right = svgEl("linearGradient", { id: "stats-column-right", x1: "0", y1: "0", x2: "1", y2: "1" });
+    right.append(
+      svgEl("stop", { offset: "0%", "stop-color": "#b6a0ff", "stop-opacity": "0.68" }),
+      svgEl("stop", { offset: "100%", "stop-color": "#6fa8ff", "stop-opacity": "0.42" })
+    );
+    defs.appendChild(right);
+
+    const top = svgEl("linearGradient", { id: "stats-column-top", x1: "0", y1: "0", x2: "1", y2: "1" });
+    top.append(
+      svgEl("stop", { offset: "0%", "stop-color": "#ffffff", "stop-opacity": "0.82" }),
+      svgEl("stop", { offset: "100%", "stop-color": "#9b7cff", "stop-opacity": "0.58" })
+    );
+    defs.appendChild(top);
+    svg.appendChild(defs);
+
+    svg.appendChild(svgEl("ellipse", {
+      cx: "370",
+      cy: "226",
+      rx: "210",
+      ry: "42",
+      class: "stats-hero-base stats-hero-base--wide",
+    }));
+    svg.appendChild(svgEl("ellipse", {
+      cx: "370",
+      cy: "226",
+      rx: "150",
+      ry: "26",
+      class: "stats-hero-base",
+    }));
+
+    [
+      [112, 46, 2.3],
+      [220, 30, 1.8],
+      [318, 62, 1.4],
+      [508, 38, 2.5],
+      [574, 104, 1.7],
+      [156, 152, 1.5],
+      [444, 84, 1.2],
+      [602, 178, 1.1],
+    ].forEach(([cx, cy, r], index) => {
+      const spark = svgEl("circle", {
+        cx,
+        cy,
+        r,
+        class: "stats-hero-spark",
+        style: `--spark-delay:${index * 0.42}s`,
       });
-      row.addEventListener('mouseleave', () => {
-        chart.setActiveElements([]);
-        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-        chart.update();
-      });
+      svg.appendChild(spark);
     });
-  }
 
-  // ============================================================
-  // 评论分布:Waline 实时拉,按 type 字段 (admin/guest) 分桶
-  // ============================================================
-  async function fetchCommentsBreakdown() {
-    const url = `${WALINE_API}/api/comment?type=recent&pageSize=100`;
-    const data = await fetchJson(url);
-    const list = Array.isArray(data) ? data : (data?.data || []);
-    const bucket = { 管理员: 0, 访客: 0 };
-    list.forEach(c => {
-      const isAdmin = c.type === 'administrator' || c.type === 'admin' || c.user_id != null;
-      bucket[isAdmin ? '管理员' : '访客'] += 1;
-    });
-    return Object.entries(bucket).map(([label, value]) => ({ label, value }));
-  }
-
-  // ============================================================
-  // 主题切换响应:用 dataState 里的快照重绘所有图表
-  // ============================================================
-  function onThemeChange() {
-    if (!dataState.stats) return;
-    renderMainChart(dataState.stats.snapshots);
-    Object.entries(dataState.stats.breakdowns).forEach(([key, val]) => {
-      if (key === 'commentsByRole') return;       // 用 dataState.comments
-      renderPie(key, val);
-    });
-    if (dataState.comments) renderPie('commentsByRole', dataState.comments);
-  }
-
-  // ============================================================
-  // 入口
-  // ============================================================
-  async function init() {
-    if (!document.getElementById('stats-main-chart')) return;
-
-    // Chart.js 没加载完(网络慢)就等一下;失败超 8s 走降级
-    if (typeof Chart === 'undefined') {
-      const timeout = new Promise(resolve => setTimeout(resolve, 8000));
-      await Promise.race([loadChartJs(), timeout]);
+    const columns = [];
+    const positions = [];
+    for (let row = 0; row < 5; row += 1) {
+      for (let col = 0; col < 8; col += 1) {
+        positions.push({
+          row,
+          col,
+          x: 322 + (col - row) * 37,
+          y: 82 + (col + row) * 14,
+        });
+      }
     }
-    if (!document.getElementById('stats-main-chart')) return;
+    positions.sort((a, b) => a.y - b.y);
 
-    if (typeof Chart === 'undefined') {
-      console.error('[stats] Chart.js 加载失败');
-      document.querySelectorAll('.stats-pie-wrap, .stats-chart-wrap').forEach(el => {
-        el.innerHTML = '<p class="stats-chart-empty" style="display:block">图表库加载失败</p>';
+    positions.forEach((item, index) => {
+      const group = svgEl("g", {
+        class: "stats-column",
+        filter: "url(#stats-column-glow)",
       });
+      const leftFace = svgEl("polygon", { class: "stats-column-face stats-column-face--left" });
+      const rightFace = svgEl("polygon", { class: "stats-column-face stats-column-face--right" });
+      const topFace = svgEl("polygon", { class: "stats-column-face stats-column-face--top" });
+      group.append(leftFace, rightFace, topFace);
+      svg.appendChild(group);
+
+      columns.push({
+        x: item.x,
+        y: item.y,
+        w: 15,
+        d: 8,
+        base: 32 + ((item.col * 9 + item.row * 13) % 58),
+        amplitude: 5 + ((item.col + item.row * 2) % 7),
+        speed: 1.0 + ((item.col * 3 + item.row) % 7) * 0.085,
+        phase: index * 0.55 + item.row * 0.32,
+        left: leftFace,
+        right: rightFace,
+        top: topFace,
+      });
+    });
+
+    host.appendChild(svg);
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const update = time => {
+      const seconds = time / 1000;
+
+      columns.forEach(column => {
+        const h = column.base + Math.sin(seconds * column.speed + column.phase) * column.amplitude;
+        const points = columnPoints(column.x, column.y, h, column.w, column.d);
+        column.left.setAttribute("points", points.left);
+        column.right.setAttribute("points", points.right);
+        column.top.setAttribute("points", points.top);
+      });
+
+      if (reducedMotion || !svg.isConnected) {
+        heroFrame = 0;
+        return;
+      }
+
+      heroFrame = window.requestAnimationFrame(update);
+    };
+
+    update(performance.now());
+  }
+
+  function bindUpdateLink() {
+    const link = document.querySelector("[data-stats-update-link]");
+    if (!link || link.dataset.statsBound === "1") return;
+
+    link.dataset.statsBound = "1";
+    link.addEventListener("click", event => {
+      if (document.body.dataset.standalone === "true") return;
+      if (typeof window._loadPage !== "function") return;
+      event.preventDefault();
+      window._loadPage("update", true);
+    });
+  }
+
+  function bindPageChangeStopper() {
+    if (pageChangeBound) return;
+    pageChangeBound = true;
+    window.addEventListener("y181:pagechange", event => {
+      if (event.detail?.page !== "stats") stopHeroAnimation();
+    });
+  }
+
+  function init() {
+    const page = document.querySelector(".stats-page");
+    if (!page) {
+      stopHeroAnimation();
       return;
     }
 
-    // Chart.js 全局基线:字体跟随 body
-    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily || 'Arial, sans-serif';
-    Chart.defaults.font.size   = 12;
-
-    // 1) Hero meta(快,先灌)
-    cached('site-meta', TTL.meta, () => fetchJson(dataUrl('site-meta.json')))
-      .then(meta => { dataState.meta = meta; hydrateHero(meta); })
-      .catch(err => console.warn('[stats] site-meta:', err));
-
-    // 2) 主体 stats(主图 + 6 张静态饼)
-    let stats = null;
-    try {
-      stats = await cached('stats-data', TTL.stats, () => fetchJson(dataUrl('stats.json')));
-      dataState.stats = stats;
-    } catch (err) {
-      console.error('[stats] 主数据加载失败:', err);
-      const empty = document.querySelector('.stats-chart-empty');
-      if (empty) empty.hidden = false;
-      return;
-    }
-
-    renderMainChart(stats.snapshots);
-    Object.entries(stats.breakdowns).forEach(([key, val]) => {
-      if (key === 'commentsByRole') return;       // live-fetch
-      renderPie(key, val);
-    });
-
-    // 3) 评论实时桶
-    cached('comments-by-role', TTL.comments, fetchCommentsBreakdown)
-      .then(items => { dataState.comments = items; renderPie('commentsByRole', items); })
-      .catch(err => {
-        console.warn('[stats] comments:', err);
-        renderPie('commentsByRole', []);          // 触发 "暂无数据" 渲染
-      });
-
-    // 4) 主题切换:重渲染所有图表
-    if (!themeListenerBound) {
-      document.addEventListener('theme:change', onThemeChange);
-      themeListenerBound = true;
-    }
+    renderSummary();
+    renderHeroVisual();
+    renderGrowthChart();
+    renderRecentChanges();
+    renderHeatmap();
+    renderCategories();
+    renderArchive();
+    bindUpdateLink();
+    bindPageChangeStopper();
   }
 
   window.initStatsPage = init;
-  document.addEventListener('DOMContentLoaded', init);
+
+  document.addEventListener("DOMContentLoaded", init);
 })();

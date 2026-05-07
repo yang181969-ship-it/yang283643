@@ -41,8 +41,6 @@
     })();
   </script>
 
-  <!-- Chart.js:仅本页用,异步加载;失败兜底 stats.js 会渲染降级文案 -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4/dist/chart.umd.min.js" defer></script>
 </head>
 
 <body data-standalone="true" data-page="stats">
@@ -131,94 +129,155 @@
     <div class="page-card">
       <main id="main-content">
 
-        <!-- Hero:标题 + 副标题 + 3 个内联指标 chip -->
-        <section class="stats-hero no-card">
-          <div class="stats-hero-text">
-            <h1 class="page-title">站点数据</h1>
-            <p class="page-desc">小站从 <span data-meta="siteBirthday">--</span> 起航,这里记录每一项内容的累积。</p>
-          </div>
-          <div class="stats-hero-metrics">
-            <div class="stats-metric">
-              <span class="stats-metric-value" data-meta="totalContent">--</span>
-              <span class="stats-metric-label">总条目</span>
+        <section class="stats-page no-card" aria-labelledby="stats-page-title">
+          <section class="stats-hero" aria-labelledby="stats-page-title">
+            <div class="stats-hero-copy">
+              <h1 id="stats-page-title">站点数据中心 ✨</h1>
+              <p>在数字的轨迹中,记录成长的每一步。</p>
+
+              <div class="stats-summary-grid" aria-label="核心指标">
+                <article class="stats-summary-card">
+                  <span class="stats-summary-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path>
+                      <path d="M14 2v5h5"></path>
+                      <path d="M9 13h6"></path>
+                      <path d="M9 17h6"></path>
+                    </svg>
+                  </span>
+                  <span>
+                    <span class="stats-summary-label">总条目</span>
+                    <strong data-stats-summary="total">--</strong>
+                  </span>
+                </article>
+
+                <article class="stats-summary-card">
+                  <span class="stats-summary-icon stats-summary-icon--purple" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                      <path d="M16 2v4"></path>
+                      <path d="M8 2v4"></path>
+                      <path d="M3 10h18"></path>
+                    </svg>
+                  </span>
+                  <span>
+                    <span class="stats-summary-label">建站天数</span>
+                    <strong data-stats-summary="days">--</strong>
+                  </span>
+                </article>
+
+                <article class="stats-summary-card">
+                  <span class="stats-summary-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12a9 9 0 1 1-2.64-6.36"></path>
+                      <path d="M21 3v6h-6"></path>
+                      <path d="M12 7v5l3 2"></path>
+                    </svg>
+                  </span>
+                  <span>
+                    <span class="stats-summary-label">最近更新</span>
+                    <strong data-stats-summary="lastUpdated">--</strong>
+                  </span>
+                </article>
+              </div>
             </div>
-            <div class="stats-metric">
-              <span class="stats-metric-value" data-meta="totalDays">--</span>
-              <span class="stats-metric-label">累计天数</span>
-            </div>
-            <div class="stats-metric">
-              <span class="stats-metric-value" data-meta="latestUpdate">--</span>
-              <span class="stats-metric-label">最新更新</span>
-            </div>
-          </div>
-        </section>
 
-        <!-- 顶部主图:堆叠柱(月度增量) + 累计折线 -->
-        <section class="stats-chart-card" aria-label="累计内容增长">
-          <header class="stats-chart-head">
-            <h2>内容增长</h2>
-            <div class="stats-chart-legend" id="stats-main-legend"></div>
-          </header>
-          <div class="stats-chart-wrap">
-            <canvas id="stats-main-chart" aria-label="按月份的内容增长堆叠柱状图,叠加累计折线"></canvas>
-          </div>
-          <p class="stats-chart-empty" hidden>数据加载失败,请稍后再试。</p>
-        </section>
+            <div class="stats-hero-visual" data-stats-hero-visual aria-hidden="true"></div>
+          </section>
 
-        <!-- 七张详情卡:统一 [饼 | 图例] 布局 -->
-        <section class="stats-card" data-stats="notesByCategory">
-          <h2 class="stats-card-title">笔记按学科</h2>
-          <div class="stats-card-body">
-            <div class="stats-pie-wrap"><canvas data-pie="notesByCategory"></canvas></div>
-            <ul class="stats-legend" data-legend="notesByCategory"></ul>
-          </div>
-        </section>
+          <div class="stats-main-grid">
+            <section class="stats-card stats-card--growth" aria-labelledby="stats-growth-title">
+              <header class="stats-card-head">
+                <span class="stats-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19V5"></path>
+                    <path d="M4 19h16"></path>
+                    <path d="M8 16v-5"></path>
+                    <path d="M12 16V8"></path>
+                    <path d="M16 16v-7"></path>
+                  </svg>
+                </span>
+                <h2 id="stats-growth-title">内容增长总览</h2>
+                <div class="stats-chart-legend" data-stats-growth-legend></div>
+              </header>
+              <div class="stats-growth-chart" data-stats-growth-chart role="img" aria-label="分月堆叠柱状图和累计折线"></div>
+            </section>
 
-        <section class="stats-card" data-stats="animeByStatus">
-          <h2 class="stats-card-title">番剧按状态</h2>
-          <div class="stats-card-body">
-            <div class="stats-pie-wrap"><canvas data-pie="animeByStatus"></canvas></div>
-            <ul class="stats-legend" data-legend="animeByStatus"></ul>
+            <section class="stats-card stats-card--changes" aria-labelledby="stats-changes-title">
+              <header class="stats-card-head">
+                <span class="stats-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 8v4l3 2"></path>
+                    <path d="M21 12a9 9 0 1 1-3-6.7"></path>
+                    <path d="M21 3v6h-6"></path>
+                  </svg>
+                </span>
+                <h2 id="stats-changes-title">最近变化</h2>
+              </header>
+              <ul class="stats-change-list" data-stats-recent></ul>
+              <a class="stats-more-link" href="index.html?page=update" data-stats-update-link>
+                查看全部变化
+                <span aria-hidden="true">→</span>
+              </a>
+            </section>
           </div>
-        </section>
 
-        <section class="stats-card" data-stats="animeByTag">
-          <h2 class="stats-card-title">番剧按题材 Top 8</h2>
-          <div class="stats-card-body">
-            <div class="stats-pie-wrap"><canvas data-pie="animeByTag"></canvas></div>
-            <ul class="stats-legend" data-legend="animeByTag"></ul>
-          </div>
-        </section>
+          <div class="stats-bottom-grid">
+            <section class="stats-card stats-card--heatmap" aria-labelledby="stats-heatmap-title">
+              <header class="stats-card-head">
+                <span class="stats-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v7"></path>
+                    <path d="M12 22v-7"></path>
+                    <path d="m4.93 4.93 4.95 4.95"></path>
+                    <path d="m14.12 14.12 4.95 4.95"></path>
+                    <path d="M2 12h7"></path>
+                    <path d="M22 12h-7"></path>
+                  </svg>
+                </span>
+                <h2 id="stats-heatmap-title">近30天更新热度</h2>
+              </header>
+              <div class="stats-heatmap-scroll">
+                <div class="stats-heatmap" data-stats-heatmap aria-label="近30天每日更新频率"></div>
+              </div>
+              <div class="stats-heatmap-scale" aria-hidden="true">
+                <span>低</span>
+                <i></i><i></i><i></i><i></i>
+                <span>高</span>
+              </div>
+            </section>
 
-        <section class="stats-card" data-stats="galleryByCategory">
-          <h2 class="stats-card-title">画廊按分类</h2>
-          <div class="stats-card-body">
-            <div class="stats-pie-wrap"><canvas data-pie="galleryByCategory"></canvas></div>
-            <ul class="stats-legend" data-legend="galleryByCategory"></ul>
-          </div>
-        </section>
+            <section class="stats-card stats-card--categories" aria-labelledby="stats-categories-title">
+              <header class="stats-card-head">
+                <span class="stats-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 20V4"></path>
+                    <path d="M4 20h16"></path>
+                    <path d="M8 16h8"></path>
+                    <path d="M8 11h11"></path>
+                    <path d="M8 6h6"></path>
+                  </svg>
+                </span>
+                <h2 id="stats-categories-title">分类分布 TOP 5</h2>
+              </header>
+              <div class="stats-category-bars" data-stats-categories></div>
+              <div class="stats-category-axis" aria-hidden="true">
+                <span>0</span><span>5</span><span>10</span><span>15</span><span>20</span>
+              </div>
+            </section>
 
-        <section class="stats-card" data-stats="updatesByMonth">
-          <h2 class="stats-card-title">更新按月份</h2>
-          <div class="stats-card-body">
-            <div class="stats-pie-wrap"><canvas data-pie="updatesByMonth"></canvas></div>
-            <ul class="stats-legend" data-legend="updatesByMonth"></ul>
-          </div>
-        </section>
-
-        <section class="stats-card" data-stats="musicTopArtists">
-          <h2 class="stats-card-title">音乐 Top 艺术家</h2>
-          <div class="stats-card-body">
-            <div class="stats-pie-wrap"><canvas data-pie="musicTopArtists"></canvas></div>
-            <ul class="stats-legend" data-legend="musicTopArtists"></ul>
-          </div>
-        </section>
-
-        <section class="stats-card" data-stats="commentsByRole">
-          <h2 class="stats-card-title">评论分布</h2>
-          <div class="stats-card-body">
-            <div class="stats-pie-wrap"><canvas data-pie="commentsByRole"></canvas></div>
-            <ul class="stats-legend" data-legend="commentsByRole"></ul>
+            <section class="stats-card stats-card--archive" aria-labelledby="stats-archive-title">
+              <header class="stats-card-head">
+                <span class="stats-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path>
+                    <path d="M14 2v5h5"></path>
+                  </svg>
+                </span>
+                <h2 id="stats-archive-title">网站档案</h2>
+              </header>
+              <dl class="stats-archive-list" data-stats-archive></dl>
+            </section>
           </div>
         </section>
 
