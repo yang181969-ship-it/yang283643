@@ -11,6 +11,7 @@ const HTML_FILES = [
   './index.html',
   './html/anime-detail.html',
   './html/notes-detail.html',
+  './html/stats.html',
 ];
 
 // 每个 HTML 文件中,style.css 的引用可能是 ./css/style.css 或 ../css/style.css

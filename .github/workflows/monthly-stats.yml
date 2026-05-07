@@ -1,0 +1,47 @@
+name: Monthly Stats Snapshot
+
+# 每月 1 号 UTC 00:30 跑一次(对应 UTC+8 上午 08:30)
+# 也可以手动触发用于回填
+on:
+  schedule:
+    - cron: '30 0 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci || npm install
+
+      - name: Aggregate updates index
+        run: npm run aggregate:updates
+
+      - name: Aggregate stats snapshot
+        run: npm run aggregate:stats
+
+      - name: Commit snapshot if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/stats.json data/site-meta.json data/updates-index.json
+          if git diff --cached --quiet; then
+            echo "No stats changes."
+          else
+            git commit -m "chore(stats): monthly snapshot $(date -u +%Y-%m-%d)"
+            git push
+          fi
