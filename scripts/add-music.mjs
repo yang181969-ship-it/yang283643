@@ -141,6 +141,12 @@ function cleanText(value) {
   return String(value || '').trim().replace(/\s+/g, ' ');
 }
 
+function todayISO() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
 function humanizeStem(stem) {
   return cleanText(stem.replace(/[_-]+/g, ' '));
 }
@@ -559,6 +565,7 @@ async function prepareTrack(sourcePath, options, tracks, reservedFilenames, bulk
       title,
       artist,
       src,
+      dateAdded: todayISO(),
       lyric: '歌词待补充',
     },
   };

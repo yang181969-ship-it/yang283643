@@ -219,47 +219,21 @@
           </div>
 
           <div class="stats-bottom-grid">
-            <section class="stats-card stats-card--heatmap" aria-labelledby="stats-heatmap-title">
-              <header class="stats-card-head">
-                <span class="stats-card-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2v7"></path>
-                    <path d="M12 22v-7"></path>
-                    <path d="m4.93 4.93 4.95 4.95"></path>
-                    <path d="m14.12 14.12 4.95 4.95"></path>
-                    <path d="M2 12h7"></path>
-                    <path d="M22 12h-7"></path>
-                  </svg>
-                </span>
-                <h2 id="stats-heatmap-title">近30天更新热度</h2>
-              </header>
-              <div class="stats-heatmap-scroll">
-                <div class="stats-heatmap" data-stats-heatmap aria-label="近30天每日更新频率"></div>
-              </div>
-              <div class="stats-heatmap-scale" aria-hidden="true">
-                <span>低</span>
-                <i></i><i></i><i></i><i></i>
-                <span>高</span>
-              </div>
-            </section>
-
             <section class="stats-card stats-card--categories" aria-labelledby="stats-categories-title">
               <header class="stats-card-head">
                 <span class="stats-card-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 20V4"></path>
-                    <path d="M4 20h16"></path>
-                    <path d="M8 16h8"></path>
-                    <path d="M8 11h11"></path>
-                    <path d="M8 6h6"></path>
+                    <path d="M5 20V10"></path>
+                    <path d="M10 20V4"></path>
+                    <path d="M15 20v-8"></path>
+                    <path d="M20 20v-4"></path>
                   </svg>
                 </span>
                 <h2 id="stats-categories-title">分类分布 TOP 5</h2>
+                <span class="stats-category-total" data-stats-category-total>共 -- 项</span>
               </header>
               <div class="stats-category-bars" data-stats-categories></div>
-              <div class="stats-category-axis" aria-hidden="true">
-                <span>0</span><span>5</span><span>10</span><span>15</span><span>20</span>
-              </div>
+              <p class="stats-category-note">· 按内容数量统计 ·</p>
             </section>
 
             <section class="stats-card stats-card--archive" aria-labelledby="stats-archive-title">
