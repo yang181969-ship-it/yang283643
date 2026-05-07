@@ -22,10 +22,10 @@
       { month: "2026-06", notes: 11, anime: 11, gallery: 11, updates: 12, total: 45 },
     ],
     recentChanges: [
-      { date: "05-06", title: "更新页大改,右上角三个按钮合并成两个", type: "更新" },
-      { date: "05-04", title: "移动端加灵动岛,调色盘补上光晕开关", type: "更新" },
-      { date: "05-01", title: "主页大改:从静态欢迎页到 Bento 仪表盘", type: "笔记" },
-      { date: "04-22", title: "性能优化五步收官,让站点加载更轻快", type: "优化" },
+      { date: "05-06", title: "更新页大改,右上角三个按钮合并成两个", type: "更新", page: "update" },
+      { date: "05-04", title: "移动端加灵动岛,调色盘补上光晕开关", type: "更新", page: "update" },
+      { date: "05-01", title: "主页大改:从静态欢迎页到 Bento 仪表盘", type: "更新", page: "update" },
+      { date: "04-22", title: "性能优化五步收官,让站点加载更轻快", type: "更新", page: "update" },
     ],
     activity: [
       { date: "2026-04-07", count: 0 },
@@ -105,6 +105,27 @@
       if (value != null) el.setAttribute(key, String(value));
     });
     return el;
+  }
+
+  function changeTargetPage(item) {
+    const pageByType = {
+      更新: "update",
+      笔记: "notes",
+      动漫: "anime",
+      画廊: "gallery",
+      留言: "comment",
+      数据: "stats",
+      关于: "about",
+      首页: "home",
+    };
+    return item.page || pageByType[item.type] || "update";
+  }
+
+  function pageHref(page) {
+    const prefix = document.body.dataset.standalone === "true" ? "../" : "";
+    return page === "home"
+      ? `${prefix}index.html`
+      : `${prefix}index.html?page=${encodeURIComponent(page)}`;
   }
 
   function stopHeroAnimation() {
@@ -283,14 +304,29 @@
     const list = document.querySelector("[data-stats-recent]");
     if (!list) return;
 
-    list.innerHTML = statsData.recentChanges.slice(0, 4).map(item => `
-      <li class="stats-change-item" data-type="${escapeHTML(item.type)}">
-        <time>${escapeHTML(item.date)}</time>
-        <span class="stats-change-dot" aria-hidden="true"></span>
-        <span class="stats-change-title">${escapeHTML(item.title)}</span>
-        <span class="stats-change-type">${escapeHTML(item.type)}</span>
+    list.innerHTML = statsData.recentChanges.slice(0, 4).map(item => {
+      const page = changeTargetPage(item);
+      return `
+      <li class="stats-change-item" data-type="${escapeHTML(item.type)}" data-page="${escapeHTML(page)}">
+        <a class="stats-change-link" href="${escapeHTML(pageHref(page))}" data-stats-change-link data-stats-page="${escapeHTML(page)}">
+          <time>${escapeHTML(item.date)}</time>
+          <span class="stats-change-dot" aria-hidden="true"></span>
+          <span class="stats-change-title">${escapeHTML(item.title)}</span>
+          <span class="stats-change-type">${escapeHTML(item.type)}</span>
+        </a>
       </li>
-    `).join("");
+    `;
+    }).join("");
+
+    list.querySelectorAll("[data-stats-change-link]").forEach(link => {
+      link.addEventListener("click", event => {
+        const page = link.dataset.statsPage;
+        if (!page || document.body.dataset.standalone === "true") return;
+        if (typeof window._loadPage !== "function") return;
+        event.preventDefault();
+        window._loadPage(page, true);
+      });
+    });
   }
 
   function renderHeatmap() {
@@ -432,21 +468,6 @@
     defs.appendChild(top);
     svg.appendChild(defs);
 
-    svg.appendChild(svgEl("ellipse", {
-      cx: "370",
-      cy: "226",
-      rx: "210",
-      ry: "42",
-      class: "stats-hero-base stats-hero-base--wide",
-    }));
-    svg.appendChild(svgEl("ellipse", {
-      cx: "370",
-      cy: "226",
-      rx: "150",
-      ry: "26",
-      class: "stats-hero-base",
-    }));
-
     [
       [112, 46, 2.3],
       [220, 30, 1.8],
@@ -532,19 +553,6 @@
     update(performance.now());
   }
 
-  function bindUpdateLink() {
-    const link = document.querySelector("[data-stats-update-link]");
-    if (!link || link.dataset.statsBound === "1") return;
-
-    link.dataset.statsBound = "1";
-    link.addEventListener("click", event => {
-      if (document.body.dataset.standalone === "true") return;
-      if (typeof window._loadPage !== "function") return;
-      event.preventDefault();
-      window._loadPage("update", true);
-    });
-  }
-
   function bindPageChangeStopper() {
     if (pageChangeBound) return;
     pageChangeBound = true;
@@ -567,7 +575,6 @@
     renderHeatmap();
     renderCategories();
     renderArchive();
-    bindUpdateLink();
     bindPageChangeStopper();
   }
 

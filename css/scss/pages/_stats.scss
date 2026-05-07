@@ -168,16 +168,6 @@
   min-height: 220px;
 }
 
-.stats-hero-base {
-  fill: none;
-  stroke: rgba(91, 139, 255, 0.20);
-  stroke-width: 1.2;
-}
-
-.stats-hero-base--wide {
-  stroke: rgba(155, 124, 255, 0.18);
-}
-
 .stats-column {
   opacity: 0.9;
 }
@@ -381,16 +371,38 @@
 }
 
 .stats-change-item {
+  min-width: 0;
+}
+
+.stats-change-link {
   display: grid;
   grid-template-columns: 52px 12px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   min-height: 38px;
+  margin: -5px -8px;
+  padding: 5px 8px;
+  border-radius: 14px;
   color: var(--stats-muted);
   font-size: 14px;
+  text-decoration: none;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
 
   time {
     font-variant-numeric: tabular-nums;
+  }
+
+  &:hover {
+    background: rgba(79, 140, 255, 0.08);
+    transform: translateX(2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(79, 140, 255, 0.42);
+    outline-offset: 2px;
   }
 }
 
@@ -442,28 +454,6 @@
   .stats-change-type {
     color: #7f63dd;
     background: rgba(155, 124, 255, 0.12);
-  }
-}
-
-.stats-more-link {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  width: max-content;
-  margin-top: 22px;
-  color: var(--stats-blue);
-  font-size: 14px;
-  font-weight: 800;
-  text-decoration: none;
-
-  span {
-    transition: transform 180ms ease;
-  }
-
-  &:hover span {
-    transform: translateX(3px);
   }
 }
 
@@ -586,22 +576,6 @@
   color: var(--stats-muted);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-}
-
-.stats-card--archive::after {
-  content: "";
-  position: absolute;
-  right: 18px;
-  bottom: 14px;
-  width: 172px;
-  height: 74px;
-  pointer-events: none;
-  opacity: 0.46;
-  background:
-    linear-gradient(90deg, transparent 0 50%, rgba(79, 140, 255, 0.20) 50% 55%, transparent 55%),
-    linear-gradient(115deg, transparent 0 54%, rgba(155, 124, 255, 0.18) 54% 60%, transparent 60%),
-    linear-gradient(160deg, transparent 20%, rgba(79, 140, 255, 0.18) 21% 48%, transparent 49%),
-    linear-gradient(180deg, transparent 0 62%, rgba(123, 223, 242, 0.22) 62% 68%, transparent 69%);
 }
 
 .stats-archive-list {
@@ -761,7 +735,7 @@
     min-width: 640px;
   }
 
-  .stats-change-item {
+  .stats-change-link {
     grid-template-columns: 46px 10px minmax(0, 1fr);
     gap: 9px;
   }
