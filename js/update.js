@@ -35,6 +35,12 @@ function updateEscapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
+function updateEscapeAttr(str) {
+  return updateEscapeHtml(str)
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function updateNormalizeLineEndings(text) {
   return String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
@@ -127,6 +133,26 @@ function updateRenderMarkdown(md) {
     tableBuffer = [];
   }
 
+  function renderStandaloneImage(raw) {
+    const match = raw.match(/^!\[([^\]]*)\]\(([^)\s]+)(?:\s+["']([^"']*)["'])?\)$/);
+    if (!match) return "";
+
+    const alt = match[1].trim();
+    const src = match[2].trim();
+    const title = (match[3] || "").trim();
+    if (!src) return "";
+
+    const titleAttr = title ? ` title="${updateEscapeAttr(title)}"` : "";
+    const caption = alt ? `<figcaption>${inlineFormat(alt)}</figcaption>` : "";
+
+    return `
+      <figure class="update-markdown-image">
+        <img src="${updateEscapeAttr(src)}" alt="${updateEscapeAttr(alt)}" loading="lazy" decoding="async"${titleAttr}>
+        ${caption}
+      </figure>
+    `;
+  }
+
   function inlineFormat(raw) {
     let s = updateEscapeHtml(raw);
     s = s.replace(/`([^`]+)`/g, (_, code) => `<code>${code}</code>`);
@@ -166,6 +192,14 @@ function updateRenderMarkdown(md) {
     if (!line) {
       flushParagraph();
       flushList();
+      continue;
+    }
+
+    const standaloneImage = renderStandaloneImage(line);
+    if (standaloneImage) {
+      flushParagraph();
+      flushList();
+      html.push(standaloneImage);
       continue;
     }
 
