@@ -85,7 +85,22 @@
     { key: "updates", label: "更新", color: "#f6b26b" },
   ];
 
-  const categoryColors = ["#4f8cff", "#9b7cff", "#7bdff2", "#f6b26b", "#75d6a5"];
+  const dataCenterColors = [
+    "#5b6ff2",
+    "#8b63f4",
+    "#56a7f7",
+    "#f59b45",
+    "#62c99a",
+    "#cf5f9f",
+    "#a6b1e1",
+    "#80cbc4",
+  ];
+
+  const dataCenterState = {
+    groups: [],
+    activeGroupId: "",
+    activeChildId: "",
+  };
 
   let heroFrame = 0;
   let pageChangeBound = false;
@@ -147,7 +162,7 @@
     return text || "--";
   }
 
-  async function loadRecentChanges() {
+  async function loadStatsPayload() {
     try {
       const res = await fetch(assetHref("data/stats.json"), { cache: "no-cache" });
       if (!res.ok) throw new Error(`stats.json ${res.status}`);
@@ -157,11 +172,28 @@
         ? data.recentChanges
         : [];
 
-      if (!changes.length) return;
-      statsData.recentChanges = changes;
-      renderRecentChanges();
+      if (changes.length) {
+        statsData.recentChanges = changes;
+        renderRecentChanges();
+      }
+
+      const groups = data?.dataCenter?.groups;
+      if (Array.isArray(groups) && groups.length) {
+        dataCenterState.groups = normalizeDataCenterGroups(groups);
+        if (dataCenterState.groups.length) {
+          const defaultGroup = defaultDataCenterGroup(dataCenterState.groups);
+          dataCenterState.activeGroupId = defaultGroup?.id || "";
+          dataCenterState.activeChildId = defaultGroup?.children?.[0]?.id || "";
+          renderDataCenter();
+        } else {
+          renderDataCenterEmpty("暂无可用统计数据");
+        }
+      } else {
+        renderDataCenterEmpty("暂无可用统计数据");
+      }
     } catch (err) {
-      console.warn("[stats] recent changes fallback:", err);
+      console.warn("[stats] stats payload fallback:", err);
+      renderDataCenterEmpty("统计数据暂不可用");
     }
   }
 
@@ -383,41 +415,190 @@
     }).join("");
   }
 
-  function renderCategories() {
-    const host = document.querySelector("[data-stats-categories]");
+  function normalizeDataCenterGroups(groups) {
+    return groups
+      .map(group => ({
+        id: String(group.id || group.name || "").trim(),
+        name: String(group.name || group.id || "").trim(),
+        children: Array.isArray(group.children)
+          ? group.children
+              .map(child => ({
+                id: String(child.id || child.name || "").trim(),
+                name: String(child.name || child.id || "").trim(),
+                total: Number(child.total) || 0,
+                unit: String(child.unit || "项").trim() || "项",
+                items: Array.isArray(child.items)
+                  ? child.items
+                      .map(item => ({
+                        name: String(item.name || item.label || "").trim(),
+                        value: Number(item.value) || 0,
+                      }))
+                      .filter(item => item.name && item.value > 0)
+                  : [],
+              }))
+              .filter(child => child.id && child.name && child.items.length)
+          : [],
+      }))
+      .filter(group => group.id && group.name && group.children.length);
+  }
+
+  function formatCompactNumber(value) {
+    return new Intl.NumberFormat("zh-CN").format(Number(value) || 0);
+  }
+
+  function defaultDataCenterGroup(groups) {
+    return groups.find(group => group.id === "notes") || groups[0];
+  }
+
+  function renderDataCenter() {
+    const groups = dataCenterState.groups;
+    if (!groups.length) {
+      renderDataCenterEmpty("暂无可用统计数据");
+      return;
+    }
+
+    const activeGroup = groups.find(group => group.id === dataCenterState.activeGroupId) || groups[0];
+    dataCenterState.activeGroupId = activeGroup.id;
+
+    if (!activeGroup.children.some(child => child.id === dataCenterState.activeChildId)) {
+      dataCenterState.activeChildId = activeGroup.children[0]?.id || "";
+    }
+
+    renderDataCenterPrimaryTabs(groups, activeGroup.id);
+    renderDataCenterSecondaryTabs(activeGroup);
+    renderDataCenterChart(activeGroup);
+  }
+
+  function renderDataCenterPrimaryTabs(groups, activeId) {
+    const host = document.querySelector("[data-stats-primary-tabs]");
     if (!host) return;
 
-    const items = statsData.categories.slice(0, 5);
-    const total = items.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
-    const totalHost = document.querySelector("[data-stats-category-total]");
-    if (totalHost) totalHost.textContent = `共 ${total} 项`;
+    host.innerHTML = groups.map(group => `
+      <button class="stats-data-tab${group.id === activeId ? " is-active" : ""}"
+        type="button"
+        aria-pressed="${group.id === activeId ? "true" : "false"}"
+        data-stats-primary-tab="${escapeHTML(group.id)}">
+        ${escapeHTML(group.name)}
+      </button>
+    `).join("");
 
-    let remainingPercent = 100;
-    host.innerHTML = items.map((item, index) => {
-      const value = Number(item.value) || 0;
-      const rawPct = total > 0 ? (value / total) * 100 : 0;
-      const displayPct = total > 0
-        ? (index === items.length - 1 ? remainingPercent : Math.round(rawPct))
-        : 0;
-      if (index !== items.length - 1) {
-        remainingPercent = Math.max(0, remainingPercent - displayPct);
-      }
+    host.querySelectorAll("[data-stats-primary-tab]").forEach(button => {
+      button.addEventListener("click", () => {
+        dataCenterState.activeGroupId = button.dataset.statsPrimaryTab || "";
+        const nextGroup = dataCenterState.groups.find(group => group.id === dataCenterState.activeGroupId);
+        dataCenterState.activeChildId = nextGroup?.children?.[0]?.id || "";
+        renderDataCenter();
+      });
+    });
+  }
 
-      const pct = Math.min(100, Math.max(10, rawPct));
-      const color = categoryColors[index % categoryColors.length];
-      return `
-        <div class="stats-category-row">
-          <span class="stats-category-name">${escapeHTML(item.name)}</span>
-          <span class="stats-category-track">
-            <span class="stats-category-fill" style="--bar-width:${pct.toFixed(1)}%;--bar-color:${color}"></span>
-          </span>
-          <span class="stats-category-value">
-            <strong>${value}</strong>
-            <span>${displayPct}%</span>
-          </span>
+  function renderDataCenterSecondaryTabs(group) {
+    const host = document.querySelector("[data-stats-secondary-tabs]");
+    if (!host) return;
+
+    host.innerHTML = group.children.map(child => `
+      <button class="stats-data-subtab${child.id === dataCenterState.activeChildId ? " is-active" : ""}"
+        type="button"
+        aria-pressed="${child.id === dataCenterState.activeChildId ? "true" : "false"}"
+        data-stats-secondary-tab="${escapeHTML(child.id)}">
+        ${escapeHTML(child.name)}
+      </button>
+    `).join("");
+
+    host.querySelectorAll("[data-stats-secondary-tab]").forEach(button => {
+      button.addEventListener("click", () => {
+        dataCenterState.activeChildId = button.dataset.statsSecondaryTab || "";
+        renderDataCenter();
+      });
+    });
+  }
+
+  function renderDataCenterChart(group) {
+    const host = document.querySelector("[data-stats-data-chart]");
+    if (!host) return;
+
+    const child = group.children.find(item => item.id === dataCenterState.activeChildId) || group.children[0];
+    if (!child || !child.items.length) {
+      renderDataCenterEmpty("这个分类暂时没有可展示的数据");
+      return;
+    }
+
+    dataCenterState.activeChildId = child.id;
+    const total = child.items.reduce((sum, item) => sum + item.value, 0);
+    if (!total) {
+      renderDataCenterEmpty("这个分类暂时没有可展示的数据");
+      return;
+    }
+
+    host.innerHTML = `
+      <div class="stats-donut-wrap">
+        ${renderDonutSvg(child, total)}
+      </div>
+      <div class="stats-donut-legend" aria-label="${escapeHTML(child.name)}图例">
+        <div class="stats-donut-legend-grid">
+          ${child.items.map((item, index) => {
+            const pct = total > 0 ? (item.value / total) * 100 : 0;
+            const color = dataCenterColors[index % dataCenterColors.length];
+            return `
+              <div class="stats-donut-legend-item">
+                <span class="stats-donut-dot" style="--dot-color:${color}" aria-hidden="true"></span>
+                <span class="stats-donut-name">${escapeHTML(item.name)}</span>
+                <strong>${formatCompactNumber(item.value)}</strong>
+                <span>${pct.toFixed(1)}%</span>
+              </div>
+            `;
+          }).join("")}
         </div>
+      </div>
+    `;
+  }
+
+  function renderDonutSvg(child, total) {
+    const size = 260;
+    const cx = 130;
+    const cy = 130;
+    const radius = 84;
+    const stroke = 42;
+    const circumference = 2 * Math.PI * radius;
+    let offset = 0;
+
+    const circles = child.items.map((item, index) => {
+      const value = Number(item.value) || 0;
+      const length = total > 0 ? (value / total) * circumference : 0;
+      const color = dataCenterColors[index % dataCenterColors.length];
+      const circle = `
+        <circle
+          cx="${cx}"
+          cy="${cy}"
+          r="${radius}"
+          fill="none"
+          stroke="${color}"
+          stroke-width="${stroke}"
+          stroke-dasharray="${length} ${Math.max(0, circumference - length)}"
+          stroke-dashoffset="${-offset}"
+          stroke-linecap="butt"
+          transform="rotate(-90 ${cx} ${cy})"
+        />
       `;
+      offset += length;
+      return circle;
     }).join("");
+
+    return `
+      <svg class="stats-donut-svg" viewBox="0 0 ${size} ${size}" role="img" aria-label="${escapeHTML(child.name)}分类分布">
+        <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="rgba(105,145,220,0.12)" stroke-width="${stroke}" />
+        ${circles}
+        <circle class="stats-donut-hole" cx="${cx}" cy="${cy}" r="58" />
+        <text x="${cx}" y="${cy - 7}" text-anchor="middle" class="stats-donut-center-title">${escapeHTML(child.name)}</text>
+        <text x="${cx}" y="${cy + 24}" text-anchor="middle" class="stats-donut-center-value">${formatCompactNumber(total)} ${escapeHTML(child.unit || "项")}</text>
+      </svg>
+    `;
+  }
+
+  function renderDataCenterEmpty(message) {
+    const host = document.querySelector("[data-stats-data-chart]");
+    if (!host) return;
+    host.innerHTML = `<p class="stats-empty">${escapeHTML(message)}</p>`;
   }
 
   function renderArchive() {
@@ -627,8 +808,7 @@
     renderHeroVisual();
     renderGrowthChart();
     renderRecentChanges();
-    loadRecentChanges();
-    renderCategories();
+    loadStatsPayload();
     renderArchive();
     bindPageChangeStopper();
   }
