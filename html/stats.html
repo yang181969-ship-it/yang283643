@@ -219,21 +219,27 @@
           </div>
 
           <div class="stats-bottom-grid">
-            <section class="stats-card stats-card--categories" aria-labelledby="stats-categories-title">
-              <header class="stats-card-head">
+            <section class="stats-card stats-card--data-center" aria-labelledby="stats-data-center-title">
+              <header class="stats-card-head stats-data-center-head">
                 <span class="stats-card-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M5 20V10"></path>
-                    <path d="M10 20V4"></path>
-                    <path d="M15 20v-8"></path>
-                    <path d="M20 20v-4"></path>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13A1.5 1.5 0 0 1 5.5 4Z"></path>
+                    <path d="M8 9h8"></path>
+                    <path d="M8 13h5"></path>
+                    <path d="M8 17h7"></path>
                   </svg>
                 </span>
-                <h2 id="stats-categories-title">分类分布 TOP 5</h2>
-                <span class="stats-category-total" data-stats-category-total>共 -- 项</span>
+                <h2 id="stats-data-center-title">网站数据中心</h2>
               </header>
-              <div class="stats-category-bars" data-stats-categories></div>
-              <p class="stats-category-note">· 按内容数量统计 ·</p>
+
+              <div class="stats-data-center" data-stats-data-center>
+                <div class="stats-data-tabs" data-stats-primary-tabs aria-label="一级分类"></div>
+                <div class="stats-data-subtabs" data-stats-secondary-tabs aria-label="二级分类"></div>
+
+                <div class="stats-data-chart-shell" data-stats-data-chart>
+                  <p class="stats-empty">数据加载中...</p>
+                </div>
+              </div>
             </section>
 
             <section class="stats-card stats-card--archive" aria-labelledby="stats-archive-title">

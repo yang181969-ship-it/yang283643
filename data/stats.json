@@ -15,8 +15,8 @@
       "notes": 8,
       "anime": 10,
       "gallery": 17,
-      "updates": 10,
-      "total": 45
+      "updates": 11,
+      "total": 46
     }
   ],
   "breakdowns": {
@@ -103,7 +103,7 @@
       },
       {
         "label": "2026-05",
-        "value": 3
+        "value": 4
       }
     ],
     "musicTopArtists": [],
@@ -111,7 +111,324 @@
       "__live": "waline-by-role"
     }
   },
+  "dataCenter": {
+    "groups": [
+      {
+        "id": "overview",
+        "name": "总览",
+        "children": [
+          {
+            "id": "overview-content",
+            "name": "内容构成",
+            "total": 58,
+            "unit": "项",
+            "items": [
+              {
+                "name": "画廊图片",
+                "value": 17
+              },
+              {
+                "name": "音乐",
+                "value": 12
+              },
+              {
+                "name": "更新日志",
+                "value": 11
+              },
+              {
+                "name": "动漫",
+                "value": 10
+              },
+              {
+                "name": "笔记",
+                "value": 8
+              }
+            ]
+          },
+          {
+            "id": "overview-updates",
+            "name": "更新概况",
+            "total": 11,
+            "unit": "条",
+            "items": [
+              {
+                "name": "feature",
+                "value": 9
+              },
+              {
+                "name": "optimization",
+                "value": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "notes",
+        "name": "笔记",
+        "children": [
+          {
+            "id": "notes-e695b0e5ada6",
+            "name": "数学",
+            "total": 5,
+            "unit": "篇",
+            "items": [
+              {
+                "name": "微积分",
+                "value": 2
+              },
+              {
+                "name": "线性代数",
+                "value": 2
+              },
+              {
+                "name": "组合数学",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "id": "notes-e789a9e79086",
+            "name": "物理",
+            "total": 2,
+            "unit": "篇",
+            "items": [
+              {
+                "name": "电磁学",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "id": "notes-e5b7a5e585b7",
+            "name": "工具",
+            "total": 1,
+            "unit": "篇",
+            "items": [
+              {
+                "name": "公式渲染",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "anime",
+        "name": "动漫",
+        "children": [
+          {
+            "id": "anime-genres",
+            "name": "题材分布",
+            "total": 30,
+            "unit": "部",
+            "items": [
+              {
+                "name": "奇幻",
+                "value": 8
+              },
+              {
+                "name": "战斗",
+                "value": 4
+              },
+              {
+                "name": "治愈",
+                "value": 3
+              },
+              {
+                "name": "青春",
+                "value": 2
+              },
+              {
+                "name": "热血",
+                "value": 2
+              },
+              {
+                "name": "日常",
+                "value": 2
+              },
+              {
+                "name": "爱情",
+                "value": 1
+              },
+              {
+                "name": "其他",
+                "value": 8
+              }
+            ]
+          },
+          {
+            "id": "anime-years",
+            "name": "年份分布",
+            "total": 10,
+            "unit": "部",
+            "items": [
+              {
+                "name": "2026",
+                "value": 10
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "resources",
+        "name": "资源",
+        "children": [
+          {
+            "id": "resources-gallery",
+            "name": "画廊",
+            "total": 17,
+            "unit": "张",
+            "items": [
+              {
+                "name": "anime",
+                "value": 10
+              },
+              {
+                "name": "real",
+                "value": 7
+              }
+            ]
+          },
+          {
+            "id": "resources-music",
+            "name": "音乐",
+            "total": 12,
+            "unit": "首",
+            "items": [
+              {
+                "name": "G.E.M.邓紫棋",
+                "value": 2
+              },
+              {
+                "name": "陈一发儿",
+                "value": 1
+              },
+              {
+                "name": "橘子海",
+                "value": 1
+              },
+              {
+                "name": "买辣椒也用券",
+                "value": 1
+              },
+              {
+                "name": "朴树",
+                "value": 1
+              },
+              {
+                "name": "尚雯婕",
+                "value": 1
+              },
+              {
+                "name": "Don Toliver/Doja Cat",
+                "value": 1
+              },
+              {
+                "name": "其他",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "id": "resources-image-format",
+            "name": "图片格式",
+            "total": 17,
+            "unit": "张",
+            "items": [
+              {
+                "name": "webp",
+                "value": 17
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "writing",
+        "name": "写作",
+        "children": [
+          {
+            "id": "writing-total",
+            "name": "总字数构成",
+            "total": 11588,
+            "unit": "字",
+            "items": [
+              {
+                "name": "更新日志字数",
+                "value": 6167
+              },
+              {
+                "name": "笔记字数",
+                "value": 4432
+              },
+              {
+                "name": "动漫详情字数",
+                "value": 989
+              }
+            ]
+          },
+          {
+            "id": "writing-notes",
+            "name": "笔记字数",
+            "total": 4432,
+            "unit": "字",
+            "items": [
+              {
+                "name": "数学",
+                "value": 3570
+              },
+              {
+                "name": "工具",
+                "value": 656
+              },
+              {
+                "name": "物理",
+                "value": 206
+              }
+            ]
+          },
+          {
+            "id": "writing-updates",
+            "name": "更新日志字数",
+            "total": 6167,
+            "unit": "字",
+            "items": [
+              {
+                "name": "feature",
+                "value": 4900
+              },
+              {
+                "name": "optimization",
+                "value": 1267
+              }
+            ]
+          },
+          {
+            "id": "writing-anime",
+            "name": "动漫详情字数",
+            "total": 989,
+            "unit": "字",
+            "items": [
+              {
+                "name": "其他",
+                "value": 989
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "recentChanges": [
+    {
+      "date": "2026-05-07",
+      "title": "新增统计页:把小站的变化变成一张数据地图",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
     {
       "date": "2026-05-06",
       "title": "新增音乐：平凡之路 - 朴树",
@@ -512,5 +829,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-05-07T15:11:57.720Z"
+  "generatedAt": "2026-05-07T19:59:23.732Z"
 }

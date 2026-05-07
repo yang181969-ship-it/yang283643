@@ -28,6 +28,7 @@ const GALLERY_CANDIDATES  = ['./data/gallery-data.js', './js/gallery-data.js', '
 const UPDATES_INDEX_PATH  = './data/updates-index.json';
 const PLAYLIST_PATH       = './data/playlist.json';
 const MUSIC_STATS_PATH    = './data/music-stats.json';
+const COMMENTS_STATS_PATH = './data/comments-stats.json';
 
 const STATS_OUTPUT        = './data/stats.json';
 const META_OUTPUT         = './data/site-meta.json';
@@ -39,6 +40,124 @@ function safeReadJson(filePath, fallback = null) {
   if (!fs.existsSync(filePath)) return fallback;
   try { return JSON.parse(fs.readFileSync(filePath, 'utf-8')); }
   catch (err) { console.warn(`⚠ ${filePath} 解析失败:`, err.message); return fallback; }
+}
+
+function addCount(bucket, key, amount = 1) {
+  const name = String(key || '').trim() || '其他';
+  const value = Number(amount) || 0;
+  if (!value) return;
+  bucket[name] = (bucket[name] || 0) + value;
+}
+
+function toItems(bucket, limit = 8) {
+  const sorted = Object.entries(bucket)
+    .map(([name, value]) => [name, Number(value) || 0])
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-CN'));
+
+  if (sorted.length <= limit) {
+    return sorted.map(([name, value]) => ({ name, value }));
+  }
+
+  const head = sorted.slice(0, limit - 1);
+  const rest = sorted.slice(limit - 1).reduce((sum, [, value]) => sum + value, 0);
+  return [
+    ...head.map(([name, value]) => ({ name, value })),
+    { name: '其他', value: rest },
+  ];
+}
+
+function makeChild(id, name, bucket, unit = '项') {
+  const items = toItems(bucket);
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  if (!total || !items.length) return null;
+  return { id, name, total, unit, items };
+}
+
+function makeGroup(id, name, children) {
+  const validChildren = children.filter(Boolean).filter(child => child.total > 0 && child.items?.length);
+  if (!validChildren.length) return null;
+  return { id, name, children: validChildren };
+}
+
+function stripMarkdown(text) {
+  return String(text || '')
+    .replace(/---[\s\S]*?---/g, ' ')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/[>#*_~|\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function countTextChars(text) {
+  return stripMarkdown(text).replace(/\s/g, '').length;
+}
+
+function countFileChars(filePath) {
+  if (!filePath) return 0;
+  const resolved = path.resolve(String(filePath));
+  if (!fs.existsSync(resolved)) return 0;
+  return countTextChars(fs.readFileSync(resolved, 'utf-8'));
+}
+
+function slugify(value) {
+  const raw = String(value || 'item').trim();
+  return encodeURIComponent(raw).replace(/%/g, '').toLowerCase() || 'item';
+}
+
+function noteMajorCategory(note) {
+  const explicit = note.major || note.group || note.section;
+  if (explicit) return explicit;
+
+  const file = String(note.file || '').replace(/\\/g, '/').toLowerCase();
+  if (file.includes('/math/')) return '数学';
+  if (file.includes('/physics/')) return '物理';
+  if (file.includes('/tools/') || file.includes('/tool/')) return '工具';
+  if (file.includes('/site/') || file.includes('/website/')) return '网站';
+  if (file.includes('/english/')) return '英语';
+  if (file.includes('/diary/')) return '日记';
+  return '杂谈';
+}
+
+function noteSubCategory(note) {
+  return note.subcategory || note.category || '其他';
+}
+
+function animeGenres(anime) {
+  if (Array.isArray(anime.genres)) return anime.genres.map(String).filter(Boolean);
+  if (Array.isArray(anime.tags)) return anime.tags.map(String).filter(Boolean);
+
+  const info = Array.isArray(anime.info) ? anime.info : [];
+  const line = info.find(item => /题材[:：]/.test(String(item)));
+  if (!line) return [];
+
+  const raw = String(line).replace(/^.*?题材[:：]\s*/, '');
+  return raw.split(/[\/、,，]/).map(item => item.trim()).filter(Boolean);
+}
+
+function animeWatchStatus(anime) {
+  return anime.watchStatus || anime.status || anime.state || '';
+}
+
+function animeWorkStatus(anime) {
+  return anime.workStatus || anime.releaseStatus || anime.airStatus || '';
+}
+
+function animeYear(anime) {
+  const value = anime.year || anime.releaseYear || anime.date || anime.updateDate || '';
+  const match = String(value).match(/^(\d{4})/);
+  return match ? match[1] : '';
+}
+
+function updateTypeName(update) {
+  return update.primary || update.type || update.category || '其他';
+}
+
+function imageFormat(src) {
+  return path.extname(String(src || '').split(/[?#]/)[0]).replace('.', '').toLowerCase() || '其他';
 }
 
 function loadJsGlobal(filePath, varName) {
@@ -327,6 +446,150 @@ const recentChanges = buildRecentChanges({
 });
 
 // ============================================================
+// dataCenter:统计页左下「网站数据中心」
+// 一级/二级/三级数据都在构建期生成,浏览器端只负责渲染与切换
+// ============================================================
+const dataCenterGroups = [];
+
+// 总览 ───────────────────────────────────────
+{
+  const content = {};
+  addCount(content, '笔记', notes.length);
+  addCount(content, '更新日志', updates.length);
+  addCount(content, '动漫', animeIds.length);
+  addCount(content, '画廊图片', gallery.length);
+  addCount(content, '音乐', tracks.length);
+
+  const updateTypes = {};
+  updates.forEach(update => addCount(updateTypes, updateTypeName(update)));
+
+  dataCenterGroups.push(makeGroup('overview', '总览', [
+    makeChild('overview-content', '内容构成', content),
+    makeChild('overview-updates', '更新概况', updateTypes, '条'),
+  ]));
+}
+
+// 笔记 ───────────────────────────────────────
+{
+  const buckets = {};
+  notes.forEach(note => {
+    const major = noteMajorCategory(note);
+    buckets[major] ||= {};
+    addCount(buckets[major], noteSubCategory(note));
+  });
+
+  dataCenterGroups.push(makeGroup(
+    'notes',
+    '笔记',
+    Object.entries(buckets).map(([major, bucket]) =>
+      makeChild(`notes-${slugify(major)}`, major, bucket, '篇')
+    )
+  ));
+}
+
+// 动漫 ───────────────────────────────────────
+{
+  const watchStatus = {};
+  const workStatus = {};
+  const genres = {};
+  const years = {};
+
+  animeIds.forEach(id => {
+    const anime = animeData[id] || {};
+    const watch = animeWatchStatus(anime);
+    const work = animeWorkStatus(anime);
+    const year = animeYear(anime);
+
+    if (watch) addCount(watchStatus, watch);
+    if (work) addCount(workStatus, work);
+    if (year) addCount(years, year);
+    animeGenres(anime).forEach(genre => addCount(genres, genre));
+  });
+
+  dataCenterGroups.push(makeGroup('anime', '动漫', [
+    makeChild('anime-watch-status', '观看状态', watchStatus, '部'),
+    makeChild('anime-work-status', '作品状态', workStatus, '部'),
+    makeChild('anime-genres', '题材分布', genres, '部'),
+    makeChild('anime-years', '年份分布', years, '部'),
+  ]));
+}
+
+// 资源 ───────────────────────────────────────
+{
+  const galleryCategories = {};
+  const musicArtists = {};
+  const imageFormats = {};
+
+  gallery.forEach(item => {
+    addCount(galleryCategories, item.category || '其他');
+    addCount(imageFormats, imageFormat(item.src));
+  });
+  tracks.forEach(track => addCount(musicArtists, track.artist || '未分类'));
+
+  dataCenterGroups.push(makeGroup('resources', '资源', [
+    makeChild('resources-gallery', '画廊', galleryCategories, '张'),
+    makeChild('resources-music', '音乐', musicArtists, '首'),
+    makeChild('resources-image-format', '图片格式', imageFormats, '张'),
+  ]));
+}
+
+// 写作 ───────────────────────────────────────
+{
+  const totalWords = {};
+  const noteWords = {};
+  const updateWords = {};
+  const animeWords = {};
+
+  notes.forEach(note => {
+    const count = countFileChars(note.file);
+    if (!count) return;
+    addCount(totalWords, '笔记字数', count);
+    addCount(noteWords, noteMajorCategory(note), count);
+  });
+
+  updates.forEach(update => {
+    const count = countFileChars(update.file);
+    if (!count) return;
+    addCount(totalWords, '更新日志字数', count);
+    addCount(updateWords, updateTypeName(update), count);
+  });
+
+  animeIds.forEach(id => {
+    const anime = animeData[id] || {};
+    const count = countTextChars([anime.description, ...(anime.info || [])].join(' '));
+    if (!count) return;
+    addCount(totalWords, '动漫详情字数', count);
+    addCount(animeWords, animeWatchStatus(anime) || '其他', count);
+  });
+
+  dataCenterGroups.push(makeGroup('writing', '写作', [
+    makeChild('writing-total', '总字数构成', totalWords, '字'),
+    makeChild('writing-notes', '笔记字数', noteWords, '字'),
+    makeChild('writing-updates', '更新日志字数', updateWords, '字'),
+    makeChild('writing-anime', '动漫详情字数', animeWords, '字'),
+  ]));
+}
+
+// 留言:仅在本地统计文件存在时启用,避免迁移期依赖在线接口
+{
+  const commentsStats = safeReadJson(COMMENTS_STATS_PATH, null);
+  if (commentsStats?.groups) {
+    dataCenterGroups.push(makeGroup('comments', '留言', commentsStats.groups.map(group =>
+      makeChild(
+        group.id || `comments-${slugify(group.name)}`,
+        group.name || '留言',
+        Object.fromEntries((group.items || []).map(item => [item.name, item.value])),
+        group.unit || '条'
+      )
+    )));
+  }
+}
+
+const dataCenter = {
+  groups: dataCenterGroups.filter(Boolean),
+};
+
+// ============================================================
 // snapshots:月度累积快照(用于顶部堆叠柱+累计折线)
 // 同月重复跑会原地覆盖,不会重复累加
 // ============================================================
@@ -380,7 +643,7 @@ fs.mkdirSync(path.dirname(STATS_OUTPUT), { recursive: true });
 
 fs.writeFileSync(
   STATS_OUTPUT,
-  JSON.stringify({ snapshots, breakdowns, recentChanges, generatedAt: siteMeta.generatedAt }, null, 2) + '\n',
+  JSON.stringify({ snapshots, breakdowns, dataCenter, recentChanges, generatedAt: siteMeta.generatedAt }, null, 2) + '\n',
   'utf-8'
 );
 fs.writeFileSync(
@@ -393,6 +656,7 @@ console.log(`✓ 已写入 ${STATS_OUTPUT}`);
 console.log(`✓ 已写入 ${META_OUTPUT}`);
 console.log(`  快照数:${snapshots.length}  最新月份:${currentMonth}`);
 console.log(`  最近变化:${recentChanges.length} 条`);
+console.log(`  dataCenter:${dataCenter.groups.length} 组`);
 console.log(`  breakdowns:`);
 Object.entries(breakdowns).forEach(([k, v]) => {
   if (Array.isArray(v)) console.log(`    ${k}: ${v.length} 项`);
