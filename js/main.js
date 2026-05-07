@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     anime: "html/anime.html",
     notes: "html/notes.html",
     update: "html/update.html",
+    stats: "html/stats.html",
     comment: "html/comment.html",
     about: "html/about.html",
   };
@@ -162,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (page === "gallery" && typeof initGalleryPage === "function") initGalleryPage();
     if (page === "notes"   && typeof window.initNotesPage === "function") window.initNotesPage();
     if (page === "update"  && typeof window.initUpdatePage === "function") window.initUpdatePage();
+    if (page === "stats"   && typeof window.initStatsPage  === "function") window.initStatsPage();
   }
 
   function afterPageLoad(page, push, options = {}) {

@@ -1,0 +1,115 @@
+{
+  "snapshots": [
+    {
+      "date": "2026-04-13",
+      "month": "2026-04",
+      "notes": 4,
+      "anime": 7,
+      "gallery": 12,
+      "updates": 1,
+      "total": 24
+    },
+    {
+      "date": "2026-05-07",
+      "month": "2026-05",
+      "notes": 8,
+      "anime": 10,
+      "gallery": 17,
+      "updates": 10,
+      "total": 45
+    }
+  ],
+  "breakdowns": {
+    "notesByCategory": [
+      {
+        "label": "微积分",
+        "value": 2
+      },
+      {
+        "label": "线性代数",
+        "value": 2
+      },
+      {
+        "label": "电磁学",
+        "value": 2
+      },
+      {
+        "label": "组合数学",
+        "value": 1
+      },
+      {
+        "label": "公式渲染",
+        "value": 1
+      }
+    ],
+    "animeByStatus": [
+      {
+        "label": "在追",
+        "value": 10
+      }
+    ],
+    "animeByTag": [
+      {
+        "label": "奇幻",
+        "value": 8
+      },
+      {
+        "label": "战斗",
+        "value": 4
+      },
+      {
+        "label": "治愈",
+        "value": 3
+      },
+      {
+        "label": "日常",
+        "value": 2
+      },
+      {
+        "label": "热血",
+        "value": 2
+      },
+      {
+        "label": "青春",
+        "value": 2
+      },
+      {
+        "label": "公路",
+        "value": 1
+      },
+      {
+        "label": "旅行",
+        "value": 1
+      },
+      {
+        "label": "其他",
+        "value": 7
+      }
+    ],
+    "galleryByCategory": [
+      {
+        "label": "anime",
+        "value": 10
+      },
+      {
+        "label": "real",
+        "value": 7
+      }
+    ],
+    "updatesByMonth": [
+      {
+        "label": "2026-04",
+        "value": 7
+      },
+      {
+        "label": "2026-05",
+        "value": 3
+      }
+    ],
+    "musicTopArtists": [],
+    "commentsByRole": {
+      "__live": "waline-by-role"
+    }
+  },
+  "generatedAt": "2026-05-07T06:34:04.142Z"
+}

@@ -35,6 +35,8 @@ function applyMode(mode, root) {
     root.setAttribute("data-theme", mode);
     root.setAttribute("data-theme-mode", mode);
   }
+
+  document.dispatchEvent(new CustomEvent("theme:change", { detail: { kind: "mode" } }));
 }
 
 function applyGlow(state, root) {
@@ -42,6 +44,7 @@ function applyGlow(state, root) {
   const normalized = state === "off" ? "off" : "on";
   root.setAttribute("data-glow", normalized);
   localStorage.setItem("ambient-glow", normalized);
+  document.dispatchEvent(new CustomEvent("theme:change", { detail: { kind: "glow" } }));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -100,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     root.style.setProperty("--primary-hue", hue);
     localStorage.setItem("primary-hue", hue);
     syncPresetActive();
+    document.dispatchEvent(new CustomEvent("theme:change", { detail: { kind: "hue" } }));
   });
 
   /* ===== 预设颜色点击 ===== */

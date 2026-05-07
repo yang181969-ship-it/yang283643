@@ -1,0 +1,272 @@
+// ============================================================
+// 站点统计页 ── Phase F
+// ============================================================
+
+@use '../abstracts/mixins' as *;
+
+// ---------------- Hero ----------------
+.stats-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+
+  .stats-hero-text {
+    min-width: 0;
+    flex: 1 1 280px;
+  }
+
+  .stats-hero-metrics {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .stats-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 88px;
+    padding: 10px 16px;
+    border-radius: var(--radius-card);
+    background: var(--glass-bg-weak);
+    backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+    -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+    border: var(--glass-border-subtle);
+    box-shadow: var(--glass-shadow-rest);
+    transition:
+      transform var(--dur-glass) var(--ease-glass),
+      box-shadow var(--dur-glass) var(--ease-glass);
+  }
+  .stats-metric:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--glass-shadow-hover);
+  }
+  .stats-metric-value {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--primary-dark);
+    font-variant-numeric: tabular-nums;
+  }
+  .stats-metric-label {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+}
+
+// ---------------- 顶部主图卡 ----------------
+.stats-chart-card {
+  // 顶部主图 ── 玻璃卡(走 section auto-card,这里只补 padding 微调和高度)
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .stats-chart-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+  }
+
+  .stats-chart-legend {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .stats-chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
+  .stats-chart-wrap {
+    position: relative;
+    width: 100%;
+    // 主图占视口高的 1/3 ~ 1/2,夹紧上下界免得在大屏拉得太瘦/小屏挤
+    height: clamp(240px, 40vh, 420px);
+  }
+
+  .stats-chart-empty {
+    margin: 0;
+    padding: 32px 12px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+}
+
+// ---------------- 通用图例 ----------------
+.stats-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--bg-card);
+}
+
+// ---------------- 七张详情卡 ----------------
+.stats-card {
+  // .stats-card 也吃 section 的玻璃自动样式,只补内部布局
+
+  .stats-card-title {
+    margin: 0 0 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+
+  .stats-card-body {
+    display: grid;
+    grid-template-columns: minmax(180px, 220px) 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .stats-pie-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 220px;
+    justify-self: center;
+  }
+
+  .stats-legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .stats-legend-row {
+    display: grid;
+    grid-template-columns: 14px 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    cursor: default;
+    transition: background var(--dur-glass-quick) var(--ease-glass-quick);
+
+    &:hover {
+      background: var(--primary-soft);
+    }
+  }
+  .stats-legend-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-main);
+  }
+  .stats-legend-value {
+    color: var(--text-main);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .stats-legend-pct {
+    min-width: 48px;
+    text-align: right;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stats-legend-empty {
+    padding: 18px 8px;
+    color: var(--text-muted);
+    font-size: 13.5px;
+    text-align: center;
+    list-style: none;
+  }
+}
+
+// ---------------- 卡片入场错落动画(轻量) ----------------
+// 顶部主图先到,下面 7 张依次错落 60ms;进入即满载,不阻塞交互
+@media (prefers-reduced-motion: no-preference) {
+  .stats-chart-card,
+  .stats-card {
+    animation: stats-fade-up 480ms var(--ease-glass) both;
+  }
+  .stats-chart-card { animation-delay: 40ms; }
+  .stats-card:nth-of-type(1) { animation-delay: 100ms; }
+  .stats-card:nth-of-type(2) { animation-delay: 160ms; }
+  .stats-card:nth-of-type(3) { animation-delay: 220ms; }
+  .stats-card:nth-of-type(4) { animation-delay: 280ms; }
+  .stats-card:nth-of-type(5) { animation-delay: 340ms; }
+  .stats-card:nth-of-type(6) { animation-delay: 400ms; }
+  .stats-card:nth-of-type(7) { animation-delay: 460ms; }
+}
+
+@keyframes stats-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ============================================================
+// 响应式
+// ============================================================
+@include desktop {
+  .stats-card .stats-card-body {
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+  }
+}
+
+@include mobile {
+  .stats-hero {
+    align-items: stretch;
+
+    .stats-hero-metrics {
+      width: 100%;
+      gap: 8px;
+    }
+    .stats-metric {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 10px 8px;
+    }
+    .stats-metric-value { font-size: 18px; }
+    .stats-metric-label { font-size: 11px; }
+  }
+
+  .stats-chart-card {
+    .stats-chart-head h2 { font-size: 16px; }
+    .stats-chart-wrap { height: clamp(220px, 36vh, 300px); }
+  }
+
+  .stats-card .stats-card-body {
+    // 移动端:饼上图例下,堆叠
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .stats-card .stats-pie-wrap {
+    max-width: 180px;
+  }
+}
+
+// 暗色:玻璃卡的底色已由 themes/dark 处理,这里只补图例 dot 描边
+[data-theme="dark"] {
+  .stats-legend-dot {
+    box-shadow: 0 0 0 2px var(--bg-card);
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "generatedAt": "2026-05-07T05:50:00.000Z",
+  "totalTracks": 0,
+  "totalArtists": 0,
+  "topArtists": [],
+  "_note": "由 scripts/add-music.mjs 维护。topArtists 形如 [{ name: '艺术家', count: 12 }],被 7-aggregate-stats.mjs 透传到 stats.json。"
+}
