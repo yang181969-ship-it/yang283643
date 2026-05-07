@@ -26,6 +26,7 @@ const NOTES_INDEX_PATH    = './data/notes-index.json';
 const ANIME_DATA_PATH     = './js/anime-data.js';
 const GALLERY_CANDIDATES  = ['./data/gallery-data.js', './js/gallery-data.js', './data/gallery.json'];
 const UPDATES_INDEX_PATH  = './data/updates-index.json';
+const PLAYLIST_PATH       = './data/playlist.json';
 const MUSIC_STATS_PATH    = './data/music-stats.json';
 
 const STATS_OUTPUT        = './data/stats.json';
@@ -89,6 +90,121 @@ function thisMonthKey() {
   return todayISO().slice(0, 7);
 }
 
+function toISODate(value) {
+  if (!value) return '';
+  const text = String(value).trim();
+  const direct = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (direct) return `${direct[1]}-${direct[2]}-${direct[3]}`;
+  const time = new Date(text).getTime();
+  if (Number.isNaN(time)) return '';
+  return new Date(time).toISOString().slice(0, 10);
+}
+
+function fileDateFromSrc(src) {
+  if (!src) return '';
+  const cleanSrc = String(src).replace(/\\/g, '/').replace(/^(\.\.\/)+/, '').split(/[?#]/)[0];
+  const filePath = path.resolve(cleanSrc);
+  if (!fs.existsSync(filePath)) return '';
+  try {
+    return fs.statSync(filePath).mtime.toISOString().slice(0, 10);
+  } catch {
+    return '';
+  }
+}
+
+function filenameFromSrc(src) {
+  const cleanSrc = String(src || '').replace(/\\/g, '/').split(/[?#]/)[0];
+  return cleanSrc.split('/').filter(Boolean).pop() || '图片';
+}
+
+function galleryCategoryLabel(category) {
+  if (category === 'anime') return '动漫图';
+  if (category === 'real') return '照片';
+  return '图片';
+}
+
+function playlistTracks(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.tracks)) return data.tracks;
+  return [];
+}
+
+function compactChange(item, order) {
+  const date = toISODate(item.date);
+  const title = String(item.title || '').trim();
+  const type = String(item.type || '').trim();
+  if (!date || !title || !type) return null;
+
+  return {
+    date,
+    title,
+    type,
+    page: item.page || '',
+    href: item.href || '',
+    order,
+  };
+}
+
+function buildRecentChanges({ notes, animeData, animeIds, gallery, updates, tracks }) {
+  const changes = [];
+
+  updates.forEach((item, index) => {
+    changes.push(compactChange({
+      date: item.date,
+      title: item.title || '站点更新',
+      type: item.type || '更新',
+      page: item.page || 'update',
+    }, 100000 + index));
+  });
+
+  notes.forEach((item, index) => {
+    changes.push(compactChange({
+      date: item.date,
+      title: `新增笔记：${item.title || filenameFromSrc(item.file)}`,
+      type: '笔记',
+      page: 'notes',
+    }, 200000 + index));
+  });
+
+  animeIds.forEach((id, index) => {
+    const item = animeData[id] || {};
+    changes.push(compactChange({
+      date: item.updateDate || item.date || item.addedAt,
+      title: `新增动漫：${item.title || id}`,
+      type: '动漫',
+      page: 'anime',
+    }, 300000 + index));
+  });
+
+  gallery.forEach((item, index) => {
+    const label = galleryCategoryLabel(item.category);
+    const name = filenameFromSrc(item.src);
+    changes.push(compactChange({
+      date: item.date || item.addedAt || item.updateDate || fileDateFromSrc(item.src),
+      title: `新增${label}：${name}`,
+      type: '画廊',
+      page: 'gallery',
+    }, 400000 + (Number(item.order) || index)));
+  });
+
+  tracks.forEach((item, index) => {
+    const title = item.artist
+      ? `${item.title || filenameFromSrc(item.src)} - ${item.artist}`
+      : `${item.title || filenameFromSrc(item.src)}`;
+    changes.push(compactChange({
+      date: item.dateAdded || item.addedAt || item.date || fileDateFromSrc(item.src),
+      title: `新增音乐：${title}`,
+      type: '音乐',
+      page: 'home',
+    }, 500000 + index));
+  });
+
+  return changes
+    .filter(Boolean)
+    .sort((a, b) => b.date.localeCompare(a.date) || b.order - a.order)
+    .map(({ order, ...item }) => item);
+}
+
 // ============================================================
 // 主流程
 // ============================================================
@@ -99,10 +215,11 @@ const animeData  = loadJsGlobal(ANIME_DATA_PATH, 'animeData') || {};
 const animeIds   = Object.keys(animeData);
 const gallery    = loadGallery() || [];
 const updates    = safeReadJson(UPDATES_INDEX_PATH, []);
+const tracks     = playlistTracks(safeReadJson(PLAYLIST_PATH, { tracks: [] }));
 const musicStats = safeReadJson(MUSIC_STATS_PATH, null);
 const prevStats  = safeReadJson(STATS_OUTPUT, { snapshots: [], breakdowns: {} });
 
-console.log(`  笔记:${notes.length}  番剧:${animeIds.length}  画廊:${gallery.length}  更新:${updates.length}`);
+console.log(`  笔记:${notes.length}  番剧:${animeIds.length}  画廊:${gallery.length}  更新:${updates.length}  音乐:${tracks.length}`);
 
 // ============================================================
 // breakdowns:7 张详情卡的源数据
@@ -200,6 +317,15 @@ const breakdowns = {};
 // 这里只放一个标记,告诉前端要走 live-fetch
 breakdowns.commentsByRole = { __live: 'waline-by-role' };
 
+const recentChanges = buildRecentChanges({
+  notes,
+  animeData,
+  animeIds,
+  gallery,
+  updates,
+  tracks,
+});
+
 // ============================================================
 // snapshots:月度累积快照(用于顶部堆叠柱+累计折线)
 // 同月重复跑会原地覆盖,不会重复累加
@@ -225,7 +351,8 @@ snapshots.sort((a, b) => a.month.localeCompare(b.month));
 const allDates = [
   ...notes.map(n => n.date),
   ...animeIds.map(id => animeData[id].updateDate),
-  ...gallery.map(g => g.date || ''),
+  ...gallery.map(g => g.date || fileDateFromSrc(g.src)),
+  ...tracks.map(t => t.dateAdded || t.addedAt || t.date || fileDateFromSrc(t.src)),
   ...updates.map(u => u.date),
 ].filter(Boolean).sort();
 
@@ -253,7 +380,7 @@ fs.mkdirSync(path.dirname(STATS_OUTPUT), { recursive: true });
 
 fs.writeFileSync(
   STATS_OUTPUT,
-  JSON.stringify({ snapshots, breakdowns, generatedAt: siteMeta.generatedAt }, null, 2) + '\n',
+  JSON.stringify({ snapshots, breakdowns, recentChanges, generatedAt: siteMeta.generatedAt }, null, 2) + '\n',
   'utf-8'
 );
 fs.writeFileSync(
@@ -265,6 +392,7 @@ fs.writeFileSync(
 console.log(`✓ 已写入 ${STATS_OUTPUT}`);
 console.log(`✓ 已写入 ${META_OUTPUT}`);
 console.log(`  快照数:${snapshots.length}  最新月份:${currentMonth}`);
+console.log(`  最近变化:${recentChanges.length} 条`);
 console.log(`  breakdowns:`);
 Object.entries(breakdowns).forEach(([k, v]) => {
   if (Array.isArray(v)) console.log(`    ${k}: ${v.length} 项`);

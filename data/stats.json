@@ -111,5 +111,406 @@
       "__live": "waline-by-role"
     }
   },
-  "generatedAt": "2026-05-07T14:47:24.730Z"
+  "recentChanges": [
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：平凡之路 - 朴树",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：起风了 - 买辣椒也用券",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：泡沫 - G.E.M.邓紫棋",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：鳥の詩 (鸟之诗) - Lia",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：❀ (纯音乐) - MappleHY",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：童话镇 - 陈一发儿",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "更新页大改,右上角三个按钮合并成两个",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增音乐：Lose My Mind (feat. Doja Cat) - Don Toliver/Doja Cat",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增音乐：F1 - Hans Zimmer",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增音乐：夏日漱石 (Summer Cozy Rock) - 橘子海",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增动漫图：010.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增动漫图：009.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增动漫图：008.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增照片：005.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增照片：006.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增动漫图：007.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增照片：007.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增照片：004.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增动漫图：006.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增照片：003.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增照片：002.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增动漫图：005.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增照片：001.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增动漫：你的名字",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-05-04",
+      "title": "新增音乐：倒数 - G.E.M.邓紫棋",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-04",
+      "title": "移动端加灵动岛,调色盘补上光晕开关",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-05-01",
+      "title": "主页大改:从静态欢迎页到 Bento 仪表盘",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-04-30",
+      "title": "新增音乐：Call of Silence × YouSeeBIGGIRL - EYAir",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-04-25",
+      "title": "新增动漫：魔法少女小圆",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-04-25",
+      "title": "新增动漫：铃芽之旅",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-04-25",
+      "title": "新增动漫：进击的巨人",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-04-25",
+      "title": "新增动漫：鬼灭之刃",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-04-24",
+      "title": "新增动漫：间谍过家家",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-04-22",
+      "title": "新增动漫图：004.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-04-22",
+      "title": "新增动漫图：001.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-04-22",
+      "title": "新增动漫图：002.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-04-22",
+      "title": "新增动漫图：003.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-04-22",
+      "title": "性能优化五步收官 —— 从「能看」到「真的快」",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-04-21",
+      "title": "新增动漫：紫罗兰永恒花园",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-04-20",
+      "title": "主页加全局搜索,新增明暗主题切换",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-04-19",
+      "title": "新增笔记：网站公式书写语法说明",
+      "type": "笔记",
+      "page": "notes",
+      "href": ""
+    },
+    {
+      "date": "2026-04-19",
+      "title": "新增笔记：Gosper 算法",
+      "type": "笔记",
+      "page": "notes",
+      "href": ""
+    },
+    {
+      "date": "2026-04-18",
+      "title": "新增动漫：葬送的芙莉莲",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-04-18",
+      "title": "新增动漫：魔女之旅",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-04-17",
+      "title": "换域名,留言板加了 VPN 提示弹窗",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-04-16",
+      "title": "留言板接入 Waline,统一页面结构,开通笔记和关于,砍掉日记",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-04-15",
+      "title": "手机端适配起步,画廊功能上线,增加悬浮按钮",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-04-14",
+      "title": "新增动漫：约会大作战",
+      "type": "动漫",
+      "page": "anime",
+      "href": ""
+    },
+    {
+      "date": "2026-04-14",
+      "title": "新增留言板,调整滑动方式",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-04-13",
+      "title": "网站正式开张 —— 从零搭起第一版骨架",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-03-23",
+      "title": "新增笔记：电场线与通量",
+      "type": "笔记",
+      "page": "notes",
+      "href": ""
+    },
+    {
+      "date": "2026-02-26",
+      "title": "新增音乐：鹿 be free - 尚雯婕",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2025-10-21",
+      "title": "新增笔记：矩阵的特征值与迹",
+      "type": "笔记",
+      "page": "notes",
+      "href": ""
+    },
+    {
+      "date": "2025-03-16",
+      "title": "新增笔记：对角化与相似变换",
+      "type": "笔记",
+      "page": "notes",
+      "href": ""
+    },
+    {
+      "date": "2025-02-03",
+      "title": "新增笔记：收敛性问题",
+      "type": "笔记",
+      "page": "notes",
+      "href": ""
+    },
+    {
+      "date": "2025-02-03",
+      "title": "新增笔记：傅里叶级数的基本形式",
+      "type": "笔记",
+      "page": "notes",
+      "href": ""
+    },
+    {
+      "date": "2020-01-05",
+      "title": "新增笔记：高斯定律的积分形式",
+      "type": "笔记",
+      "page": "notes",
+      "href": ""
+    }
+  ],
+  "generatedAt": "2026-05-07T15:11:57.720Z"
 }

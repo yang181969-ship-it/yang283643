@@ -7,6 +7,7 @@
   "use strict";
 
   const SVG_NS = "http://www.w3.org/2000/svg";
+  const RECENT_CHANGES_LIMIT = 8;
 
   const statsData = {
     summary: {
@@ -118,6 +119,12 @@
       关于: "about",
       首页: "home",
     };
+    pageByType["音乐"] = "home";
+    pageByType["动漫"] = "anime";
+    pageByType["画廊"] = "gallery";
+    pageByType["图片"] = "gallery";
+    pageByType["笔记"] = "notes";
+    pageByType["更新"] = "update";
     return item.page || pageByType[item.type] || "update";
   }
 
@@ -126,6 +133,36 @@
     return page === "home"
       ? `${prefix}index.html`
       : `${prefix}index.html?page=${encodeURIComponent(page)}`;
+  }
+
+  function assetHref(path) {
+    const prefix = document.body.dataset.standalone === "true" ? "../" : "";
+    return `${prefix}${path}`;
+  }
+
+  function formatShortDate(value) {
+    const text = String(value || "").trim();
+    const match = text.match(/^\d{4}-(\d{2})-(\d{2})/);
+    if (match) return `${match[1]}-${match[2]}`;
+    return text || "--";
+  }
+
+  async function loadRecentChanges() {
+    try {
+      const res = await fetch(assetHref("data/stats.json"), { cache: "no-cache" });
+      if (!res.ok) throw new Error(`stats.json ${res.status}`);
+
+      const data = await res.json();
+      const changes = Array.isArray(data.recentChanges)
+        ? data.recentChanges
+        : [];
+
+      if (!changes.length) return;
+      statsData.recentChanges = changes;
+      renderRecentChanges();
+    } catch (err) {
+      console.warn("[stats] recent changes fallback:", err);
+    }
   }
 
   function stopHeroAnimation() {
@@ -304,12 +341,13 @@
     const list = document.querySelector("[data-stats-recent]");
     if (!list) return;
 
-    list.innerHTML = statsData.recentChanges.slice(0, 4).map(item => {
+    list.innerHTML = statsData.recentChanges.slice(0, RECENT_CHANGES_LIMIT).map(item => {
       const page = changeTargetPage(item);
+      const href = item.href || pageHref(page);
       return `
       <li class="stats-change-item" data-type="${escapeHTML(item.type)}" data-page="${escapeHTML(page)}">
-        <a class="stats-change-link" href="${escapeHTML(pageHref(page))}" data-stats-change-link data-stats-page="${escapeHTML(page)}">
-          <time>${escapeHTML(item.date)}</time>
+        <a class="stats-change-link" href="${escapeHTML(href)}" data-stats-change-link data-stats-page="${escapeHTML(page)}">
+          <time>${escapeHTML(formatShortDate(item.date))}</time>
           <span class="stats-change-dot" aria-hidden="true"></span>
           <span class="stats-change-title">${escapeHTML(item.title)}</span>
           <span class="stats-change-type">${escapeHTML(item.type)}</span>
@@ -349,9 +387,23 @@
     const host = document.querySelector("[data-stats-categories]");
     if (!host) return;
 
-    const max = Math.max(...statsData.categories.map(item => item.value), 1);
-    host.innerHTML = statsData.categories.map((item, index) => {
-      const pct = Math.max(6, (item.value / max) * 100);
+    const items = statsData.categories.slice(0, 5);
+    const total = items.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+    const totalHost = document.querySelector("[data-stats-category-total]");
+    if (totalHost) totalHost.textContent = `共 ${total} 项`;
+
+    let remainingPercent = 100;
+    host.innerHTML = items.map((item, index) => {
+      const value = Number(item.value) || 0;
+      const rawPct = total > 0 ? (value / total) * 100 : 0;
+      const displayPct = total > 0
+        ? (index === items.length - 1 ? remainingPercent : Math.round(rawPct))
+        : 0;
+      if (index !== items.length - 1) {
+        remainingPercent = Math.max(0, remainingPercent - displayPct);
+      }
+
+      const pct = Math.min(100, Math.max(10, rawPct));
       const color = categoryColors[index % categoryColors.length];
       return `
         <div class="stats-category-row">
@@ -359,7 +411,10 @@
           <span class="stats-category-track">
             <span class="stats-category-fill" style="--bar-width:${pct.toFixed(1)}%;--bar-color:${color}"></span>
           </span>
-          <strong>${item.value}</strong>
+          <span class="stats-category-value">
+            <strong>${value}</strong>
+            <span>${displayPct}%</span>
+          </span>
         </div>
       `;
     }).join("");
@@ -572,7 +627,7 @@
     renderHeroVisual();
     renderGrowthChart();
     renderRecentChanges();
-    renderHeatmap();
+    loadRecentChanges();
     renderCategories();
     renderArchive();
     bindPageChangeStopper();

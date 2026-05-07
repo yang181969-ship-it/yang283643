@@ -204,8 +204,9 @@
 
 .stats-bottom-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.42fr) minmax(320px, 0.78fr);
   gap: 18px;
+  align-items: stretch;
 }
 
 .stats-card {
@@ -248,6 +249,35 @@
   }
 }
 
+.stats-card--categories {
+  padding: 34px 38px 30px !important;
+
+  .stats-card-head {
+    margin-bottom: 32px;
+  }
+
+  .stats-card-icon {
+    width: 56px;
+    height: 56px;
+    flex-basis: 56px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(79, 140, 255, 0.14), rgba(155, 124, 255, 0.08));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.66);
+
+    svg {
+      width: 32px;
+      height: 32px;
+      stroke-width: 2.4;
+    }
+  }
+
+  h2 {
+    font-size: 30px;
+    line-height: 1.16;
+    font-weight: 850;
+  }
+}
+
 .stats-chart-legend {
   display: flex;
   align-items: center;
@@ -282,29 +312,31 @@
 .stats-legend-mark--line {
   position: relative;
   width: 22px;
-  height: 10px;
+  height: 12px;
 
   &::before {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    top: 4px;
+    top: 50%;
     height: 2px;
     border-radius: 999px;
     background: var(--legend-color);
+    transform: translateY(-50%);
   }
 
   &::after {
     content: "";
     position: absolute;
-    top: 1px;
-    left: 9px;
-    width: 7px;
-    height: 7px;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: #fff;
     border: 2px solid var(--legend-color);
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -457,6 +489,42 @@
   }
 }
 
+.stats-change-item[data-type="动漫"] {
+  .stats-change-dot {
+    background: var(--stats-purple);
+    box-shadow: 0 0 0 5px rgba(155, 124, 255, 0.12);
+  }
+
+  .stats-change-type {
+    color: #7f63dd;
+    background: rgba(155, 124, 255, 0.12);
+  }
+}
+
+.stats-change-item[data-type="画廊"] {
+  .stats-change-dot {
+    background: var(--stats-cyan);
+    box-shadow: 0 0 0 5px rgba(123, 223, 242, 0.14);
+  }
+
+  .stats-change-type {
+    color: #248da0;
+    background: rgba(123, 223, 242, 0.16);
+  }
+}
+
+.stats-change-item[data-type="音乐"] {
+  .stats-change-dot {
+    background: var(--stats-green);
+    box-shadow: 0 0 0 5px rgba(117, 214, 165, 0.13);
+  }
+
+  .stats-change-type {
+    color: #2e9a65;
+    background: rgba(117, 214, 165, 0.14);
+  }
+}
+
 .stats-heatmap-scroll {
   overflow-x: auto;
   padding-bottom: 4px;
@@ -529,28 +597,30 @@
 
 .stats-category-bars {
   display: grid;
-  gap: 15px;
+  gap: 25px;
 }
 
 .stats-category-row {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 28px;
+  grid-template-columns: 116px minmax(0, 1fr) 132px;
   align-items: center;
-  gap: 12px;
+  gap: 26px;
   color: #40567d;
-  font-size: 14px;
+  font-size: 22px;
 }
 
 .stats-category-name {
-  font-weight: 750;
+  color: #2e4b78;
+  font-weight: 850;
+  line-height: 1.2;
 }
 
 .stats-category-track {
   position: relative;
-  height: 10px;
+  height: 16px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(105, 145, 220, 0.10);
+  background: rgba(105, 145, 220, 0.11);
 }
 
 .stats-category-fill {
@@ -562,20 +632,47 @@
   box-shadow: 0 6px 14px color-mix(in srgb, var(--bar-color) 22%, transparent);
 }
 
-.stats-category-row strong {
-  color: var(--stats-ink);
-  font-size: 13px;
+.stats-category-value {
+  display: grid;
+  grid-template-columns: 48px 58px;
+  align-items: center;
+  justify-content: end;
+  gap: 22px;
   font-variant-numeric: tabular-nums;
   text-align: right;
+
+  strong {
+    color: var(--stats-ink);
+    font-size: 24px;
+    line-height: 1.15;
+    font-weight: 850;
+  }
+
+  span {
+    color: var(--stats-muted);
+    font-size: 22px;
+    line-height: 1.15;
+    font-weight: 650;
+  }
 }
 
-.stats-category-axis {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  margin: 16px 28px 0 60px;
+.stats-category-total {
+  margin-left: auto;
   color: var(--stats-muted);
-  font-size: 12px;
+  font-size: 18px;
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stats-category-note {
+  margin: 30px 0 0;
+  padding-top: 20px;
+  border-top: 1px dashed rgba(105, 145, 220, 0.25);
+  color: #8a9ab5;
+  font-size: 16px;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .stats-archive-list {
@@ -756,8 +853,66 @@
     height: 13px;
   }
 
-  .stats-category-axis {
-    margin-left: 60px;
+  .stats-card--categories {
+    padding: 20px !important;
+
+    .stats-card-head {
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .stats-card-icon {
+      width: 42px;
+      height: 42px;
+      flex-basis: 42px;
+      border-radius: 14px;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    h2 {
+      font-size: 22px;
+    }
+  }
+
+  .stats-category-total {
+    font-size: 15px;
+  }
+
+  .stats-category-bars {
+    gap: 18px;
+  }
+
+  .stats-category-row {
+    grid-template-columns: 64px minmax(0, 1fr) 78px;
+    gap: 10px;
+    font-size: 17px;
+  }
+
+  .stats-category-track {
+    height: 12px;
+  }
+
+  .stats-category-value {
+    grid-template-columns: 28px 36px;
+    gap: 8px;
+
+    strong {
+      font-size: 17px;
+    }
+
+    span {
+      font-size: 16px;
+    }
+  }
+
+  .stats-category-note {
+    margin-top: 22px;
+    padding-top: 16px;
+    font-size: 13px;
   }
 
   .stats-archive-item {
@@ -795,6 +950,8 @@
 
   .stats-change-title,
   .stats-category-row,
+  .stats-category-name,
+  .stats-category-note,
   .stats-archive-item dd,
   .stats-chart-month {
     color: #c8d5ee;
@@ -804,6 +961,11 @@
   .stats-total-value,
   .stats-category-row strong {
     color: #e9f1ff;
+  }
+
+  .stats-category-total,
+  .stats-category-value span {
+    color: #9fb0d0;
   }
 
   .stats-total-point {
