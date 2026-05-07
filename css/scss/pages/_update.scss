@@ -282,12 +282,9 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 }
 
 // ============================================================
-// 月份分组 sticky header
+// 月份分组标题
 // ============================================================
 .update-month-header {
-  position: sticky;
-  top: 8px;
-  z-index: 5;
   margin: 22px 0 14px -28px;  // 反向负 margin 让 header 跨过 timeline 竖线
   padding: 8px 0 8px 28px;
   font-size: 14px;
@@ -650,6 +647,29 @@ $tag-opt:     ('visual', 'perf', 'mobile');
     margin: 28px 0;
     border: none;
     border-top: 1px solid var(--border-soft);
+  }
+
+  .update-markdown-image {
+    margin: 18px 0 22px;
+  }
+
+  .update-markdown-image img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    background: var(--bg-panel);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .update-markdown-image figcaption {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: center;
   }
 
   pre {
