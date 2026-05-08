@@ -534,61 +534,166 @@
       <div class="stats-donut-wrap">
         ${renderDonutSvg(child, total)}
       </div>
-      <div class="stats-donut-legend" aria-label="${escapeHTML(child.name)}图例">
-        <div class="stats-donut-legend-grid">
-          ${child.items.map((item, index) => {
-            const pct = total > 0 ? (item.value / total) * 100 : 0;
-            const color = dataCenterColors[index % dataCenterColors.length];
-            return `
-              <div class="stats-donut-legend-item">
-                <span class="stats-donut-dot" style="--dot-color:${color}" aria-hidden="true"></span>
-                <span class="stats-donut-name">${escapeHTML(item.name)}</span>
-                <strong>${formatCompactNumber(item.value)}</strong>
-                <span>${pct.toFixed(1)}%</span>
-              </div>
-            `;
-          }).join("")}
-        </div>
-      </div>
+    `;
+  }
+
+  function spreadDonutLabels(labels, minY, maxY) {
+    if (labels.length < 2) return;
+
+    labels.sort((a, b) => a.y - b.y);
+    const gap = Math.min(78, (maxY - minY) / (labels.length - 1));
+
+    labels[0].y = Math.max(labels[0].y, minY);
+    for (let index = 1; index < labels.length; index += 1) {
+      labels[index].y = Math.max(labels[index].y, labels[index - 1].y + gap);
+    }
+
+    const overflow = labels[labels.length - 1].y - maxY;
+    if (overflow > 0) {
+      labels.forEach(label => {
+        label.y -= overflow;
+      });
+    }
+
+    if (labels[0].y < minY) {
+      const shift = minY - labels[0].y;
+      labels.forEach(label => {
+        label.y += shift;
+      });
+    }
+  }
+
+  function donutPoint(cx, cy, radius, angle) {
+    return {
+      x: cx + Math.cos(angle) * radius,
+      y: cy + Math.sin(angle) * radius,
+    };
+  }
+
+  function donutSegmentPath(cx, cy, innerRadius, outerRadius, startAngle, endAngle) {
+    const fullCircle = Math.PI * 2;
+    const safeEndAngle = Math.min(endAngle, startAngle + fullCircle - 0.0001);
+    const largeArc = safeEndAngle - startAngle > Math.PI ? 1 : 0;
+    const outerStart = donutPoint(cx, cy, outerRadius, startAngle);
+    const outerEnd = donutPoint(cx, cy, outerRadius, safeEndAngle);
+    const innerEnd = donutPoint(cx, cy, innerRadius, safeEndAngle);
+    const innerStart = donutPoint(cx, cy, innerRadius, startAngle);
+
+    return [
+      `M ${outerStart.x.toFixed(1)} ${outerStart.y.toFixed(1)}`,
+      `A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerEnd.x.toFixed(1)} ${outerEnd.y.toFixed(1)}`,
+      `L ${innerEnd.x.toFixed(1)} ${innerEnd.y.toFixed(1)}`,
+      `A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerStart.x.toFixed(1)} ${innerStart.y.toFixed(1)}`,
+      "Z",
+    ].join(" ");
+  }
+
+  function renderDonutCallout(label, child, total) {
+    const pct = total > 0 ? (label.value / total) * 100 : 0;
+    const anchor = label.side === "right" ? "start" : "end";
+    const valueText = `${formatCompactNumber(label.value)} ${child.unit || "项"}`;
+
+    return `
+      <g class="stats-donut-callout" data-side="${label.side}">
+        <path
+          class="stats-donut-callout-line"
+          d="M ${label.startX} ${label.startY} L ${label.routeX} ${label.startY} L ${label.routeX} ${label.dotY} L ${label.dotX} ${label.dotY}"
+          stroke="${label.color}"
+        />
+        <circle class="stats-donut-callout-halo" cx="${label.dotX}" cy="${label.dotY}" r="6" fill="${label.color}" />
+        <circle class="stats-donut-callout-dot" cx="${label.dotX}" cy="${label.dotY}" r="3.6" fill="${label.color}" />
+        <text x="${label.textX}" y="${label.y}" text-anchor="${anchor}" class="stats-donut-label-title">${escapeHTML(label.name)}</text>
+        <text x="${label.textX}" y="${label.y + 23}" text-anchor="${anchor}" class="stats-donut-label-value">${escapeHTML(valueText)}</text>
+        <text x="${label.textX}" y="${label.y + 46}" text-anchor="${anchor}" class="stats-donut-label-percent">${pct.toFixed(1)}%</text>
+      </g>
     `;
   }
 
   function renderDonutSvg(child, total) {
-    const size = 260;
-    const cx = 130;
-    const cy = 130;
-    const radius = 84;
-    const stroke = 42;
-    const circumference = 2 * Math.PI * radius;
-    let offset = 0;
-
-    const circles = child.items.map((item, index) => {
+    const width = 760;
+    const outerRadius = 126;
+    const innerRadius = 84;
+    const calloutStartRadius = outerRadius + 4;
+    const routeOffset = outerRadius + 64;
+    const labelGap = 78;
+    const labelMinY = 54;
+    const labelBottomSpace = 100;
+    let angleOffset = -Math.PI / 2;
+    const labelSides = child.items.reduce((counts, item) => {
       const value = Number(item.value) || 0;
-      const length = total > 0 ? (value / total) * circumference : 0;
+      const angle = total > 0 ? (value / total) * Math.PI * 2 : 0;
+      const side = Math.cos(angleOffset + angle / 2) >= 0 ? "right" : "left";
+      counts[side] += 1;
+      angleOffset += angle;
+      return counts;
+    }, { left: 0, right: 0 });
+    const maxSideCount = Math.max(labelSides.left, labelSides.right, 1);
+    const height = Math.max(360, labelMinY + (maxSideCount - 1) * labelGap + labelBottomSpace);
+    const cx = width / 2;
+    const cy = height / 2;
+    const labelMaxY = height - 86;
+    angleOffset = -Math.PI / 2;
+
+    const segments = child.items.map((item, index) => {
+      const value = Number(item.value) || 0;
+      const angle = total > 0 ? (value / total) * Math.PI * 2 : 0;
+      const startAngle = angleOffset;
+      const endAngle = angleOffset + angle;
       const color = dataCenterColors[index % dataCenterColors.length];
-      const circle = `
-        <circle
-          cx="${cx}"
-          cy="${cy}"
-          r="${radius}"
-          fill="none"
-          stroke="${color}"
-          stroke-width="${stroke}"
-          stroke-dasharray="${length} ${Math.max(0, circumference - length)}"
-          stroke-dashoffset="${-offset}"
-          stroke-linecap="butt"
-          transform="rotate(-90 ${cx} ${cy})"
+      const path = `
+        <path
+          class="stats-donut-segment"
+          d="${donutSegmentPath(cx, cy, innerRadius, outerRadius, startAngle, endAngle)}"
+          fill="${color}"
         />
       `;
-      offset += length;
-      return circle;
+      angleOffset = endAngle;
+      return path;
+    }).join("");
+
+    angleOffset = -Math.PI / 2;
+    const labels = child.items.map((item, index) => {
+      const value = Number(item.value) || 0;
+      const angle = total > 0 ? (value / total) * Math.PI * 2 : 0;
+      const midAngle = angleOffset + angle / 2;
+      const side = Math.cos(midAngle) >= 0 ? "right" : "left";
+      const startPoint = donutPoint(cx, cy, calloutStartRadius, midAngle);
+      const routeX = cx + (side === "right" ? routeOffset : -routeOffset);
+      const dotX = routeX + (side === "right" ? 24 : -24);
+      const targetY = Math.min(labelMaxY, Math.max(labelMinY, cy + Math.sin(midAngle) * 150));
+
+      angleOffset += angle;
+
+      return {
+        name: item.name,
+        value,
+        color: dataCenterColors[index % dataCenterColors.length],
+        side,
+        startX: startPoint.x.toFixed(1),
+        startY: startPoint.y.toFixed(1),
+        routeX: routeX.toFixed(1),
+        dotX: dotX.toFixed(1),
+        dotY: 0,
+        textX: (dotX + (side === "right" ? 22 : -22)).toFixed(1),
+        y: targetY,
+      };
+    });
+
+    ["left", "right"].forEach(side => {
+      spreadDonutLabels(labels.filter(label => label.side === side), labelMinY, labelMaxY);
+    });
+
+    const callouts = labels.map(label => {
+      label.dotY = (label.y - 6).toFixed(1);
+      return renderDonutCallout(label, child, total);
     }).join("");
 
     return `
-      <svg class="stats-donut-svg" viewBox="0 0 ${size} ${size}" role="img" aria-label="${escapeHTML(child.name)}分类分布">
-        <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="rgba(105,145,220,0.12)" stroke-width="${stroke}" />
-        ${circles}
-        <circle class="stats-donut-hole" cx="${cx}" cy="${cy}" r="58" />
+      <svg class="stats-donut-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHTML(child.name)}分类分布">
+        <circle cx="${cx}" cy="${cy}" r="${(outerRadius + innerRadius) / 2}" fill="none" stroke="rgba(105,145,220,0.12)" stroke-width="${outerRadius - innerRadius}" />
+        ${segments}
+        ${callouts}
+        <circle class="stats-donut-hole" cx="${cx}" cy="${cy}" r="68" />
         <text x="${cx}" y="${cy - 7}" text-anchor="middle" class="stats-donut-center-title">${escapeHTML(child.name)}</text>
         <text x="${cx}" y="${cy + 24}" text-anchor="middle" class="stats-donut-center-value">${formatCompactNumber(total)} ${escapeHTML(child.unit || "项")}</text>
       </svg>
@@ -605,19 +710,67 @@
     const host = document.querySelector("[data-stats-archive]");
     if (!host) return;
 
-    const items = [
-      { label: "建站日期", value: statsData.archive.siteBirthday, icon: "calendar" },
-      { label: "最后更新", value: statsData.archive.lastUpdated, icon: "clock" },
-      { label: "当前版本", value: statsData.archive.version, icon: "version" },
-      { label: "技术栈", value: statsData.archive.stack.join("<br>"), icon: "stack" },
+    const archive = statsData.archive || {};
+    const baseItems = [
+      { label: "建站日期", value: archive.siteBirthday || "--" },
+      { label: "最后更新", value: archive.lastUpdated || "--" },
+      { label: "当前版本", value: archive.version || "--" },
     ];
+    const techItems = (Array.isArray(archive.stack) ? archive.stack : [])
+      .flatMap(item => String(item || "").replace(/CSS\/SCSS/g, "CSS · SCSS").split("·"))
+      .map(item => item.trim())
+      .filter(Boolean);
+    const statusItems = Array.isArray(archive.status) && archive.status.length
+      ? archive.status
+      : [
+          { label: "内容统计", value: "自动生成", type: "auto" },
+          { label: "留言系统", value: "迁移中", type: "migrating" },
+          { label: "移动端适配", value: "优化中", type: "progress" },
+          { label: "数据中心", value: "已启用", type: "enabled" },
+        ];
+    const normalizedStatusItems = statusItems.map(item => ({
+      label: item.label,
+      value: item.value,
+      type: String(item.type || "enabled").replace(/[^a-z0-9_-]/gi, "") || "enabled",
+    }));
 
-    host.innerHTML = items.map(item => `
-      <div class="stats-archive-item" data-icon="${item.icon}">
-        <dt>${escapeHTML(item.label)}</dt>
-        <dd>${item.icon === "stack" ? item.value : escapeHTML(item.value)}</dd>
-      </div>
-    `).join("");
+    host.innerHTML = `
+      <section class="stats-archive-section">
+        <h3 class="stats-archive-section-title">基础档案</h3>
+        <div class="stats-archive-info-list">
+          ${baseItems.map(item => `
+            <div class="stats-archive-info-row">
+              <span class="stats-archive-info-label">${escapeHTML(item.label)}</span>
+              <span class="stats-archive-info-value">${escapeHTML(item.value)}</span>
+            </div>
+          `).join("")}
+        </div>
+      </section>
+
+      <section class="stats-archive-section">
+        <h3 class="stats-archive-section-title">技术能力</h3>
+        <div class="stats-archive-tags">
+          ${techItems.map(item => `<span>${escapeHTML(item)}</span>`).join("")}
+        </div>
+      </section>
+
+      <section class="stats-archive-section stats-archive-section--status">
+        <h3 class="stats-archive-section-title">运行状态</h3>
+        <div class="stats-archive-status-list">
+          ${normalizedStatusItems.map(item => `
+            <div class="stats-archive-status-row">
+              <span class="stats-archive-status-name">${escapeHTML(item.label)}</span>
+              <span class="stats-archive-status-badge is-${item.type}">${escapeHTML(item.value)}</span>
+            </div>
+          `).join("")}
+        </div>
+      </section>
+
+      <svg class="stats-archive-bg-mark" viewBox="0 0 200 200" aria-hidden="true">
+        <path d="M42 62h48l14 18h54v74H42z" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></path>
+        <path d="M68 104h64M68 128h44" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"></path>
+      </svg>
+    `;
   }
 
   function columnPoints(x, y, h, w, d) {
