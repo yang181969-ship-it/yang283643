@@ -1,32 +1,180 @@
 <main id="main-content">
-  <section class="no-card">
+  <section class="gallery-page no-card" aria-labelledby="gallery-title">
 
-    <!-- 顶部控制栏 -->
-    <div class="gallery-controls">
-      <div class="gallery-control-group">
-        <button id="filter-btn" type="button">分类 ▼</button>
-        <div class="dropdown" id="filter-menu">
-          <div data-filter="all">全部</div>
-          <div data-filter="real">现实</div>
-          <div data-filter="anime">动漫</div>
+    <section class="gallery-hero" aria-labelledby="gallery-title">
+      <div class="gallery-hero__content">
+        <p class="gallery-hero__eyebrow">My Gallery</p>
+        <h1 id="gallery-title">我的画廊收藏 ✨</h1>
+        <p class="gallery-hero__desc">
+          收藏生活中的美好瞬间与灵感碎片，<br>
+          每一张图片，每一幅画，都是属于我的回忆。
+        </p>
+
+        <div class="gallery-hero__stats" aria-label="画廊统计">
+          <span class="gallery-stat-pill">
+            <span aria-hidden="true">✦</span>
+            <strong data-gallery-total>0</strong>
+            <span>张图片</span>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="gallery-panel" role="region" aria-labelledby="gallery-collection-title">
+      <div class="gallery-panel__header gallery-controls">
+        <div class="gallery-panel__title-wrap">
+          <h2 class="gallery-panel__title" id="gallery-collection-title">全部收藏</h2>
+        </div>
+
+        <div class="gallery-toolbar" data-gallery-toolbar>
+          <button
+            class="gallery-toolbar__item gallery-toolbar__item--search"
+            type="button"
+            data-gallery-action="search"
+            aria-label="展开搜索"
+          >
+            <span class="gallery-toolbar__text">搜索</span>
+          </button>
+
+          <button
+            class="gallery-toolbar__item"
+            type="button"
+            data-gallery-action="filter"
+            aria-label="展开筛选"
+          >
+            <span class="gallery-toolbar__text">筛选</span>
+          </button>
+
+          <button
+            class="gallery-toolbar__item"
+            type="button"
+            data-gallery-action="sort"
+            aria-label="展开排序"
+          >
+            <span class="gallery-toolbar__text">排序</span>
+          </button>
         </div>
       </div>
 
-      <div class="gallery-control-group">
-        <button id="sort-btn" type="button">排列 ▼</button>
-        <div class="dropdown" id="sort-menu">
-          <div data-sort="default">默认</div>
-          <div data-sort="random">随机</div>
+      <div class="gallery-toolbar-popovers">
+        <div class="gallery-toolbar-popover gallery-toolbar-popover--search" data-gallery-panel="search">
+          <div class="gallery-search-expanded">
+            <input
+              class="gallery-search-expanded__input"
+              type="search"
+              placeholder="搜索全部水区图片"
+              autocomplete="off"
+              data-gallery-search-input
+            >
+            <button
+              class="gallery-search-expanded__clear"
+              type="button"
+              data-gallery-search-clear
+              aria-label="清空搜索"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        <div class="gallery-toolbar-popover gallery-toolbar-popover--filter" data-gallery-panel="filter">
+          <div class="gallery-filter-panel">
+            <div class="gallery-filter-panel__group">
+              <div class="gallery-filter-panel__label">分类</div>
+              <div class="gallery-filter-panel__chips" data-gallery-category-list>
+                <button class="gallery-chip is-active" type="button" data-category="all">全部</button>
+                <button class="gallery-chip" type="button" data-category="real">现实</button>
+                <button class="gallery-chip" type="button" data-category="anime">动漫</button>
+              </div>
+            </div>
+
+            <div class="gallery-filter-panel__group">
+              <div class="gallery-filter-panel__label">标签</div>
+              <div class="gallery-filter-panel__chips" data-gallery-tag-list></div>
+            </div>
+
+            <div class="gallery-filter-panel__footer">
+              <button class="gallery-filter-panel__clear" type="button" data-gallery-filter-clear>
+                清空筛选
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="gallery-toolbar-popover gallery-toolbar-popover--sort" data-gallery-panel="sort">
+          <div class="gallery-sort-panel">
+            <button class="gallery-sort-option is-active" type="button" data-sort="default">
+              默认排序
+            </button>
+            <button class="gallery-sort-option" type="button" data-sort="random">
+              随机排序
+            </button>
+            <button class="gallery-sort-option" type="button" data-sort="time-asc">
+              更新时间升序
+            </button>
+            <button class="gallery-sort-option" type="button" data-sort="time-desc">
+              更新时间降序
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 图片区域 -->
-    <div id="gallery-grid" class="gallery-grid"></div>
+      <div id="gallery-grid" class="gallery-grid" data-gallery-list></div>
+    </section>
 
-    <!-- 图片放大 -->
-    <div id="lightbox" class="lightbox">
-      <img id="lightbox-img" alt="放大图片">
+    <div class="gallery-lightbox" id="gallery-lightbox" hidden>
+      <div class="gallery-lightbox__backdrop" data-lightbox-close></div>
+
+      <div
+        class="gallery-lightbox__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gallery-lightbox-title"
+      >
+        <button class="gallery-lightbox__close" type="button" aria-label="关闭" data-lightbox-close>×</button>
+
+        <div class="gallery-lightbox__image-wrap">
+          <button class="gallery-lightbox__nav gallery-lightbox__nav--prev" type="button" aria-label="上一张" data-lightbox-prev>‹</button>
+          <img class="gallery-lightbox__image" src="" alt="" data-lightbox-img>
+          <button class="gallery-lightbox__nav gallery-lightbox__nav--next" type="button" aria-label="下一张" data-lightbox-next>›</button>
+
+          <div class="gallery-lightbox__count">
+            <span data-current-index>1</span> / <span data-total-count>1</span>
+          </div>
+        </div>
+
+        <aside class="gallery-lightbox__info">
+          <div class="gallery-lightbox__title-row">
+            <h3 id="gallery-lightbox-title" data-lightbox-title>未命名图片</h3>
+            <span class="gallery-lightbox__soft-icons" aria-hidden="true">★ ♥</span>
+          </div>
+
+          <div class="gallery-info-item">
+            <span class="gallery-info-label">收藏时间</span>
+            <span class="gallery-info-value" data-lightbox-date>暂无记录</span>
+          </div>
+
+          <div class="gallery-info-item">
+            <span class="gallery-info-label">分类</span>
+            <span class="gallery-info-value" data-lightbox-category>未分类</span>
+          </div>
+
+          <div class="gallery-info-item">
+            <span class="gallery-info-label">标签</span>
+            <div class="gallery-info-tags" data-lightbox-tags>暂无标签</div>
+          </div>
+
+          <div class="gallery-info-item">
+            <span class="gallery-info-label">备注</span>
+            <p class="gallery-info-note" data-lightbox-note>暂无备注</p>
+          </div>
+
+          <div class="gallery-lightbox__actions">
+            <button type="button" data-lightbox-prev>上一张</button>
+            <button type="button" data-lightbox-next>下一张</button>
+          </div>
+        </aside>
+      </div>
     </div>
 
   </section>

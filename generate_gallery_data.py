@@ -1,5 +1,7 @@
+from datetime import datetime
 from pathlib import Path
 from PIL import Image
+import json
 import re
 
 # ===== 路径配置 =====
@@ -17,6 +19,8 @@ BASE_COLUMN_WIDTH = 300
 # 图片文件名编号宽度：001.webp、002.webp ...
 FILENAME_NUMBER_WIDTH = 3
 
+PRESERVED_FIELDS = ("title", "category", "album", "tags", "note")
+
 
 def natural_sort_key(text: str):
     parts = re.split(r"(\d+)", text.lower())
@@ -31,28 +35,35 @@ def estimate_render_height(item, column_width=BASE_COLUMN_WIDTH):
     return column_width * height / width
 
 
+def format_mtime(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
+
+
 def get_image_key(src: str) -> str:
     """
-    从路径中提取"图片身份标识"，忽略扩展名差异
+    从路径中提取"图片身份标识"，忽略扩展名差异。
     例如：assets/gallery/real/001.jpg 和 assets/gallery/real/001.webp
-    都会得到同一个 key："real/001"
+    都会得到同一个 key："real/001"。
     """
-    path = Path(src)
-    # 相对于 gallery 目录的路径（去掉 assets/gallery/ 前缀）
-    # 再去掉扩展名
+    path = Path(src.replace("\\", "/"))
     parts = path.parts
-    # 找到 gallery 所在的位置
+
     try:
         gallery_index = parts.index("gallery")
         relative_parts = parts[gallery_index + 1:]
     except ValueError:
         relative_parts = parts
-    # 拼接成 "real/001" 这样的 key（去掉扩展名）
+
     if not relative_parts:
         return path.stem
+
     *dirs, filename = relative_parts
     stem = Path(filename).stem
     return "/".join([*dirs, stem])
+
+
+def make_id_from_key(key: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9_-]+", "-", key).strip("-") or "gallery-item"
 
 
 def get_supported_files(category_dir):
@@ -139,7 +150,103 @@ def renumber_gallery_files():
     return previous_key_by_current_key
 
 
-def collect_images():
+def js_string_pattern(field):
+    return re.compile(
+        rf'(?:^|[,{{\s])["\']?{re.escape(field)}["\']?\s*:\s*("(?:(?:\\.)|[^"\\])*"|\'(?:(?:\\.)|[^\'\\])*\')',
+        re.MULTILINE,
+    )
+
+
+def js_number_pattern(field):
+    return re.compile(
+        rf'(?:^|[,{{\s])["\']?{re.escape(field)}["\']?\s*:\s*(\d+)',
+        re.MULTILINE,
+    )
+
+
+def js_array_pattern(field):
+    return re.compile(
+        rf'(?:^|[,{{\s])["\']?{re.escape(field)}["\']?\s*:\s*(\[[\s\S]*?\])',
+        re.MULTILINE,
+    )
+
+
+def parse_js_string(raw):
+    if not raw:
+        return ""
+
+    quote = raw[0]
+    if quote == "'":
+        raw = '"' + raw[1:-1].replace('"', '\\"') + '"'
+
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return raw.strip("\"'")
+
+
+def extract_string_field(block, field):
+    match = js_string_pattern(field).search(block)
+    return parse_js_string(match.group(1)) if match else ""
+
+
+def extract_number_field(block, field):
+    match = js_number_pattern(field).search(block)
+    return int(match.group(1)) if match else None
+
+
+def extract_tags_field(block):
+    match = js_array_pattern("tags").search(block)
+    if not match:
+        return []
+
+    raw = match.group(1)
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError:
+        value = re.findall(r'"([^"]+)"|\'([^\']+)\'', raw)
+        value = [first or second for first, second in value]
+
+    if not isinstance(value, list):
+        return []
+
+    return [str(item).strip() for item in value if str(item).strip()]
+
+
+def parse_existing_gallery_items():
+    """
+    从旧的 gallery-data.js 中提取可保留字段。
+    用 key（类似 real/001）而不是完整 src，这样格式变化不会破坏映射。
+    """
+    if not OUTPUT_FILE.exists():
+        return {}
+
+    text = OUTPUT_FILE.read_text(encoding="utf-8")
+    object_blocks = re.findall(r"\{[\s\S]*?\}", text)
+    existing = {}
+
+    for block in object_blocks:
+        src = extract_string_field(block, "src")
+        if not src:
+            continue
+
+        key = get_image_key(src)
+        item = {
+            "order": extract_number_field(block, "order"),
+            "title": extract_string_field(block, "title"),
+            "category": extract_string_field(block, "category"),
+            "album": extract_string_field(block, "album"),
+            "tags": extract_tags_field(block),
+            "note": extract_string_field(block, "note"),
+        }
+
+        existing[key] = item
+
+    return existing
+
+
+def collect_images(existing_items=None):
+    existing_items = existing_items or {}
     items = []
 
     for category in CATEGORIES:
@@ -159,47 +266,37 @@ def collect_images():
             if width <= 0 or height <= 0:
                 continue
 
-            items.append({
-                "src": file.relative_to(BASE_DIR).as_posix(),
-                "category": category,
+            src = file.relative_to(BASE_DIR).as_posix()
+            key = get_image_key(src)
+            preserved = existing_items.get(key, {})
+            updated_at = format_mtime(file.stat().st_mtime)
+
+            item = {
+                "id": make_id_from_key(key),
+                "title": preserved.get("title") or file.stem,
+                "src": src,
+                "thumb": src,
+                "category": preserved.get("category") or category,
+                "album": preserved.get("album") or "",
+                "tags": preserved.get("tags") if isinstance(preserved.get("tags"), list) else [],
+                "note": preserved.get("note") or "",
                 "width": width,
                 "height": height,
                 "filename": file.name,
-            })
+                "updatedAt": updated_at,
+                "date": updated_at,
+            }
+
+            items.append(item)
 
     items.sort(key=lambda x: (x["category"], natural_sort_key(x["filename"])))
     return items
 
 
-def parse_existing_gallery_data():
-    """
-    从旧的 gallery-data.js 中提取"图片身份标识 → order"的映射
-    用 key（类似 real/001）而不是完整 src,这样格式变化（jpg→webp）不会破坏映射
-    """
-    if not OUTPUT_FILE.exists():
-        return {}
-
-    text = OUTPUT_FILE.read_text(encoding="utf-8")
-
-    pattern = re.compile(
-        r'src:\s*"([^"]+)"[\s\S]*?order:\s*(\d+)',
-        re.MULTILINE
-    )
-
-    existing = {}
-    for match in pattern.finditer(text):
-        src = match.group(1)
-        order = int(match.group(2))
-        key = get_image_key(src)
-        existing[key] = order
-
-    return existing
-
-
 def distribute_existing_items(existing_items, column_count=COLUMN_COUNT):
     """
-    旧图：尽量按原 order 保持稳定
-    用"轮转列分配"近似恢复原布局节奏
+    旧图：尽量按原 order 保持稳定。
+    用"轮转列分配"近似恢复原布局节奏。
     """
     existing_items = sorted(existing_items, key=lambda x: x["old_order"])
 
@@ -215,8 +312,8 @@ def distribute_existing_items(existing_items, column_count=COLUMN_COUNT):
 
 def place_new_items(columns, new_items):
     """
-    新图：优先放进当前最短列
-    为了更好补洞，先把高图优先放
+    新图：优先放进当前最短列。
+    为了更好补洞，先把高图优先放。
     """
     new_items = sorted(new_items, key=lambda x: estimate_render_height(x), reverse=True)
 
@@ -230,7 +327,7 @@ def place_new_items(columns, new_items):
 
 def interleave_columns(columns):
     """
-    按列交错输出，得到最终顺序
+    按列交错输出，得到最终顺序。
     """
     arranged = []
     max_len = max((len(col["items"]) for col in columns), default=0)
@@ -246,28 +343,45 @@ def interleave_columns(columns):
     return arranged
 
 
-def build_arrangement(all_items, existing_order_map):
-    existing_items = []
+def build_arrangement(all_items, existing_items):
+    existing_order_map = {
+        key: item.get("order")
+        for key, item in existing_items.items()
+        if isinstance(item.get("order"), int)
+    }
+
+    existing_arranged_items = []
     new_items = []
 
     for item in all_items:
-        # 用 key 匹配（real/001 这种），不再用完整 src
         key = item.get("previous_key") or get_image_key(item["src"])
         if key in existing_order_map:
             item["old_order"] = existing_order_map[key]
-            existing_items.append(item)
+            existing_arranged_items.append(item)
         else:
             new_items.append(item)
 
-    # 旧图尽量稳定
-    columns = distribute_existing_items(existing_items, column_count=COLUMN_COUNT)
-
-    # 新图优先补最短列
+    columns = distribute_existing_items(existing_arranged_items, column_count=COLUMN_COUNT)
     columns = place_new_items(columns, new_items)
+    return interleave_columns(columns)
 
-    # 最终交错输出
-    arranged = interleave_columns(columns)
-    return arranged
+
+def public_gallery_item(item):
+    return {
+        "id": item["id"],
+        "title": item["title"],
+        "src": item["src"],
+        "thumb": item["thumb"],
+        "category": item["category"],
+        "album": item["album"],
+        "tags": item["tags"],
+        "note": item["note"],
+        "width": item["width"],
+        "height": item["height"],
+        "order": item["order"],
+        "updatedAt": item["updatedAt"],
+        "date": item["date"],
+    }
 
 
 def generate_js(items):
@@ -276,15 +390,9 @@ def generate_js(items):
     lines.append("const galleryData = [")
 
     for item in items:
-        lines.append(
-            "  { "
-            f'src: "{item["src"]}", '
-            f'category: "{item["category"]}", '
-            f'width: {item["width"]}, '
-            f'height: {item["height"]}, '
-            f'order: {item["order"]} '
-            "},"
-        )
+        block = json.dumps(public_gallery_item(item), ensure_ascii=False, indent=2)
+        indented_block = "\n".join(f"  {line}" for line in block.splitlines())
+        lines.append(f"{indented_block},")
 
     lines.append("];")
     lines.append("")
@@ -292,32 +400,41 @@ def generate_js(items):
 
 
 def main():
-    existing_order_map = parse_existing_gallery_data()
+    existing_items = parse_existing_gallery_items()
     previous_key_by_current_key = renumber_gallery_files()
-    all_items = collect_images()
+    all_items = collect_images(existing_items)
 
     for item in all_items:
         current_key = get_image_key(item["src"])
-        item["previous_key"] = previous_key_by_current_key.get(current_key, current_key)
+        previous_key = previous_key_by_current_key.get(current_key, current_key)
+        item["previous_key"] = previous_key
+
+        if previous_key != current_key and previous_key in existing_items:
+            preserved = existing_items[previous_key]
+            for field in PRESERVED_FIELDS:
+                if field == "tags":
+                    if isinstance(preserved.get(field), list):
+                        item[field] = preserved[field]
+                elif preserved.get(field):
+                    item[field] = preserved[field]
 
     if not all_items:
         OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
         OUTPUT_FILE.write_text(
             "// 由 generate_gallery_data.py 自动生成，请勿手动修改\nconst galleryData = [];\n",
-            encoding="utf-8"
+            encoding="utf-8",
         )
         print("未找到可用图片，已生成空的 gallery-data.js")
         return
 
-    arranged_items = build_arrangement(all_items, existing_order_map)
+    arranged_items = build_arrangement(all_items, existing_items)
     js_content = generate_js(arranged_items)
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_FILE.write_text(js_content, encoding="utf-8")
 
-    # 基于 key 统计（和 build_arrangement 里的判断一致）
     all_keys = {item.get("previous_key") or get_image_key(item["src"]) for item in all_items}
-    existing_count = sum(1 for key in all_keys if key in existing_order_map)
+    existing_count = sum(1 for key in all_keys if key in existing_items)
     new_count = len(all_keys) - existing_count
 
     print(f"已生成: {OUTPUT_FILE}")
