@@ -88,11 +88,11 @@
     ],
     "galleryByCategory": [
       {
-        "label": "anime",
+        "label": "动漫",
         "value": 10
       },
       {
-        "label": "real",
+        "label": "现实",
         "value": 7
       }
     ],
@@ -272,6 +272,92 @@
         ]
       },
       {
+        "id": "gallery",
+        "name": "画廊",
+        "children": [
+          {
+            "id": "gallery-anime",
+            "name": "动漫",
+            "total": 24,
+            "unit": "次",
+            "items": [
+              {
+                "name": "人物",
+                "value": 5
+              },
+              {
+                "name": "风景",
+                "value": 4
+              },
+              {
+                "name": "治愈",
+                "value": 4
+              },
+              {
+                "name": "插画",
+                "value": 2
+              },
+              {
+                "name": "蓝色",
+                "value": 2
+              },
+              {
+                "name": "自然",
+                "value": 2
+              },
+              {
+                "name": "抽象",
+                "value": 1
+              },
+              {
+                "name": "其他",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "id": "gallery-real",
+            "name": "现实",
+            "total": 23,
+            "unit": "次",
+            "items": [
+              {
+                "name": "天空",
+                "value": 5
+              },
+              {
+                "name": "城市",
+                "value": 4
+              },
+              {
+                "name": "夜景",
+                "value": 4
+              },
+              {
+                "name": "蓝色",
+                "value": 3
+              },
+              {
+                "name": "自然",
+                "value": 3
+              },
+              {
+                "name": "风景",
+                "value": 2
+              },
+              {
+                "name": "日常",
+                "value": 1
+              },
+              {
+                "name": "治愈",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "resources",
         "name": "资源",
         "children": [
@@ -282,11 +368,11 @@
             "unit": "张",
             "items": [
               {
-                "name": "anime",
+                "name": "动漫",
                 "value": 10
               },
               {
-                "name": "real",
+                "name": "现实",
                 "value": 7
               }
             ]
@@ -352,12 +438,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 11588,
+            "total": 11576,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 6167
+                "value": 6155
               },
               {
                 "name": "笔记字数",
@@ -392,12 +478,12 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 6167,
+            "total": 6155,
             "unit": "字",
             "items": [
               {
                 "name": "feature",
-                "value": 4900
+                "value": 4888
               },
               {
                 "name": "optimization",
@@ -829,5 +915,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-05-08T12:02:40.277Z"
+  "generatedAt": "2026-05-08T16:15:46.283Z"
 }

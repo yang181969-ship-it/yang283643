@@ -26,8 +26,8 @@ const GALLERY_SORT_LABELS = {
 
 const GALLERY_TOOLBAR_DEFAULT_LABELS = {
   search: "搜索",
-  filter: "筛选",
-  sort: "排序",
+  filter: "全部",
+  sort: "默认",
 };
 
 const GALLERY_TOOLBAR_ARIA_LABELS = {
@@ -48,11 +48,6 @@ const galleryRuntime = {
   visibleImages: [],
   currentLightboxIndex: 0,
   previousFocus: null,
-  toolbarTouched: {
-    search: false,
-    filter: false,
-    sort: false,
-  },
   refs: {},
 };
 
@@ -82,13 +77,8 @@ function initGalleryPage() {
   galleryState.category = "all";
   galleryState.tags = [];
   galleryState.sort = "default";
-  galleryRuntime.toolbarTouched = {
-    search: false,
-    filter: false,
-    sort: false,
-  };
 
-  renderHeroStats(images);
+  renderGalleryHeroStats(images);
   renderGalleryTagChips();
   syncGalleryCategoryButtons();
   syncGallerySortButtons();
@@ -132,7 +122,7 @@ function initGalleryPage() {
   renderGallery();
 }
 
-function renderHeroStats(images) {
+function renderGalleryHeroStats(images) {
   const totalEl = document.querySelector("[data-gallery-total]");
   if (totalEl) totalEl.textContent = String(images.length);
 }
@@ -261,7 +251,6 @@ function initGallerySort() {
     if (!button) return;
 
     galleryState.sort = button.dataset.sort || "default";
-    galleryRuntime.toolbarTouched.sort = true;
     syncGallerySortButtons();
     syncGalleryToolbarLabels();
     renderGallery();
@@ -295,9 +284,9 @@ function syncGalleryToolbarLabels() {
     filterLabel === GALLERY_TOOLBAR_DEFAULT_LABELS.filter ? "" : filterLabel
   );
 
-  const sortLabel = galleryRuntime.toolbarTouched.sort
-    ? GALLERY_SORT_LABELS[galleryState.sort] || GALLERY_TOOLBAR_DEFAULT_LABELS.sort
-    : GALLERY_TOOLBAR_DEFAULT_LABELS.sort;
+  const sortLabel = galleryState.sort === "default"
+    ? GALLERY_TOOLBAR_DEFAULT_LABELS.sort
+    : GALLERY_SORT_LABELS[galleryState.sort] || GALLERY_TOOLBAR_DEFAULT_LABELS.sort;
   setGalleryToolbarButtonLabel(
     "sort",
     sortLabel,
@@ -409,7 +398,6 @@ function renderGallery() {
       >
         <img src="${escapeHTML(item.thumb || item.src)}" alt="${escapeHTML(title)}" loading="lazy" decoding="async">
         <div class="gallery-item__overlay">
-          <h3>${escapeHTML(title)}</h3>
           <p>${escapeHTML(date)} · ${escapeHTML(category)}</p>
         </div>
       </article>
