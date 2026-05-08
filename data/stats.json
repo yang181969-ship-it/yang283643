@@ -15,8 +15,8 @@
       "notes": 8,
       "anime": 10,
       "gallery": 17,
-      "updates": 11,
-      "total": 46
+      "updates": 12,
+      "total": 47
     }
   ],
   "breakdowns": {
@@ -103,7 +103,7 @@
       },
       {
         "label": "2026-05",
-        "value": 4
+        "value": 5
       }
     ],
     "musicTopArtists": [],
@@ -120,7 +120,7 @@
           {
             "id": "overview-content",
             "name": "内容构成",
-            "total": 58,
+            "total": 59,
             "unit": "项",
             "items": [
               {
@@ -128,12 +128,12 @@
                 "value": 17
               },
               {
-                "name": "音乐",
+                "name": "更新日志",
                 "value": 12
               },
               {
-                "name": "更新日志",
-                "value": 11
+                "name": "音乐",
+                "value": 12
               },
               {
                 "name": "动漫",
@@ -148,12 +148,12 @@
           {
             "id": "overview-updates",
             "name": "更新概况",
-            "total": 11,
+            "total": 12,
             "unit": "条",
             "items": [
               {
                 "name": "feature",
-                "value": 9
+                "value": 10
               },
               {
                 "name": "optimization",
@@ -438,12 +438,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 11576,
+            "total": 12676,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 6155
+                "value": 7255
               },
               {
                 "name": "笔记字数",
@@ -478,12 +478,12 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 6155,
+            "total": 7255,
             "unit": "字",
             "items": [
               {
                 "name": "feature",
-                "value": 4888
+                "value": 5988
               },
               {
                 "name": "optimization",
@@ -508,6 +508,13 @@
     ]
   },
   "recentChanges": [
+    {
+      "date": "2026-05-08",
+      "title": "画廊和关于页翻新,把展示页面补成真正能逛的入口",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
     {
       "date": "2026-05-07",
       "title": "新增统计页:把小站的变化变成一张数据地图",
@@ -915,5 +922,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-05-08T16:15:46.283Z"
+  "generatedAt": "2026-05-08T16:51:35.268Z"
 }
