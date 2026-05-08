@@ -293,13 +293,13 @@
 }
 
 // ============================================================
-// 移动端:装饰环隐藏,Hero 单列,stat 横滑
+// 移动端:Hero 单列,SVG 居中,stat 单列
 // ============================================================
 @include small {
   .update-hero {
     grid-template-columns: 1fr;
     padding: 22px 18px;
-    gap: 0;
+    gap: 16px;
     border-radius: 18px;
   }
 
@@ -312,30 +312,31 @@
     margin-bottom: 16px;
   }
 
-  // 装饰环隐藏(移动端 Hero 收成纯文字 + stats)
+  // 装饰环在小屏显示并居中
   .update-hero-decoration {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(100%, 240px);
+    height: clamp(150px, 48vw, 210px);
+    margin: 0 auto;
   }
 
-  // stats 改横滑
+  // stats 改单列
   .update-hero-stats {
-    display: flex;
-    grid-template-columns: none;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 10px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    margin: 0 -18px;
-    padding: 4px 18px;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar { display: none; }
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+    scroll-snap-type: none;
   }
 
   .update-stat-card {
-    flex: 0 0 auto;
-    min-width: 200px;
-    max-width: 240px;
-    scroll-snap-align: start;
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    scroll-snap-align: none;
   }
 }

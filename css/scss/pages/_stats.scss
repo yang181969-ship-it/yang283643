@@ -1070,6 +1070,19 @@
     min-height: 170px;
   }
 
+  .stats-hero-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .stats-hero-svg {
+    flex: 0 0 100%;
+    transform: translateX(-9%);
+  }
+
   .stats-card {
     padding: 18px !important;
     border-radius: 20px !important;
