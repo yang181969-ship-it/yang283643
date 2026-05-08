@@ -236,10 +236,49 @@ function filenameFromSrc(src) {
   return cleanSrc.split('/').filter(Boolean).pop() || '图片';
 }
 
-function galleryCategoryLabel(category) {
-  if (category === 'anime') return '动漫图';
-  if (category === 'real') return '照片';
+function galleryCategoryLabel(item) {
+  const name = galleryCategoryName(item);
+  if (name === '动漫') return '动漫图';
+  if (name === '现实') return '照片';
   return '图片';
+}
+
+function galleryCategoryName(item) {
+  const category = typeof item === 'string' ? item : item?.category;
+  const src = typeof item === 'string' ? '' : item?.src;
+  const raw = String(category || '').trim();
+  const normalized = raw.toLowerCase();
+  const cleanSrc = String(src || '').replace(/\\/g, '/').toLowerCase();
+
+  if (normalized === 'anime' || raw === '动漫' || cleanSrc.includes('/anime/')) return '动漫';
+  if (normalized === 'real' || raw === '现实' || raw === '真实' || raw === '照片' || cleanSrc.includes('/real/')) return '现实';
+  return raw || '其他';
+}
+
+function galleryTags(item, categoryName) {
+  const tags = Array.isArray(item.tags) ? item.tags : [];
+  const blocked = new Set([
+    categoryName,
+    '动漫',
+    '现实',
+    '真实',
+    '照片',
+    'anime',
+    'real',
+    '画廊',
+    '图片',
+  ]);
+  const seen = new Set();
+
+  const values = tags
+    .map(tag => String(tag || '').trim())
+    .filter(tag => {
+      if (!tag || blocked.has(tag) || seen.has(tag)) return false;
+      seen.add(tag);
+      return true;
+    });
+
+  return values.length ? values : ['未标注'];
 }
 
 function playlistTracks(data) {
@@ -296,7 +335,7 @@ function buildRecentChanges({ notes, animeData, animeIds, gallery, updates, trac
   });
 
   gallery.forEach((item, index) => {
-    const label = galleryCategoryLabel(item.category);
+    const label = galleryCategoryLabel(item);
     const name = filenameFromSrc(item.src);
     changes.push(compactChange({
       date: item.date || item.addedAt || item.updateDate || fileDateFromSrc(item.src),
@@ -398,13 +437,7 @@ const breakdowns = {};
 {
   const bucket = {};
   gallery.forEach(g => {
-    let cat = g.category;
-    if (!cat) {
-      if (/\/real\//.test(g.src || '')) cat = '真实';
-      else if (/\/anime\//.test(g.src || '')) cat = '动漫';
-      else cat = '其他';
-    }
-    bucket[cat] = (bucket[cat] || 0) + 1;
+    addCount(bucket, galleryCategoryName(g));
   });
   breakdowns.galleryByCategory = toPie(bucket);
 }
@@ -514,6 +547,29 @@ const dataCenterGroups = [];
   ]));
 }
 
+// 画廊 ───────────────────────────────────────
+{
+  const animeTags = {};
+  const realTags = {};
+
+  gallery.forEach(item => {
+    const category = galleryCategoryName(item);
+    const bucket = category === '动漫'
+      ? animeTags
+      : category === '现实'
+        ? realTags
+        : null;
+
+    if (!bucket) return;
+    galleryTags(item, category).forEach(tag => addCount(bucket, tag));
+  });
+
+  dataCenterGroups.push(makeGroup('gallery', '画廊', [
+    makeChild('gallery-anime', '动漫', animeTags, '次'),
+    makeChild('gallery-real', '现实', realTags, '次'),
+  ]));
+}
+
 // 资源 ───────────────────────────────────────
 {
   const galleryCategories = {};
@@ -521,7 +577,7 @@ const dataCenterGroups = [];
   const imageFormats = {};
 
   gallery.forEach(item => {
-    addCount(galleryCategories, item.category || '其他');
+    addCount(galleryCategories, galleryCategoryName(item));
     addCount(imageFormats, imageFormat(item.src));
   });
   tracks.forEach(track => addCount(musicArtists, track.artist || '未分类'));
