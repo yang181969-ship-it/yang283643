@@ -12,6 +12,7 @@
 
     "aggregate:updates": "node scripts/6-aggregate-updates.mjs",
     "aggregate:stats":   "node scripts/7-aggregate-stats.mjs",
+    "gallery:data": "python generate_gallery_data.py",
 
     "optimize:animes": "node scripts/1-rename-anime-images.js",
     "optimize:gallery": "node scripts/2-optimize-gallery.js",
@@ -23,7 +24,7 @@
     "music:sync": "node scripts/add-music.mjs --sync",
     "portrait:rotation": "node scripts/generate-portrait-rotation.mjs",
 
-    "build:all": "npm run aggregate:updates && npm run aggregate:stats && npm run build && npm run build:critical && npm run inline:critical"
+    "build:all": "npm run gallery:data && npm run aggregate:updates && npm run aggregate:stats && npm run build && npm run build:critical && npm run inline:critical"
   },
 
   "devDependencies": {
