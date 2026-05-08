@@ -1,58 +1,246 @@
 <main id="main-content">
-  <section class="about-page no-card">
-
-    <!-- 卡片区 -->
-    <div class="about-grid">
-
-      <article class="card about-card">
-        <h3 class="about-card-title">我是谁</h3>
-        <p class="about-text">
-          一个喜欢数学、物理，也喜欢把零散想法整理成结构的人。
+  <section class="about-page no-card" aria-labelledby="about-title">
+    <section class="about-hero" aria-labelledby="about-title">
+      <div class="about-hero__content">
+        <p class="about-hero__eyebrow">About this site</p>
+        <h1 id="about-title">关于这个小站 ✨</h1>
+        <p>
+          记录生活、兴趣、笔记与成长，也把喜欢的东西慢慢整理成自己的角落。
         </p>
-        <p class="about-text">
-          我希望把感兴趣的东西一点点留下来，而不是让它们只停在脑子里。
-        </p>
-      </article>
+      </div>
+    </section>
 
-      <article class="card about-card">
-        <h3 class="about-card-title">这个网站在记录什么</h3>
-        <p class="about-text">这里主要放这些内容：</p>
-        <ul class="about-list">
-          <li><strong>Gallery</strong>：图片与日常收集</li>
-          <li><strong>Anime</strong>：兴趣相关内容</li>
-          <li><strong>Notes</strong>：数学、物理与工具笔记</li>
-          <li><strong>Comment</strong>：留言与交流</li>
-        </ul>
-      </article>
+    <section class="about-layout no-card" aria-label="关于页面内容">
+      <div class="about-main">
+        <div class="about-grid">
+          <article class="card about-card">
+            <h3 class="about-card-title">
+              <span class="about-card-title-icon about-card-title-icon--user" aria-hidden="true"></span>
+              我是谁
+            </h3>
+            <p class="about-text">
+              一个喜欢数学、物理，也喜欢把零散想法整理成结构的人。
+            </p>
+            <p class="about-text">
+              我希望把感兴趣的东西一点点留下来，而不是让它们只停在脑子里。
+            </p>
+          </article>
 
-      <article class="card about-card">
-        <h3 class="about-card-title">关于这个网站</h3>
-        <p class="about-text">
-          这个网站对我来说，不只是一个展示页面，更像一个长期维护的个人空间。
-        </p>
-        <p class="about-text">
-          我会在这里记录生活、整理笔记，也会把自己学到的东西慢慢放进来，让它一点点变完整。
-        </p>
-        <p class="about-text">
-          技术上它主要使用 HTML、CSS、JavaScript 构建，通过 GitHub Pages 和自定义域名部署；笔记部分支持 Markdown 与 KaTeX，评论区接入了 Waline。
-        </p>
-      </article>
+          <article class="card about-card">
+            <h3 class="about-card-title">
+              <span class="about-card-title-icon about-card-title-icon--book" aria-hidden="true"></span>
+              这个网站在记录什么
+            </h3>
+            <p class="about-text">这里主要放这些内容：</p>
+            <ul class="about-list">
+              <li><strong>Gallery</strong>：图片与日常收集</li>
+              <li><strong>Anime</strong>：兴趣相关内容</li>
+              <li><strong>Notes</strong>：数学、物理与工具笔记</li>
+              <li><strong>Comment</strong>：留言与交流</li>
+            </ul>
+          </article>
 
-      <article class="card about-card">
-        <h3 class="about-card-title">我希望它变成什么</h3>
-        <p class="about-text">
-          希望几年以后再回来看，它已经不只是几个页面，而是一个真正积累起内容、想法和成长过程的地方。
-        </p>
-      </article>
+          <article class="card about-card">
+            <h3 class="about-card-title">
+              <span class="about-card-title-icon about-card-title-icon--globe" aria-hidden="true"></span>
+              关于这个网站
+            </h3>
+            <p class="about-text">
+              这个网站对我来说，不只是一个展示页面，更像一个长期维护的个人空间。
+            </p>
+            <p class="about-text">
+              我会在这里记录生活、整理笔记，也会把自己学到的东西慢慢放进来，让它一点点变完整。
+            </p>
+            <p class="about-text">
+              技术上它主要使用 HTML、CSS、JavaScript 构建，通过 GitHub Pages 和自定义域名部署；笔记部分支持 Markdown 与 KaTeX，评论区接入了 Waline。
+            </p>
+          </article>
 
-      <article class="card about-card">
-        <h3 class="about-card-title">一句话</h3>
-        <p class="about-quote">
-          把喜欢的内容、学过的东西和正在走的路，慢慢放进同一个地方。
-        </p>
-      </article>
+          <article class="card about-card">
+            <h3 class="about-card-title">
+              <span class="about-card-title-icon about-card-title-icon--star" aria-hidden="true"></span>
+              我希望它变成什么
+            </h3>
+            <p class="about-text">
+              希望几年以后再回来看，它已经不只是几个页面，而是一个真正积累起内容、想法和成长过程的地方。
+            </p>
+          </article>
+        </div>
 
-    </div>
+        <article class="card about-card about-card--quote">
+          <h3 class="about-card-title">
+            <span class="about-card-title-icon about-card-title-icon--quote" aria-hidden="true"></span>
+            一句话
+          </h3>
+          <p class="about-quote">
+            把喜欢的内容、学过的东西和正在走的路，慢慢放进同一个地方。
+          </p>
+        </article>
+      </div>
 
+      <aside class="about-aside" aria-label="声明与反馈">
+        <article class="card about-card about-card--declaration">
+          <div class="about-card__title">
+            <span class="about-card-title-icon about-card-title-icon--shield" aria-hidden="true"></span>
+            <h2>声明与来源</h2>
+          </div>
+
+          <ul class="about-declaration-summary">
+            <li>本站为个人非商业网站</li>
+            <li>图片、图标、字体、代码库尽量标注来源</li>
+            <li>AI 生成或辅助内容会在适当位置说明</li>
+            <li>如有侵权或来源问题，请联系删除或更正</li>
+          </ul>
+
+          <div class="about-declaration-tags" aria-hidden="true">
+            <span>非商业</span>
+            <span>尊重原创</span>
+            <span>来源标注</span>
+            <span>及时更正</span>
+          </div>
+
+          <button
+            class="about-card__more"
+            type="button"
+            data-open-declaration
+            aria-haspopup="dialog"
+            aria-controls="aboutDeclarationModal"
+          >
+            查看完整声明
+          </button>
+        </article>
+
+        <article class="card about-card about-card--boundary">
+          <h3 class="about-card-title">
+            <span class="about-card-title-icon about-card-title-icon--info" aria-hidden="true"></span>
+            内容边界
+          </h3>
+          <ul class="about-list">
+            <li>笔记与内容主要为个人理解与整理</li>
+            <li>可能存在疏漏与不足</li>
+            <li>会随着学习持续修订</li>
+            <li>不作为权威教程或正式资料</li>
+          </ul>
+        </article>
+
+        <article class="card about-card about-card--feedback">
+          <h3 class="about-card-title">
+            <span class="about-card-title-icon about-card-title-icon--send" aria-hidden="true"></span>
+            反馈通道
+          </h3>
+          <ul class="about-channel-list">
+            <li>内容错误反馈</li>
+            <li>资源来源问题</li>
+            <li>页面显示问题</li>
+            <li>留言 / 邮箱 / GitHub</li>
+          </ul>
+          <div class="about-feedback-links" aria-label="反馈方式">
+            <a href="index.html?page=comment">留言板</a>
+            <span>邮箱</span>
+            <span>GitHub</span>
+          </div>
+        </article>
+      </aside>
+    </section>
   </section>
+
+  <div class="about-declaration-modal" id="aboutDeclarationModal" data-declaration-modal hidden>
+    <div class="about-declaration-modal__backdrop" data-close-declaration></div>
+
+    <div
+      class="about-declaration-modal__panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="aboutDeclarationTitle"
+    >
+      <header class="about-declaration-modal__header">
+        <div class="about-declaration-modal__title">
+          <span class="about-card-title-icon about-card-title-icon--shield" aria-hidden="true"></span>
+          <h2 id="aboutDeclarationTitle">完整声明</h2>
+        </div>
+
+        <button
+          class="about-declaration-modal__close"
+          type="button"
+          aria-label="关闭完整声明"
+          data-close-declaration
+        >
+          <span class="about-close-icon" aria-hidden="true"></span>
+        </button>
+      </header>
+
+      <div class="about-declaration-modal__body">
+        <article class="declaration-section">
+          <h3>视觉资源</h3>
+          <ul>
+            <li>Hero 插画、主页卡片装饰、头像、零散装饰元素：GPT 图像生成</li>
+            <li>图标：站内 CSS 图标与整体图标库风格保持一致</li>
+            <li>字体：系统字体栈，未引入 Web Font</li>
+          </ul>
+        </article>
+
+        <article class="declaration-section">
+          <h3>媒体资源</h3>
+          <ul>
+            <li>画廊图片：公开图库及个人收集内容，按实际页面标注整理</li>
+            <li>动漫页封面与剧照：网络公开图源</li>
+            <li>音乐文件：网络公开渠道，仅作个人收听记录展示，不提供下载</li>
+          </ul>
+        </article>
+
+        <article class="declaration-section">
+          <h3>数据来源</h3>
+          <ul>
+            <li>天气数据：Open-Meteo</li>
+            <li>动漫元信息：参考网络公开资料整理</li>
+          </ul>
+        </article>
+
+        <article class="declaration-section">
+          <h3>第三方链接</h3>
+          <ul>
+            <li>动漫播放链接来自第三方资源站，本站仅作为个人观看记录的索引，不存储任何视频文件</li>
+          </ul>
+        </article>
+
+        <article class="declaration-section">
+          <h3>AI 使用说明</h3>
+          <ul>
+            <li>部分文案、代码、设计方案在 AI 协助下完成</li>
+            <li>AI 生成的图片会在角标处标记，AI 辅助的文案会在适当位置注明</li>
+          </ul>
+        </article>
+
+        <article class="declaration-section">
+          <h3>开源依赖</h3>
+          <ul>
+            <li>Waline、KaTeX、Vite、Chart.js 等</li>
+            <li>其他依赖见仓库 <code>package.json</code>，均遵守各自开源许可证</li>
+          </ul>
+        </article>
+
+        <article class="declaration-section">
+          <h3>原创内容授权</h3>
+          <p>
+            本站原创内容，包括个人笔记、个人拍摄图片、原创代码等，默认仅作为个人记录与展示。
+            如需转载、修改或引用，请优先联系确认。
+          </p>
+          <p class="declaration-note">
+            上述声明仅适用于本人原创内容；第三方资产仍受其原始来源与授权约束。
+          </p>
+        </article>
+
+        <article class="declaration-section">
+          <h3>联系反馈</h3>
+          <p>
+            如发现版权、来源或显示问题，欢迎通过留言板、邮箱或 GitHub Issues 联系，会尽快核实处理。
+          </p>
+        </article>
+      </div>
+
+      <footer class="about-declaration-modal__footer">
+        本声明最后更新于 2026 年 5 月
+      </footer>
+    </div>
+  </div>
 </main>

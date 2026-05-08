@@ -21,6 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let homeContent = null;          // 主页骨架（字符串）
   let homeContentPromise = null;   // 正在 fetch 的 Promise，避免重复请求
 
+  function stripInjectedDevServerScripts(html) {
+    return html.replace(/<!-- Code injected by live-server -->\s*<script\b[\s\S]*?<\/script>/gi, "");
+  }
+
   async function getHomeContent() {
     if (homeContent !== null) return homeContent;
     if (homeContentPromise) return homeContentPromise;
@@ -28,7 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
     homeContentPromise = fetch("index.html")
       .then(res => res.text())
       .then(html => {
-        const doc = new DOMParser().parseFromString(html, "text/html");
+        const cleanHtml = stripInjectedDevServerScripts(html);
+        const doc = new DOMParser().parseFromString(cleanHtml, "text/html");
         const originalMain = doc.querySelector("#main-content");
         homeContent = originalMain ? originalMain.innerHTML : "";
         return homeContent;
@@ -156,6 +161,51 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function initAboutDeclarationModal() {
+    const openBtn = document.querySelector("[data-open-declaration]");
+    const modal = document.querySelector("[data-declaration-modal]");
+    if (!openBtn || !modal || openBtn.dataset.declarationBound === "1") return;
+
+    const closeBtns = modal.querySelectorAll("[data-close-declaration]");
+    const closeBtn = modal.querySelector(".about-declaration-modal__close");
+    let previousActiveElement = null;
+
+    function openModal() {
+      previousActiveElement = document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+      modal.hidden = false;
+      document.documentElement.classList.add("is-modal-open");
+      requestAnimationFrame(() => closeBtn?.focus({ preventScroll: true }));
+    }
+
+    function closeModal() {
+      if (modal.hidden) return;
+      modal.hidden = true;
+      document.documentElement.classList.remove("is-modal-open");
+
+      if (previousActiveElement && document.contains(previousActiveElement)) {
+        previousActiveElement.focus({ preventScroll: true });
+      }
+    }
+
+    openBtn.dataset.declarationBound = "1";
+    openBtn.addEventListener("click", openModal);
+    closeBtns.forEach((btn) => {
+      btn.addEventListener("click", closeModal);
+    });
+
+    if (!window.__aboutDeclarationEscBound) {
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        const activeModal = document.querySelector("[data-declaration-modal]");
+        if (!activeModal || activeModal.hidden) return;
+        activeModal.querySelector("[data-close-declaration]")?.click();
+      });
+      window.__aboutDeclarationEscBound = true;
+    }
+  }
+
   function runPageInit(page) {
     if (page === "home"    && typeof window.initHomeCards === "function") window.initHomeCards();
     if (page === "comment" && typeof initCommentPage === "function") initCommentPage();
@@ -164,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (page === "notes"   && typeof window.initNotesPage === "function") window.initNotesPage();
     if (page === "update"  && typeof window.initUpdatePage === "function") window.initUpdatePage();
     if (page === "stats"   && typeof window.initStatsPage  === "function") window.initStatsPage();
+    if (page === "about") initAboutDeclarationModal();
   }
 
   function afterPageLoad(page, push, options = {}) {
@@ -183,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadPage(page, push = true, options = {}) {
     if (!Object.prototype.hasOwnProperty.call(pageMap, page)) return;
+    document.documentElement.classList.remove("is-modal-open");
 
     if (page === "home") {
       const html = await getHomeContent();
@@ -204,7 +256,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(file);
       if (!res.ok) throw new Error(`无法加载 ${file}`);
       const html = await res.text();
-      const doc = new DOMParser().parseFromString(html, "text/html");
+      const cleanHtml = stripInjectedDevServerScripts(html);
+      const doc = new DOMParser().parseFromString(cleanHtml, "text/html");
       const newMain = doc.querySelector("#main-content");
       if (!newMain) throw new Error(`${file} 中没有找到 #main-content`);
 
