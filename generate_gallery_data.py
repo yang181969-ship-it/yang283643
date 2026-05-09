@@ -343,6 +343,41 @@ def interleave_columns(columns):
     return arranged
 
 
+def sort_data_file_items(items):
+    grouped = {category: [] for category in CATEGORIES}
+    extras = []
+
+    for item in items:
+        category = item.get("category")
+        if category in grouped:
+            grouped[category].append(item)
+        else:
+            extras.append(item)
+
+    def item_sort_key(item):
+        filename = item.get("filename") or Path(item.get("src", "")).name
+        return natural_sort_key(filename)
+
+    for category in CATEGORIES:
+        grouped[category].sort(key=item_sort_key)
+
+    arranged = []
+    max_len = max((len(grouped[category]) for category in CATEGORIES), default=0)
+
+    for index in range(max_len):
+        for category in CATEGORIES:
+            if index < len(grouped[category]):
+                arranged.append(grouped[category][index])
+
+    extras.sort(key=lambda item: (str(item.get("category") or ""), item_sort_key(item)))
+    arranged.extend(extras)
+
+    for i, item in enumerate(arranged, start=1):
+        item["order"] = i
+
+    return arranged
+
+
 def build_arrangement(all_items, existing_items):
     existing_order_map = {
         key: item.get("order")
@@ -427,7 +462,7 @@ def main():
         print("未找到可用图片，已生成空的 gallery-data.js")
         return
 
-    arranged_items = build_arrangement(all_items, existing_items)
+    arranged_items = sort_data_file_items(build_arrangement(all_items, existing_items))
     js_content = generate_js(arranged_items)
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)

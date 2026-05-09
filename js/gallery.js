@@ -387,6 +387,14 @@ function renderGallery() {
     const title = item.title || filenameFromSrc(item.src) || "未命名图片";
     const category = GALLERY_CATEGORY_LABELS[item.category] || item.category || "未分类";
     const date = formatDisplayDate(item.updatedAt || item.date);
+    const width = Number(item.width) || 0;
+    const height = Number(item.height) || 0;
+    const ratioStyle = width > 0 && height > 0
+      ? ` style="--gallery-item-ratio: ${width} / ${height};"`
+      : "";
+    const sizeAttrs = width > 0 && height > 0
+      ? ` width="${width}" height="${height}"`
+      : "";
 
     return `
       <article
@@ -395,8 +403,9 @@ function renderGallery() {
         tabindex="0"
         data-gallery-index="${index}"
         aria-label="打开 ${escapeHTML(title)}"
+        ${ratioStyle}
       >
-        <img src="${escapeHTML(item.thumb || item.src)}" alt="${escapeHTML(title)}" loading="lazy" decoding="async">
+        <img src="${escapeHTML(item.thumb || item.src)}" alt="${escapeHTML(title)}"${sizeAttrs} loading="eager" decoding="async">
         <div class="gallery-item__overlay">
           <p>${escapeHTML(date)} · ${escapeHTML(category)}</p>
         </div>

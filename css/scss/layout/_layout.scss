@@ -163,12 +163,13 @@ footer {
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    --rail-widget-mobile-h: clamp(178px, 34vw, 190px);
-    gap: 12px;
-    padding: 12px 16px 0;
+    --rail-widget-mobile-h: clamp(196px, 34vw, 220px);
+    gap: 10px;
+    padding: 12px var(--page-pad-x) 0;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--page-pad-x);
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     flex-shrink: 0;
@@ -176,14 +177,14 @@ footer {
     &::-webkit-scrollbar { display: none; }
 
     > .rail-widget {
-      flex: 0 0 calc(100% - 32px);
+      flex: 0 0 100%;
       width: auto;
       max-width: none;
       min-width: 0;
       height: var(--rail-widget-mobile-h);
       box-sizing: border-box;
       overflow: hidden;
-      scroll-snap-align: center;
+      scroll-snap-align: start;
       scroll-snap-stop: always;
     }
   }

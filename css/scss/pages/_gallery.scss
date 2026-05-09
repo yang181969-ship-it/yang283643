@@ -421,18 +421,31 @@
   -webkit-column-break-inside: avoid;
   page-break-inside: avoid;
   display: block;
+  aspect-ratio: var(--gallery-item-ratio, auto);
   margin-bottom: 12px;
   overflow: hidden;
   border-radius: 16px;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.58);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  transform: translateZ(0);
 
   img {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
+    object-fit: cover;
+    background: rgba(245, 248, 255, 0.72);
     transition: transform 0.35s ease;
+  }
+
+  &:not([style*="--gallery-item-ratio"]) {
+    aspect-ratio: auto;
+
+    img {
+      height: auto;
+      object-fit: contain;
+    }
   }
 
   &:hover img,
@@ -524,6 +537,10 @@
   max-height: min(720px, 88vh);
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "image info"
+    "image actions";
   gap: 18px;
   padding: 18px;
   border-radius: 24px;
@@ -551,6 +568,7 @@
 
 .gallery-lightbox__image-wrap {
   position: relative;
+  grid-area: image;
   min-height: 420px;
   overflow: hidden;
   border-radius: 18px;
@@ -602,7 +620,9 @@
 }
 
 .gallery-lightbox__info {
+  grid-area: info;
   min-width: 0;
+  min-height: 0;
   padding: 30px 10px 8px;
   overflow-y: auto;
 }
@@ -672,9 +692,12 @@
 }
 
 .gallery-lightbox__actions {
+  grid-area: actions;
+  align-self: end;
   display: flex;
   gap: 10px;
-  margin-top: 24px;
+  margin-top: 0;
+  padding: 0 10px 8px;
 
   button {
     flex: 1;
@@ -788,7 +811,18 @@
 
   .gallery-lightbox__dialog {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "image"
+      "actions"
+      "info";
+    padding-top: 56px;
     overflow-y: auto;
+  }
+
+  .gallery-lightbox__close {
+    top: 12px;
+    right: 14px;
   }
 
   .gallery-lightbox__image-wrap {
@@ -797,6 +831,14 @@
 
   .gallery-lightbox__image {
     max-height: 56vh;
+  }
+
+  .gallery-lightbox__actions {
+    padding: 0 10px;
+  }
+
+  .gallery-lightbox__info {
+    padding: 0 10px 8px;
   }
 }
 
@@ -897,7 +939,7 @@
     width: 100%;
     max-height: 90vh;
     gap: 14px;
-    padding: 14px;
+    padding: 54px 14px 14px;
     border-radius: 20px;
   }
 
