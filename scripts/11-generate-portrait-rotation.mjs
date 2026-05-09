@@ -1,4 +1,4 @@
-// scripts/generate-portrait-rotation.mjs
+// scripts/11-generate-portrait-rotation.mjs
 // Generate the daily portrait rotation order used by the home page cards.
 
 import { readdir, mkdir, writeFile } from 'node:fs/promises';
@@ -47,7 +47,7 @@ function parseArgs(argv) {
 function printHelp() {
   console.log(`
 Usage:
-  node scripts/generate-portrait-rotation.mjs [--start-date YYYY-MM-DD] [--seed TEXT] [--dry-run]
+  node scripts/11-generate-portrait-rotation.mjs [--start-date YYYY-MM-DD] [--seed TEXT] [--dry-run]
 
 Options:
   --start-date  First day of the generated cycle. Defaults to today.

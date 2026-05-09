@@ -10,7 +10,7 @@
       "total": 24
     },
     {
-      "date": "2026-05-08",
+      "date": "2026-05-09",
       "month": "2026-05",
       "notes": 8,
       "anime": 10,
@@ -318,24 +318,20 @@
           {
             "id": "gallery-real",
             "name": "现实",
-            "total": 23,
+            "total": 21,
             "unit": "次",
             "items": [
-              {
-                "name": "天空",
-                "value": 5
-              },
               {
                 "name": "城市",
                 "value": 4
               },
               {
-                "name": "夜景",
+                "name": "天空",
                 "value": 4
               },
               {
-                "name": "蓝色",
-                "value": 3
+                "name": "夜景",
+                "value": 4
               },
               {
                 "name": "自然",
@@ -346,11 +342,15 @@
                 "value": 2
               },
               {
-                "name": "日常",
+                "name": "蓝色",
+                "value": 2
+              },
+              {
+                "name": "草原",
                 "value": 1
               },
               {
-                "name": "治愈",
+                "name": "建筑",
                 "value": 1
               }
             ]
@@ -615,20 +615,6 @@
     },
     {
       "date": "2026-05-05",
-      "title": "新增照片：005.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增照片：006.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
       "title": "新增动漫图：007.webp",
       "type": "画廊",
       "page": "gallery",
@@ -643,14 +629,35 @@
     },
     {
       "date": "2026-05-05",
-      "title": "新增照片：004.webp",
+      "title": "新增动漫图：006.webp",
       "type": "画廊",
       "page": "gallery",
       "href": ""
     },
     {
       "date": "2026-05-05",
-      "title": "新增动漫图：006.webp",
+      "title": "新增照片：006.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增动漫图：005.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增照片：005.webp",
+      "type": "画廊",
+      "page": "gallery",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增照片：004.webp",
       "type": "画廊",
       "page": "gallery",
       "href": ""
@@ -665,13 +672,6 @@
     {
       "date": "2026-05-05",
       "title": "新增照片：002.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增动漫图：005.webp",
       "type": "画廊",
       "page": "gallery",
       "href": ""
@@ -762,7 +762,7 @@
     },
     {
       "date": "2026-04-22",
-      "title": "新增动漫图：001.webp",
+      "title": "新增动漫图：003.webp",
       "type": "画廊",
       "page": "gallery",
       "href": ""
@@ -776,7 +776,7 @@
     },
     {
       "date": "2026-04-22",
-      "title": "新增动漫图：003.webp",
+      "title": "新增动漫图：001.webp",
       "type": "画廊",
       "page": "gallery",
       "href": ""
@@ -922,5 +922,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-05-08T16:51:35.268Z"
+  "generatedAt": "2026-05-09T08:40:04.765Z"
 }

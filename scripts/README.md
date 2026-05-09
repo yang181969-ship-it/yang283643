@@ -10,7 +10,7 @@
 | `npm run build` | 编译并压缩完整样式到 `css/style.css` |
 | `npm run build:critical` | 编译首屏关键样式到 `css/critical.css` |
 | `npm run inline:critical` | 把 `css/critical.css` 内联到指定 HTML |
-| `npm run build:all` | 依次执行更新索引聚合、站点统计聚合、完整 CSS、critical CSS、critical 内联 |
+| `npm run build:all` | 依次执行画廊数据、更新索引、标签参考、站点统计、完整 CSS、critical CSS、critical 内联 |
 | `npm run aggregate:updates` | 扫描更新日志 Markdown,生成更新页索引数据 |
 | `npm run aggregate:stats` | 聚合站点统计页数据和 Hero 区单点指标 |
 | `npm run optimize:animes` | 处理动漫页图片 |
@@ -18,13 +18,15 @@
 | `npm run update:refs` | 根据图片重命名映射更新动漫页引用 |
 | `npm run optimize:portraits` | 处理人像、装饰图、心情头像 |
 | `npm run portrait:rotation` | 生成主页人像每日轮换顺序 |
+| `npm run tags:sync` | 汇总网站已使用和已配置的标签,更新 `site-tags.md` |
 | `npm run purgecss` | 诊断未使用 CSS |
 | `npm run music:add -- ...` | 添加一首或批量添加音乐到播放器歌单 |
 | `npm run music:sync` | 扫描 `assets/music/`,把尚未加入歌单的音频自动追加到播放器歌单 |
+| `npm run music:covers` | 为歌单生成或补齐音乐封面 SVG |
 
 ## 音乐维护
 
-### add-music.mjs
+### 9-add-music.mjs
 
 作用:复制一首或多首音频到 `assets/music/`,并追加到 `data/playlist.json`。
 
@@ -67,7 +69,7 @@ npm run music:add -- "songs" --batch --recursive
 也可以直接运行:
 
 ```bash
-node scripts/add-music.mjs "assets/music/new-song.mp3" --title "New Song" --artist "Artist"
+node scripts/9-add-music.mjs "assets/music/new-song.mp3" --title "New Song" --artist "Artist"
 ```
 
 常用选项:
@@ -92,6 +94,7 @@ node scripts/add-music.mjs "assets/music/new-song.mp3" --title "New Song" --arti
 - 批量添加时不支持 `--title`、`--id`、`--filename`,因为每首歌都需要不同值。
 - 批量添加时可以使用 `--artist "默认歌手"`,给无法从文件名推断歌手的文件兜底。
 - 自动写入的字段是 `id`、`title`、`artist`、`src`、`lyric`。
+- 新增音乐后运行 `npm run music:covers`,会生成 `assets/music/covers/track-xxx.svg` 并补齐歌单里的 `cover` 字段。
 - 歌词暂时统一写成 `"歌词待补充"`。以后确定歌词方案后,再把播放器升级为 `lyricSrc` 按需加载。
 - 自动生成文件名发生冲突时,会追加 `-2`、`-3`；如果手动指定 `--filename` 且冲突,脚本会报错,避免覆盖旧文件。
 
@@ -100,8 +103,9 @@ node scripts/add-music.mjs "assets/music/new-song.mp3" --title "New Song" --arti
 1. 准备一个音频文件,优先用 `.mp3`。
 2. 放进 `assets/music/` 后运行 `npm run music:sync -- --dry-run` 预览。
 3. 确认无误后运行 `npm run music:sync`。
-4. 打开 `data/playlist.json` 简单检查新增条目。
-5. 本地打开主页,测试播放、上一首、下一首和歌单浮层。
+4. 运行 `npm run music:covers` 生成或补齐封面。
+5. 打开 `data/playlist.json` 简单检查新增条目和 `cover` 字段。
+6. 本地打开主页,测试播放、上一首、下一首和歌单浮层。
 
 如果想从别的位置复制一首歌进来,也可以运行:
 
@@ -111,8 +115,9 @@ npm run music:add -- "音频路径" --title "歌名" --artist "歌手"
 
 然后:
 
-1. 打开 `data/playlist.json` 简单检查新增条目。
-2. 本地打开主页,测试播放、上一首、下一首和歌单浮层。
+1. 运行 `npm run music:covers` 生成或补齐封面。
+2. 打开 `data/playlist.json` 简单检查新增条目和 `cover` 字段。
+3. 本地打开主页,测试播放、上一首、下一首和歌单浮层。
 
 批量新增音乐的推荐流程:
 
@@ -120,7 +125,23 @@ npm run music:add -- "音频路径" --title "歌名" --artist "歌手"
 2. 尽量把文件名整理成 `歌手 - 歌名.mp3`。
 3. 先运行 `npm run music:add -- "songs" --batch --dry-run` 预览。
 4. 确认无误后运行 `npm run music:add -- "songs" --batch`。
-5. 打开 `data/playlist.json` 和主页播放器检查结果。
+5. 运行 `npm run music:covers` 生成或补齐封面。
+6. 打开 `data/playlist.json` 和主页播放器检查结果。
+
+### 10-generate-music-covers.mjs
+
+命令:
+
+```bash
+npm run music:covers
+```
+
+作用:
+
+- 读取 `data/playlist.json`。
+- 为每首歌生成 `assets/music/covers/track-xxx.svg`。
+- 自动把每首歌的 `cover` 字段写回歌单。
+- 支持 `--dry-run` 预览,支持 `--no-playlist` 只生成封面但不改歌单。
 
 ## 图片优化脚本
 
@@ -198,7 +219,7 @@ npm run optimize:portraits
 - 原图备份到 `assets/_originals/` 对应目录。
 - 如果 PNG 被转成 WebP,脚本会列出需要检查引用的文件名。
 
-### generate-portrait-rotation.mjs
+### 11-generate-portrait-rotation.mjs
 
 命令:
 
@@ -231,7 +252,7 @@ npm run portrait:rotation -- --start-date 2026-05-04 --seed portrait-rotation-v1
 
 ## CSS 与性能脚本
 
-### 4-purgecss.mjs
+### 8-purgecss.mjs
 
 命令:
 
@@ -314,12 +335,27 @@ npm run aggregate:stats
 
 注意:评论 / Waline 数据不在脚本里聚合,统计页前端会运行时实时拉取。通常需要先运行 `npm run aggregate:updates`,再运行这个脚本；也可以直接用 `npm run build:all` 一并刷新。
 
-### split-notes.mjs
+### 13-sync-site-tags.mjs
 
 命令:
 
 ```bash
-node scripts/split-notes.mjs
+npm run tags:sync
+```
+
+作用:
+
+- 读取 `js/anime-data.js`、`data/notes-index.json`、`data/updates-index.json`、`js/gallery-data.js` 等当前站点数据源。
+- 同时读取对应页面里的筛选按钮和标签文案配置。
+- 自动重写 `site-tags.md`,记录当前已使用标签、分类、primary 和已配置但暂无内容的筛选项。
+- 已接入 `npm run build:all`,通常在更新索引聚合完成后自动刷新。
+
+### 12-split-notes.mjs
+
+命令:
+
+```bash
+node scripts/12-split-notes.mjs
 ```
 
 作用:
@@ -341,7 +377,7 @@ node scripts/split-notes.mjs
 
 ### portrait-rotation.json
 
-这是 `generate-portrait-rotation.mjs` 生成的主页人像每日轮换数据。`js/home-cards.js` 会读取其中的 `startDate` 和 `sets.q` / `sets.half`,按当天日期选择首页卡片右下角的人像图片。
+这是 `11-generate-portrait-rotation.mjs` 生成的主页人像每日轮换数据。`js/home-cards.js` 会读取其中的 `startDate` 和 `sets.q` / `sets.half`,按当天日期选择首页卡片右下角的人像图片。
 
 这个文件可以手动检查顺序,但通常不建议手写维护。需要换顺序时重新运行:
 
@@ -407,6 +443,7 @@ npm run aggregate:stats
 ```bash
 npm run music:sync -- --dry-run
 npm run music:sync
+npm run music:covers
 ```
 
 批量新增:
@@ -414,9 +451,10 @@ npm run music:sync
 ```bash
 npm run music:add -- "songs" --batch --dry-run
 npm run music:add -- "songs" --batch
+npm run music:covers
 ```
 
-然后检查 `data/playlist.json` 和主页播放器。
+然后检查 `data/playlist.json`、`assets/music/covers/` 和主页播放器。
 
 ### 新增动漫图片
 
@@ -449,4 +487,4 @@ npm run music:add -- "songs" --batch
 npm run build:all
 ```
 
-这会先刷新 `data/updates-index.json`、`data/stats.json` 和 `data/site-meta.json`,再构建完整样式和首屏 CSS。检查无误后,可以删除本次生成的 `.bak` 文件。
+这会先刷新 `js/gallery-data.js`、`data/updates-index.json`、`site-tags.md`、`data/stats.json` 和 `data/site-meta.json`,再构建完整样式和首屏 CSS。检查无误后,可以删除本次生成的 `.bak` 文件。

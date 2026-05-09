@@ -174,6 +174,7 @@
     audio.src = resolveSiteUrl(track.src);
     titleEl.textContent  = track.title || '未命名';
     artistEl.textContent = track.artist || '—';
+    renderCover(track);
     parseLyric(track.lyric);
     renderLyrics();
     updatePlaylistModalActive();
@@ -185,6 +186,51 @@
         updatePlayingState(false);
       });
     }
+  }
+
+  function renderCover(track) {
+    if (!coverEl) return;
+
+    const cover = track?.cover;
+    let img = coverEl.querySelector('.music-cover__image');
+
+    if (!cover) {
+      coverEl.classList.remove('has-cover');
+      if (img) {
+        img.hidden = true;
+        img.removeAttribute('src');
+      }
+      return;
+    }
+
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'music-cover__image';
+      img.alt = '';
+      img.decoding = 'async';
+      img.loading = 'eager';
+      coverEl.appendChild(img);
+    }
+
+    const nextSrc = resolveSiteUrl(cover);
+    if (img.src === nextSrc && img.complete && img.naturalWidth > 0) {
+      img.hidden = false;
+      coverEl.classList.add('has-cover');
+      return;
+    }
+
+    coverEl.classList.remove('has-cover');
+    img.onload = () => {
+      img.hidden = false;
+      coverEl.classList.add('has-cover');
+    };
+    img.onerror = () => {
+      img.hidden = true;
+      coverEl.classList.remove('has-cover');
+    };
+
+    img.hidden = true;
+    img.src = nextSrc;
   }
 
   function getRequestedTrackIndex(detail) {
@@ -382,6 +428,27 @@
   // ============================================================
   // 歌单浮层
   // ============================================================
+  function renderPlaylistCover(track) {
+    const cover = track?.cover;
+    if (cover) {
+      return `
+        <span class="music-modal__cover" aria-hidden="true">
+          <img src="${escapeHtml(resolveSiteUrl(cover))}" alt="" loading="lazy" decoding="async">
+        </span>
+      `;
+    }
+
+    return `
+      <span class="music-modal__cover music-modal__cover--empty" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18V5l12-2v13"></path>
+          <circle cx="6" cy="18" r="3"></circle>
+          <circle cx="18" cy="16" r="3"></circle>
+        </svg>
+      </span>
+    `;
+  }
+
   function renderPlaylistModal() {
     if (!modalListEl) return;
     modalListEl.innerHTML = '';
@@ -394,6 +461,7 @@
       li.dataset.search = normalizeSearchText(`${title} ${artist}`);
       li.innerHTML = `
         <span class="music-modal__index">${String(i + 1).padStart(2, '0')}</span>
+        ${renderPlaylistCover(track)}
         <div class="music-modal__info">
           <span class="music-modal__name">${escapeHtml(title)}</span>
           <span class="music-modal__sub">${escapeHtml(artist)}</span>

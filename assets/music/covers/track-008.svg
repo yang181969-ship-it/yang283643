@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="❀ (纯音乐) - MappleHY">
+  <defs>
+    <linearGradient id="bg-track-008" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3f1237"/>
+      <stop offset="55%" stop-color="#a21caf"/>
+      <stop offset="100%" stop-color="#f472b6"/>
+    </linearGradient>
+    <radialGradient id="light-track-008" cx="34%" cy="22%" r="68%">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.72"/>
+      <stop offset="56%" stop-color="#fef3c7" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain-track-008" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.76" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.18"/>
+      </feComponentTransfer>
+    </filter>
+    <style>
+      .cover-title,
+      .cover-artist,
+      .cover-code,
+      .cover-symbol-text {
+        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+        letter-spacing: 0;
+      }
+      .cover-title { fill: #fff1f7; font-size: 68px; font-weight: 800; }
+      .cover-artist { fill: #fff1f7; font-size: 32px; font-weight: 600; opacity: 0.78; }
+      .cover-code { fill: #fff1f7; font-size: 24px; font-weight: 700; opacity: 0.5; }
+      .cover-symbol { opacity: 0.92; }
+      .cover-symbol-text { fill: #fff1f7; font-weight: 900; opacity: 0.9; }
+    </style>
+  </defs>
+  <rect width="1024" height="1024" rx="84" fill="url(#bg-track-008)"/>
+  <rect width="1024" height="1024" rx="84" fill="url(#light-track-008)"/>
+  <rect width="1024" height="1024" rx="84" filter="url(#grain-track-008)" opacity="0.42"/>
+  <circle cx="212" cy="228" r="210" fill="#fef3c7" opacity="0.17"/>
+  <circle cx="778" cy="582" r="280" fill="#86efac" opacity="0.13"/>
+  
+    <g class="cover-pattern" opacity="0.10" transform="rotate(-36 512 512)">
+      <rect x="-220" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="-90" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="40" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="170" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="300" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="430" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="560" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="690" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="820" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="950" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+<rect x="1080" y="-60" width="2" height="1160" rx="1" fill="#fff1f7"/>
+    </g>
+  
+  
+        <g class="cover-symbol">
+          <ellipse cx="512" cy="430" rx="70" ry="178" fill="#fef3c7" opacity="0.42" transform="rotate(0 512 512)"/>
+<ellipse cx="512" cy="430" rx="70" ry="178" fill="#fef3c7" opacity="0.42" transform="rotate(60 512 512)"/>
+<ellipse cx="512" cy="430" rx="70" ry="178" fill="#fef3c7" opacity="0.42" transform="rotate(120 512 512)"/>
+<ellipse cx="512" cy="430" rx="70" ry="178" fill="#fef3c7" opacity="0.42" transform="rotate(180 512 512)"/>
+<ellipse cx="512" cy="430" rx="70" ry="178" fill="#fef3c7" opacity="0.42" transform="rotate(240 512 512)"/>
+<ellipse cx="512" cy="430" rx="70" ry="178" fill="#fef3c7" opacity="0.42" transform="rotate(300 512 512)"/>
+          <circle cx="512" cy="512" r="74" fill="#86efac" opacity="0.82"/>
+          <circle cx="512" cy="512" r="24" fill="#fff1f7" opacity="0.76"/>
+        </g>
+      
+  <rect x="44" y="44" width="936" height="936" rx="58" fill="none" stroke="#fff1f7" stroke-opacity="0.16" stroke-width="2"/>
+  <text class="cover-title" x="72" y="746">❀ (纯音乐) </text>
+  <text class="cover-artist" x="72" y="822">MappleHY</text>
+  <text class="cover-code" x="72" y="936">Y181 MUSIC / 008</text>
+</svg>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="鹿 be free - 尚雯婕">
+  <defs>
+    <linearGradient id="bg-track-003" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10342f"/>
+      <stop offset="55%" stop-color="#1d6b55"/>
+      <stop offset="100%" stop-color="#8fcf9b"/>
+    </linearGradient>
+    <radialGradient id="light-track-003" cx="34%" cy="22%" r="68%">
+      <stop offset="0%" stop-color="#f7d060" stop-opacity="0.72"/>
+      <stop offset="56%" stop-color="#f7d060" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#f7d060" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain-track-003" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.76" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.18"/>
+      </feComponentTransfer>
+    </filter>
+    <style>
+      .cover-title,
+      .cover-artist,
+      .cover-code,
+      .cover-symbol-text {
+        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+        letter-spacing: 0;
+      }
+      .cover-title { fill: #f7fee7; font-size: 68px; font-weight: 800; }
+      .cover-artist { fill: #f7fee7; font-size: 32px; font-weight: 600; opacity: 0.78; }
+      .cover-code { fill: #f7fee7; font-size: 24px; font-weight: 700; opacity: 0.5; }
+      .cover-symbol { opacity: 0.92; }
+      .cover-symbol-text { fill: #f7fee7; font-weight: 900; opacity: 0.9; }
+    </style>
+  </defs>
+  <rect width="1024" height="1024" rx="84" fill="url(#bg-track-003)"/>
+  <rect width="1024" height="1024" rx="84" fill="url(#light-track-003)"/>
+  <rect width="1024" height="1024" rx="84" filter="url(#grain-track-003)" opacity="0.42"/>
+  <circle cx="212" cy="198" r="210" fill="#f7d060" opacity="0.17"/>
+  <circle cx="778" cy="642" r="280" fill="#d9f99d" opacity="0.13"/>
+  
+    <g class="cover-pattern" opacity="0.13" transform="rotate(-36 512 512)">
+      <rect x="-220" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="-90" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="40" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="170" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="300" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="430" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="560" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="690" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="820" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="950" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+<rect x="1080" y="-60" width="2" height="1160" rx="1" fill="#f7fee7"/>
+    </g>
+  
+  
+        <g class="cover-symbol" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M512 660 C472 578 452 504 464 420 C474 348 418 312 376 270" stroke="#f7d060" stroke-width="16"/>
+          <path d="M512 660 C552 578 572 504 560 420 C550 348 606 312 648 270" stroke="#f7d060" stroke-width="16"/>
+          <path d="M462 432 C410 420 362 384 336 338 M558 432 C610 420 658 384 684 338" stroke="#d9f99d" stroke-width="12"/>
+          <path d="M478 358 C444 334 422 296 416 258 M546 358 C580 334 602 296 608 258" stroke="#f7fee7" stroke-width="9" opacity="0.56"/>
+        </g>
+      
+  <rect x="44" y="44" width="936" height="936" rx="58" fill="none" stroke="#f7fee7" stroke-opacity="0.16" stroke-width="2"/>
+  <text class="cover-title" x="72" y="746">鹿 be free</text>
+  <text class="cover-artist" x="72" y="822">尚雯婕</text>
+  <text class="cover-code" x="72" y="936">Y181 MUSIC / 003</text>
+</svg>

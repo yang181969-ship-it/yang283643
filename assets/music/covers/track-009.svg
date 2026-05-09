@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="鳥の詩 (鸟之诗) - Lia">
+  <defs>
+    <linearGradient id="bg-track-009" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#102a43"/>
+      <stop offset="55%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <radialGradient id="light-track-009" cx="34%" cy="22%" r="68%">
+      <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.72"/>
+      <stop offset="56%" stop-color="#e0f2fe" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#e0f2fe" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain-track-009" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.76" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.18"/>
+      </feComponentTransfer>
+    </filter>
+    <style>
+      .cover-title,
+      .cover-artist,
+      .cover-code,
+      .cover-symbol-text {
+        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+        letter-spacing: 0;
+      }
+      .cover-title { fill: #eff6ff; font-size: 68px; font-weight: 800; }
+      .cover-artist { fill: #eff6ff; font-size: 32px; font-weight: 600; opacity: 0.78; }
+      .cover-code { fill: #eff6ff; font-size: 24px; font-weight: 700; opacity: 0.5; }
+      .cover-symbol { opacity: 0.92; }
+      .cover-symbol-text { fill: #eff6ff; font-weight: 900; opacity: 0.9; }
+    </style>
+  </defs>
+  <rect width="1024" height="1024" rx="84" fill="url(#bg-track-009)"/>
+  <rect width="1024" height="1024" rx="84" fill="url(#light-track-009)"/>
+  <rect width="1024" height="1024" rx="84" filter="url(#grain-track-009)" opacity="0.42"/>
+  <circle cx="250" cy="246" r="210" fill="#e0f2fe" opacity="0.17"/>
+  <circle cx="760" cy="614" r="280" fill="#fef3c7" opacity="0.13"/>
+  
+    <g class="cover-pattern" opacity="0.14" transform="rotate(-22 512 512)">
+      <rect x="-220" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="-90" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="40" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="170" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="300" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="430" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="560" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="690" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="820" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="950" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+<rect x="1080" y="-60" width="2" height="1160" rx="1" fill="#eff6ff"/>
+    </g>
+  
+  
+        <g class="cover-symbol" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M612 244 C424 310 340 474 402 652 C552 626 710 514 744 312 C708 258 666 236 612 244 Z" fill="#e0f2fe" opacity="0.28" stroke="#e0f2fe" stroke-width="10"/>
+          <path d="M704 298 C596 416 488 534 362 704" stroke="#eff6ff" stroke-width="12"/>
+          <path d="M594 414 L696 410 M530 492 L650 506 M470 570 L590 604" stroke="#fef3c7" stroke-width="9" opacity="0.72"/>
+        </g>
+      
+  <rect x="44" y="44" width="936" height="936" rx="58" fill="none" stroke="#eff6ff" stroke-opacity="0.16" stroke-width="2"/>
+  <text class="cover-title" x="72" y="746">鳥の詩 (鸟之诗) </text>
+  <text class="cover-artist" x="72" y="822">Lia</text>
+  <text class="cover-code" x="72" y="936">Y181 MUSIC / 009</text>
+</svg>

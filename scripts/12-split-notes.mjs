@@ -12,7 +12,7 @@
 //   6. 重写 data/notes-index.json,每个拆出的文件一条
 //
 // 用法(在项目根目录):
-//   node scripts/split-notes.mjs
+//   node scripts/12-split-notes.mjs
 //
 // 依赖:纯 Node 内置模块(fs/path),不需要任何 npm 包
 // ============================================================

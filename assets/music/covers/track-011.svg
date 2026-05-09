@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="起风了 - 买辣椒也用券">
+  <defs>
+    <linearGradient id="bg-track-011" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#17324d"/>
+      <stop offset="55%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#99f6e4"/>
+    </linearGradient>
+    <radialGradient id="light-track-011" cx="34%" cy="22%" r="68%">
+      <stop offset="0%" stop-color="#dbeafe" stop-opacity="0.72"/>
+      <stop offset="56%" stop-color="#dbeafe" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#dbeafe" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain-track-011" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.76" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.18"/>
+      </feComponentTransfer>
+    </filter>
+    <style>
+      .cover-title,
+      .cover-artist,
+      .cover-code,
+      .cover-symbol-text {
+        font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+        letter-spacing: 0;
+      }
+      .cover-title { fill: #f8fafc; font-size: 68px; font-weight: 800; }
+      .cover-artist { fill: #f8fafc; font-size: 32px; font-weight: 600; opacity: 0.78; }
+      .cover-code { fill: #f8fafc; font-size: 24px; font-weight: 700; opacity: 0.5; }
+      .cover-symbol { opacity: 0.92; }
+      .cover-symbol-text { fill: #f8fafc; font-weight: 900; opacity: 0.9; }
+    </style>
+  </defs>
+  <rect width="1024" height="1024" rx="84" fill="url(#bg-track-011)"/>
+  <rect width="1024" height="1024" rx="84" fill="url(#light-track-011)"/>
+  <rect width="1024" height="1024" rx="84" filter="url(#grain-track-011)" opacity="0.42"/>
+  <circle cx="298" cy="254" r="210" fill="#dbeafe" opacity="0.17"/>
+  <circle cx="772" cy="596" r="280" fill="#fcd34d" opacity="0.13"/>
+  
+    <g class="cover-pattern" opacity="0.14" transform="rotate(-34 512 512)">
+      <rect x="-220" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="-90" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="40" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="170" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="300" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="430" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="560" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="690" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="820" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="950" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+<rect x="1080" y="-60" width="2" height="1160" rx="1" fill="#f8fafc"/>
+    </g>
+  
+  
+        <g class="cover-symbol" fill="none" stroke-linecap="round">
+          <path d="M226 424 C366 342 494 506 636 402 C702 354 772 356 828 394" stroke="#dbeafe" stroke-width="16"/>
+          <path d="M180 528 C330 438 458 626 610 520 C678 472 762 472 846 526" stroke="#f8fafc" stroke-width="13" opacity="0.72"/>
+          <path d="M250 636 C374 570 466 694 594 626 C642 600 700 596 762 620" stroke="#fcd34d" stroke-width="10" opacity="0.82"/>
+        </g>
+      
+  <rect x="44" y="44" width="936" height="936" rx="58" fill="none" stroke="#f8fafc" stroke-opacity="0.16" stroke-width="2"/>
+  <text class="cover-title" x="72" y="746">起 风 了</text>
+  <text class="cover-artist" x="72" y="822">买辣椒也用券</text>
+  <text class="cover-code" x="72" y="936">Y181 MUSIC / 011</text>
+</svg>
