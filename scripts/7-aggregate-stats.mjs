@@ -455,7 +455,7 @@ const breakdowns = {};
 }
 
 // 6. 音乐 Top 艺术家 ───────────────────────────
-// 直接透传 music-stats.json 的 topArtists 字段(由 add-music.mjs 维护)
+// 直接透传 music-stats.json 的 topArtists 字段(由 9-add-music.mjs 维护)
 // 没有数据源就给占位,前端会渲染 "暂无数据" 状态
 {
   const arr = musicStats?.topArtists;

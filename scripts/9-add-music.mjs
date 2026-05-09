@@ -22,7 +22,7 @@ function printHelp() {
   npm run music:add -- <文件夹> --batch
   npm run music:sync
   npm run music:add -- --sync
-  node scripts/add-music.mjs <音频文件> --title "歌名" --artist "歌手"
+  node scripts/9-add-music.mjs <音频文件> --title "歌名" --artist "歌手"
 
 示例:
   npm run music:add -- "assets/music/new-song.mp3" --title "New Song" --artist "Artist"

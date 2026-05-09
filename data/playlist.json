@@ -5,84 +5,96 @@
       "title": "Call of Silence × YouSeeBIGGIRL",
       "artist": "EYAir",
       "src": "assets/music/call-of-silence.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-001.svg"
     },
     {
       "id": "track-002",
       "title": "倒数",
       "artist": "G.E.M.邓紫棋",
       "src": "assets/music/倒数.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-002.svg"
     },
     {
       "id": "track-003",
       "title": "鹿 be free",
       "artist": "尚雯婕",
       "src": "assets/music/鹿-be-free.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-003.svg"
     },
     {
       "id": "track-004",
       "title": "夏日漱石 (Summer Cozy Rock)",
       "artist": "橘子海",
       "src": "assets/music/夏日漱石-summer-cozy-rock.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-004.svg"
     },
     {
       "id": "track-005",
       "title": "F1",
       "artist": "Hans Zimmer",
       "src": "assets/music/F1.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-005.svg"
     },
     {
       "id": "track-006",
       "title": "Lose My Mind (feat. Doja Cat)",
       "artist": "Don Toliver/Doja Cat",
       "src": "assets/music/Lose My Mind.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-006.svg"
     },
     {
       "id": "track-007",
       "title": "童话镇",
       "artist": "陈一发儿",
       "src": "assets/music/童话镇.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-007.svg"
     },
     {
       "id": "track-008",
       "title": "❀ (纯音乐)",
       "artist": "MappleHY",
       "src": "assets/music/❀.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-008.svg"
     },
     {
       "id": "track-009",
       "title": "鳥の詩 (鸟之诗)",
       "artist": "Lia",
       "src": "assets/music/鳥の詩 (鸟之诗).mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-009.svg"
     },
     {
       "id": "track-010",
       "title": "泡沫",
       "artist": "G.E.M.邓紫棋",
       "src": "assets/music/泡沫.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-010.svg"
     },
     {
       "id": "track-011",
       "title": "起风了",
       "artist": "买辣椒也用券",
       "src": "assets/music/起风了.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-011.svg"
     },
     {
       "id": "track-012",
       "title": "平凡之路",
       "artist": "朴树",
       "src": "assets/music/朴树 - 平凡之路.mp3",
-      "lyric": "歌词待补充"
+      "lyric": "歌词待补充",
+      "cover": "assets/music/covers/track-012.svg"
     }
   ]
 }

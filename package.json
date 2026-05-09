@@ -19,12 +19,14 @@
     "update:refs": "node scripts/3-update-html-references.js",
     "optimize:portraits": "node scripts/4-optimize-portraits.mjs",
 
-    "purgecss": "node scripts/4-purgecss.mjs",
-    "music:add": "node scripts/add-music.mjs",
-    "music:sync": "node scripts/add-music.mjs --sync",
-    "portrait:rotation": "node scripts/generate-portrait-rotation.mjs",
+    "purgecss": "node scripts/8-purgecss.mjs",
+    "music:add": "node scripts/9-add-music.mjs",
+    "music:sync": "node scripts/9-add-music.mjs --sync",
+    "music:covers": "node scripts/10-generate-music-covers.mjs",
+    "portrait:rotation": "node scripts/11-generate-portrait-rotation.mjs",
+    "tags:sync": "node scripts/13-sync-site-tags.mjs",
 
-    "build:all": "npm run gallery:data && npm run aggregate:updates && npm run aggregate:stats && npm run build && npm run build:critical && npm run inline:critical"
+    "build:all": "npm run gallery:data && npm run aggregate:updates && npm run tags:sync && npm run aggregate:stats && npm run build && npm run build:critical && npm run inline:critical"
   },
 
   "devDependencies": {
