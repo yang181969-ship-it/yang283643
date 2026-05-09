@@ -12,6 +12,8 @@
 }
 
 .about-hero {
+  --about-hero-image: url("../assets/pages/aboutpage.webp");
+
   position: relative;
   min-height: 280px;
   overflow: hidden;
@@ -28,7 +30,7 @@
       rgba(255, 255, 255, 0.12) 68%,
       rgba(255, 255, 255, 0.04) 100%
     ),
-    url("../assets/pages/aboutpage.webp");
+    var(--about-hero-image);
   background-size: cover;
   background-position: center 48%;
   background-repeat: no-repeat;
@@ -553,7 +555,7 @@ html.is-modal-open .content-scroll {
         rgba(13, 18, 32, 0.16) 72%,
         rgba(13, 18, 32, 0.06) 100%
       ),
-      url("../assets/pages/aboutpage.webp");
+      var(--about-hero-image);
   }
 
   .about-hero h1 {
@@ -594,6 +596,24 @@ html.is-modal-open .content-scroll {
 }
 
 @include laptop {
+  .about-hero {
+    min-height: 240px;
+    background-position: center;
+  }
+
+  .about-hero__content {
+    padding: 38px 28px;
+  }
+
+  .about-hero h1 {
+    font-size: 2.2rem;
+  }
+
+  .about-hero p:not(.about-hero__eyebrow) {
+    font-size: 1rem;
+    line-height: 1.9;
+  }
+
   .about-layout {
     grid-template-columns: 1fr;
   }
@@ -608,48 +628,6 @@ html.is-modal-open .content-scroll {
 }
 
 @include tablet {
-  .about-hero {
-    min-height: 300px;
-    border-radius: 24px;
-    background-image:
-      linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.34) 0%,
-        rgba(255, 255, 255, 0.72) 62%,
-        rgba(255, 255, 255, 0.9) 100%
-      ),
-      url("../assets/pages/aboutpage.webp");
-    background-position: 68% center;
-  }
-
-  .about-hero__content {
-    min-height: 300px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 24px;
-  }
-
-  .about-hero h1 {
-    font-size: 2.1rem;
-  }
-
-  .about-hero p:not(.about-hero__eyebrow) {
-    font-size: 0.95rem;
-    line-height: 1.75;
-  }
-
-  [data-theme="dark"] .about-hero {
-    background-image:
-      linear-gradient(
-        180deg,
-        rgba(13, 18, 32, 0.18) 0%,
-        rgba(13, 18, 32, 0.72) 62%,
-        rgba(13, 18, 32, 0.88) 100%
-      ),
-      url("../assets/pages/aboutpage.webp");
-  }
-
   .about-declaration-modal {
     padding: 14px;
   }
@@ -657,6 +635,31 @@ html.is-modal-open .content-scroll {
   .about-declaration-modal__panel {
     max-height: min(720px, 90vh);
     border-radius: 24px;
+  }
+}
+
+@include mobile {
+  .about-page {
+    gap: 16px;
+  }
+
+  .about-hero {
+    --about-hero-image: url("../assets/pages/about-mobile.webp");
+
+    min-height: 220px;
+    border-radius: var(--radius-card);
+  }
+
+  .about-hero__content {
+    padding: 30px 20px;
+  }
+
+  .about-hero h1 {
+    font-size: 1.85rem;
+  }
+
+  .about-hero p:not(.about-hero__eyebrow) {
+    font-size: 0.94rem;
   }
 }
 
@@ -670,17 +673,16 @@ html.is-modal-open .content-scroll {
   }
 
   .about-hero {
-    min-height: 280px;
-    border-radius: 20px;
+    min-height: 220px;
+    border-radius: var(--radius-card);
   }
 
   .about-hero__content {
-    min-height: 280px;
-    padding: 20px;
+    padding: 30px 20px;
   }
 
   .about-hero h1 {
-    font-size: 1.8rem;
+    font-size: 1.85rem;
   }
 
   .about-card--declaration,

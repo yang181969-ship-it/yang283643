@@ -12,6 +12,8 @@
 }
 
 .gallery-hero {
+  --gallery-hero-image: url("../assets/pages/gallery.webp");
+
   position: relative;
   min-height: 260px;
   overflow: hidden;
@@ -28,7 +30,7 @@
       rgba(255, 255, 255, 0.16) 70%,
       rgba(255, 255, 255, 0.04) 100%
     ),
-    url("../assets/pages/gallery.webp");
+    var(--gallery-hero-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -723,7 +725,7 @@
         rgba(13, 18, 32, 0.20) 72%,
         rgba(13, 18, 32, 0.08) 100%
       ),
-      url("../assets/pages/gallery.webp");
+      var(--gallery-hero-image);
   }
 
   .gallery-hero h1 {
@@ -901,6 +903,8 @@
   }
 
   .gallery-hero {
+    --gallery-hero-image: url("../assets/pages/gallery-mobile.webp");
+
     min-height: 220px;
     border-radius: var(--radius-card);
   }
