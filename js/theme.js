@@ -10,13 +10,18 @@
   // 尽早应用,避免刷新时闪白屏
   const root = document.documentElement;
 
+  // 首次访问的默认值:明亮模式 / 蓝色(色相 210)/ 关闭辉光
+  if (localStorage.getItem("primary-hue") === null) localStorage.setItem("primary-hue", "210");
+  if (localStorage.getItem("theme-mode")  === null) localStorage.setItem("theme-mode",  "light");
+  if (localStorage.getItem("ambient-glow") === null) localStorage.setItem("ambient-glow", "off");
+
   const savedHue = localStorage.getItem("primary-hue");
   if (savedHue) root.style.setProperty("--primary-hue", savedHue);
 
   const savedMode = localStorage.getItem("theme-mode") || "auto";
   applyMode(savedMode, root);
 
-  // 辉光开关:默认开启,只有显式存 "off" 才关
+  // 辉光开关:只有显式存 "off" 才关
   const savedGlow = localStorage.getItem("ambient-glow") === "off" ? "off" : "on";
   root.setAttribute("data-glow", savedGlow);
 
