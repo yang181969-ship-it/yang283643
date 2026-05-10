@@ -47,18 +47,6 @@ function renderAnimeDetail() {
       galleryBox.appendChild(img);
     });
   }
-
-  const linksList = document.getElementById("anime-links");
-  linksList.innerHTML = "";
-  anime.links.forEach(link => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.href = link.url;
-    a.target = "_blank";
-    a.textContent = link.text;
-    li.appendChild(a);
-    linksList.appendChild(li);
-  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {

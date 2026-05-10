@@ -15,9 +15,6 @@ xxxx: {
       "../assets/animes/3.jpg"
     ],
     updateDate:
-    links:[
-      { text: "观影链接", url: ""},
-    ]
   },
 
   <!-- anime.html 的复制文本 -->
