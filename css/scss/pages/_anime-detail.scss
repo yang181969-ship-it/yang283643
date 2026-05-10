@@ -15,15 +15,6 @@
   }
 }
 
-#anime-links a {
-  color: var(--primary-dark);
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 // ----- 额外图片展示 -----
 .anime-extra-gallery {
   display: grid;

@@ -22,9 +22,6 @@ const animeData = {
       "../assets/animes/majo-4.webp"
     ],
     updateDate: "2026-04-18",
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/v/3398.html" },
-    ]
   },
 
   frieren: {
@@ -42,9 +39,6 @@ const animeData = {
       "../assets/animes/frieren-4.webp"
     ],
     updateDate: "2026-04-18",
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/v/22881.html" },
-    ]
   },
 
   garden: {
@@ -61,9 +55,6 @@ const animeData = {
       "../assets/animes/garden-3.webp"
     ],
     updateDate: "2026-04-21",
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/vsh/%E7%B4%AB%E7%BD%97%E5%85%B0%E6%B0%B8%E6%81%92%E8%8A%B1%E5%9B%AD-------------.html" },
-    ]
   },
 
   slayer: {
@@ -80,9 +71,6 @@ const animeData = {
       "../assets/animes/slayer-3.webp"
     ],
     updateDate: "2026-04-25",
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E9%AC%BC%E7%81%AD%E4%B9%8B%E5%88%83&submit=" },
-    ]
   },
 
   spy: {
@@ -100,9 +88,6 @@ const animeData = {
       "../assets/animes/spy-4.webp"
     ],
     updateDate: "2026-04-24",
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E9%97%B4%E8%B0%8D%E8%BF%87%E5%AE%B6%E5%AE%B6&submit=" },
-    ]
   },
 
   titan: {
@@ -120,9 +105,6 @@ const animeData = {
       "../assets/animes/titan-4.webp"
     ],
     updateDate: "2026-04-25",
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E8%BF%9B%E5%87%BB%E7%9A%84%E5%B7%A8%E4%BA%BA&submit=" },
-    ]
   },
 
   datebattle: {
@@ -140,9 +122,6 @@ const animeData = {
       "../assets/animes/datebattle-3.webp",
       "../assets/animes/datebattle-4.jpg"
     ],
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E7%BA%A6%E4%BC%9A%E5%A4%A7%E4%BD%9C%E6%88%98&submit=" },
-    ]
   },
 
   suzuya: {
@@ -160,9 +139,6 @@ const animeData = {
       "../assets/animes/suzuya-4.webp"
     ],
     updateDate: "2026-04-25",
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E9%93%83%E8%8A%BD%E4%B9%8B%E6%97%85&submit=" },
-    ]
   },
 
   xiaoyuan: {
@@ -180,9 +156,6 @@ const animeData = {
       "../assets/animes/xiaoyuan-3.jpg",
       "../assets/animes/xiaoyuan-4.webp"
     ],
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/v/2132.html"},
-    ]
   },
 
   name: {
@@ -200,8 +173,5 @@ const animeData = {
       "../assets/animes/name-4.webp"
     ],
     updateDate: "2026-05-05",
-    links: [
-      { text: "观影链接", url: "https://yhdm6.top/vsh/-------------.html?wd=%E4%BD%A0%E7%9A%84%E5%90%8D%E5%AD%97&submit=" },
-    ]
   }
 };
