@@ -1,25 +1,228 @@
 <main id="main-content">
-  <section class="comment-page" aria-labelledby="comment-page-title">
-    <article class="comment-hero card">
-      <div class="comment-hero-text">
-        <p class="comment-kicker">MESSAGE BOARD</p>
-        <h2 id="comment-page-title">留言板</h2>
-        <p>
-          这里已经迁移到自研留言系统，留言数据会直接保存到我的服务器。
-          目前先开放基础留言和评分功能，后续会继续加入回复、管理、审核等能力。
-        </p>
-      </div>
-      <div class="comment-hero-badge" aria-hidden="true">
-        <span>自研</span>
-        <strong>API</strong>
-      </div>
-    </article>
+  <section class="comment-page no-card" aria-labelledby="comment-page-title">
 
-    <div id="custom-comment-root" class="custom-comment-root" aria-live="polite">
-      <article class="comment-status-card is-loading">
-        <div class="comment-status-title">留言系统加载中</div>
-        <div class="comment-status-text">正在连接自研留言服务，请稍候……</div>
-      </article>
+    <!-- 顶部 banner（横跨右侧主内容区整行） -->
+    <section class="comment-hero" aria-labelledby="comment-page-title">
+      <div class="comment-hero__inner">
+        <p class="comment-hero__eyebrow">MESSAGE BOARD</p>
+        <h1 id="comment-page-title">留言小角落</h1>
+        <p class="comment-hero__sub">
+          在这里记录你的想法、反馈与一句话，让我们一起交流吧～
+        </p>
+        <div class="comment-hero__status">
+          <span class="comment-hero__dot" aria-hidden="true"></span>
+          <span>Self-hosted API · Online</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- banner 下方两栏布局 -->
+    <div class="comment-body">
+
+      <!-- 左侧：留言展示卡 -->
+      <section class="comment-main card" aria-labelledby="comment-thread-title">
+        <header class="comment-main__head">
+          <div class="comment-main__head-left">
+            <h2 id="comment-thread-title" class="comment-main__title">最新留言</h2>
+            <div class="comment-tabs" role="tablist" aria-label="留言筛选">
+              <button type="button" class="comment-tab is-active" data-tab="all" role="tab" aria-selected="true">全部</button>
+              <button type="button" class="comment-tab" data-tab="latest" role="tab" aria-selected="false">最新</button>
+              <button type="button" class="comment-tab" data-tab="replied" role="tab" aria-selected="false">有回复</button>
+            </div>
+          </div>
+          <button type="button" class="comment-refresh-btn" id="comment-refresh-btn" aria-label="刷新留言">
+            <span class="comment-refresh-btn__icon" aria-hidden="true"></span>
+            刷新
+          </button>
+        </header>
+
+        <div id="comment-list" class="comment-thread" aria-live="polite">
+          <article class="comment-status-card is-loading">
+            <div class="comment-status-title">正在加载留言</div>
+            <div class="comment-status-text">请稍候……</div>
+          </article>
+        </div>
+
+        <div class="comment-pagination" id="comment-pagination" hidden>
+          <button type="button" id="comment-prev-page">上一页</button>
+          <span id="comment-page-info"></span>
+          <button type="button" id="comment-next-page">下一页</button>
+        </div>
+
+        <!-- 底部浮浮输入框（默认收起的胶囊态） -->
+        <form class="comment-composer" id="comment-composer" autocomplete="off" novalidate>
+          <div class="comment-composer__reply-bar" id="comment-composer-reply-bar" hidden>
+            <span class="comment-composer__reply-text">
+              <span class="comment-composer__reply-icon" aria-hidden="true"></span>
+              正在回复 <strong id="comment-composer-reply-name"></strong>
+            </span>
+            <button type="button" class="comment-composer__cancel" id="comment-composer-cancel">取消</button>
+          </div>
+
+          <div class="comment-composer__row">
+            <div class="comment-composer__avatar" aria-hidden="true">
+              <span>你</span>
+            </div>
+
+            <div class="comment-composer__main">
+              <div class="comment-composer__fields" hidden>
+                <label class="comment-composer__field">
+                  <span class="comment-composer__field-label">昵称<em>（必填）</em></span>
+                  <input
+                    id="comment-nickname"
+                    name="nickname"
+                    type="text"
+                    maxlength="24"
+                    autocomplete="nickname"
+                    placeholder="请输入昵称"
+                    required
+                  >
+                </label>
+                <label class="comment-composer__field">
+                  <span class="comment-composer__field-label">邮箱<em>（选填）</em></span>
+                  <input
+                    id="comment-email"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="请输入邮箱"
+                  >
+                </label>
+                <label class="comment-composer__field">
+                  <span class="comment-composer__field-label">网站<em>（选填）</em></span>
+                  <input
+                    id="comment-website"
+                    name="website"
+                    type="url"
+                    autocomplete="url"
+                    placeholder="请输入网站"
+                  >
+                </label>
+              </div>
+
+              <div class="comment-composer__editor">
+                <span class="comment-composer__editor-label" hidden>留言内容</span>
+                <textarea
+                  id="comment-content"
+                  class="comment-composer__textarea"
+                  name="content"
+                  rows="1"
+                  maxlength="1000"
+                  placeholder="说点什么吧..."
+                ></textarea>
+                <span class="comment-composer__counter" hidden>
+                  <span id="comment-composer-count">0</span>/1000
+                </span>
+              </div>
+
+              <div class="comment-composer__tools" hidden>
+                <div class="comment-composer__icons" aria-label="留言工具">
+                  <button type="button" class="comment-composer__icon" aria-label="表情" title="表情即将开放">
+                    <span class="comment-composer__icon-glyph comment-composer__icon-glyph--emoji" aria-hidden="true"></span>
+                  </button>
+                  <button type="button" class="comment-composer__icon" aria-label="图片" title="图片功能即将开放">
+                    <span class="comment-composer__icon-glyph comment-composer__icon-glyph--image" aria-hidden="true"></span>
+                  </button>
+                  <button type="button" class="comment-composer__icon" aria-label="链接" title="链接功能即将开放">
+                    <span class="comment-composer__icon-glyph comment-composer__icon-glyph--link" aria-hidden="true"></span>
+                  </button>
+                  <button type="button" class="comment-composer__icon" aria-label="代码" title="代码功能即将开放">
+                    <span class="comment-composer__icon-glyph comment-composer__icon-glyph--code" aria-hidden="true"></span>
+                  </button>
+                  <button type="button" class="comment-composer__icon" aria-label="引用" title="引用功能即将开放">
+                    <span class="comment-composer__icon-glyph comment-composer__icon-glyph--quote" aria-hidden="true"></span>
+                  </button>
+                </div>
+                <button type="submit" class="comment-composer__submit" id="comment-submit-btn">
+                  <span class="comment-composer__submit-icon" aria-hidden="true"></span>
+                  <span class="comment-composer__submit-label">发送留言</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="comment-composer__inline-icons" id="comment-composer-inline-icons">
+              <button type="button" class="comment-composer__inline-icon" aria-label="表情" title="表情即将开放" tabindex="-1">
+                <span class="comment-composer__icon-glyph comment-composer__icon-glyph--emoji" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="comment-composer__inline-icon" aria-label="图片" title="图片功能即将开放" tabindex="-1">
+                <span class="comment-composer__icon-glyph comment-composer__icon-glyph--image" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              class="comment-composer__send-collapsed"
+              id="comment-send-collapsed"
+              aria-label="发送留言"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3.4 20.4 21 12 3.4 3.6 3 10.5l13 1.5-13 1.5z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="comment-form-message" id="comment-form-message" hidden></div>
+        </form>
+      </section>
+
+      <!-- 右侧：三张信息卡 -->
+      <aside class="comment-sidebar" aria-label="留言侧栏">
+
+        <article class="card comment-side-card comment-stats-card" aria-labelledby="comment-stats-title">
+          <h3 id="comment-stats-title" class="comment-side__title">
+            <span class="comment-side__title-icon comment-side__title-icon--stats" aria-hidden="true"></span>
+            留言统计
+          </h3>
+          <div class="comment-stats-grid">
+            <div class="comment-stat">
+              <span class="comment-stat__value" id="comment-stat-total">—</span>
+              <span class="comment-stat__label">总留言数</span>
+            </div>
+            <div class="comment-stat">
+              <span class="comment-stat__value" id="comment-stat-today">—</span>
+              <span class="comment-stat__label">今日新增</span>
+            </div>
+            <div class="comment-stat">
+              <span class="comment-stat__value" id="comment-stat-replies">—</span>
+              <span class="comment-stat__label">总回复数</span>
+            </div>
+            <div class="comment-stat">
+              <span class="comment-stat__value" id="comment-stat-likes">—</span>
+              <span class="comment-stat__label">点赞互动</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card comment-side-card comment-rules-card" aria-labelledby="comment-rules-title">
+          <h3 id="comment-rules-title" class="comment-side__title">
+            <span class="comment-side__title-icon comment-side__title-icon--rules" aria-hidden="true"></span>
+            留言守则
+          </h3>
+          <ul class="comment-rules-list">
+            <li>友好交流，尊重每一位访客</li>
+            <li>禁止广告与恶意灌水</li>
+            <li>主题自由，但请勿留他人信息</li>
+            <li>反馈尽量描述清楚，便于改进</li>
+          </ul>
+          <p class="comment-rules-note">一起维护温馨的交流环境～</p>
+        </article>
+
+        <article class="card comment-side-card comment-owner-note-card" aria-labelledby="comment-owner-title">
+          <h3 id="comment-owner-title" class="comment-side__title">
+            <span class="comment-side__title-icon comment-side__title-icon--owner" aria-hidden="true"></span>
+            站长的话
+          </h3>
+          <div class="comment-owner-note">
+            <p>欢迎来到留言小角落。</p>
+            <p>这里更像一个轻松交流的小地方。</p>
+            <p>你可以在这里留下：<br>问候、建议、反馈，<br>或者任何想说的话。</p>
+            <p>我会不定时来看看留言，<br>需要回答的问题也会尝试回复呢。</p>
+          </div>
+          <div class="comment-owner-note__heart" aria-hidden="true"></div>
+        </article>
+
+      </aside>
     </div>
+
   </section>
 </main>
