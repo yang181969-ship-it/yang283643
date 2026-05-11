@@ -16,7 +16,7 @@ import vm from 'vm';
 //   - data/stats.json   ── snapshots[] 累积式 + breakdowns(7 张卡数据源)
 //   - data/site-meta.json ── 总条目/累计天数/最新更新等单点指标
 //
-// 评论/Waline 数据不在这聚合,前端 stats.js 实时拉(月度快照对评论意义不大)
+// 评论统计由本地 data/comments-stats.json 提供(可选),不在线 fetch
 // ============================================================
 
 const SITE_BIRTHDAY = '2026-04-13';
@@ -465,9 +465,8 @@ const breakdowns = {};
 }
 
 // 7. 评论分布 ─────────────────────────────────
-// 占位,前端 stats.js 在运行时 fetch Waline 后填充
-// 这里只放一个标记,告诉前端要走 live-fetch
-breakdowns.commentsByRole = { __live: 'waline-by-role' };
+// 留言统计后续由自研 API 或本地统计文件提供
+breakdowns.commentsByRole = [];
 
 const recentChanges = buildRecentChanges({
   notes,

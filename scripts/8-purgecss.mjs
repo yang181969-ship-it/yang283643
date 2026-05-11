@@ -21,12 +21,10 @@ const result = await new PurgeCSS().purge({
       /^data-theme/,
     ],
     greedy: [
-      /^wl-/,
       /^katex/,
       /^hljs/,
     ],
     deep: [
-      /^wl-/,
       /^katex/,
     ],
   },

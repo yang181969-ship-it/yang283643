@@ -17,7 +17,7 @@
   const TOKYO_LNG      = 139.6503;
   const MOOD_REFRESH_MS = 1000 * 60 * 60;                       // 60 分钟
   const PORTRAIT_REFRESH_BUFFER_MS = 1000;                      // 零点后 1 秒刷新
-  const WALINE_API     = "https://yang283643-waline.vercel.app";
+  const COMMENT_API    = "https://comment.yang181969.com";
   const STORAGE_PREFIX = "y181_";
 
   const TTL = {
@@ -192,10 +192,9 @@
 
   async function fetchCommentsRecent() {
     // 一次拿 100 条:comment 卡用前 N 条,stats 卡数 length
-    const url = `${WALINE_API}/api/comment?type=recent&pageSize=100`;
+    const url = `${COMMENT_API}/api/comments?page=1&pageSize=100`;
     const data = await fetchJson(url);
-    // Waline 可能返回数组或 { data: [...] } 包裹
-    return Array.isArray(data) ? data : (data?.data || []);
+    return data?.data?.comments || [];
   }
 
   // ---------------- 各卡渲染 ----------------
@@ -430,15 +429,13 @@
         setBody(card, `<p class="bento-text bento-text--muted">还没有留言,过来聊聊吧 ~</p>`);
         return;
       }
-      const tmp = document.createElement("div");
       const html = recent.map(c => {
-        tmp.innerHTML = c.comment || "";
-        const text = (tmp.textContent || "").trim().slice(0, 32);
+        const text = String(c.content || "").trim().slice(0, 32);
         return `
           <li class="bento-list-item">
             <a class="bento-list-link" href="index.html?page=comment">
               <span class="bento-list-title">
-                <strong>${escapeHTML(c.nick || "匿名")}</strong>: ${escapeHTML(text)}
+                <strong>${escapeHTML(c.nickname || "访客")}</strong>: ${escapeHTML(text)}
               </span>
             </a>
           </li>
