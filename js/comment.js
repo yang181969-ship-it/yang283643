@@ -1,545 +1,423 @@
-const WALINE_SERVER_URL = "https://yang283643-waline.vercel.app";
+// ============================================================
+// 自研留言系统前端
+// API: https://comment.yang181969.com/api/comments
+// ============================================================
 
-const WALINE_CSS_URL = "https://unpkg.com/@waline/client@v3/dist/waline.css";
-const WALINE_JS_URL = "https://unpkg.com/@waline/client@v3/dist/waline.js";
+(function () {
+  "use strict";
 
-/**
- * 管理员昵称白名单（不区分大小写，前后空格自动忽略）
- * Waline 不会在前端 DOM 上暴露用户角色，所以靠昵称识别管理员。
- * 要新增管理员，只需在这里加一行即可。
- */
-const ADMIN_NICKNAMES = ["admin"];
+  const COMMENT_API_BASE = "https://comment.yang181969.com";
+  const COMMENTS_ENDPOINT = `${COMMENT_API_BASE}/api/comments`;
 
-let walineInstance = null;
-let walineModulePromise = null;
-let walineObserver = null;
-let enhanceScheduled = false;
+  const state = {
+    page: 1,
+    pageSize: 20,
+    totalPages: 0,
+    isSubmitting: false,
+    rating: 5,
+  };
 
-function initCommentPage() {
-  const root = document.getElementById("waline");
-  if (!root) return;
+  function initCommentPage() {
+    const root = document.getElementById("custom-comment-root");
+    if (!root) return;
 
-  showLoading(root);
-  initWalineComment();
-}
+    renderShell(root);
+    bindEvents(root);
+    loadComments(root, 1);
+  }
 
-function showLoading(root) {
-  root.innerHTML = `
-    <div class="comment-status-card is-loading">
-      <div class="comment-status-title">留言系统加载中</div>
-      <div class="comment-status-text">正在检测评论服务，请稍候……</div>
-    </div>
-  `;
-}
+  window.initCommentPage = initCommentPage;
 
-function showGenericError(root) {
-  root.innerHTML = `
-    <div class="comment-status-card is-error">
-      <div class="comment-status-title">留言系统加载失败</div>
-      <div class="comment-status-text">
-        评论资源或评论服务暂时不可用，请稍后再试。
-      </div>
-      <div class="comment-status-actions">
-        <button type="button" class="comment-retry-btn" id="comment-retry-btn">重新检测</button>
-      </div>
-    </div>
-  `;
+  function renderShell(root) {
+    root.innerHTML = `
+      <section class="comment-compose card" aria-labelledby="comment-compose-title">
+        <div class="comment-compose-head">
+          <div>
+            <p class="comment-kicker">LEAVE A MESSAGE</p>
+            <h3 id="comment-compose-title">写下你的留言</h3>
+          </div>
+          <p class="comment-compose-tip">支持 0–5 星评分，最小单位 0.5。</p>
+        </div>
 
-  const retryBtn = document.getElementById("comment-retry-btn");
-  if (retryBtn) {
-    retryBtn.addEventListener("click", () => {
-      showLoading(root);
-      initWalineComment(true);
+        <form class="comment-form" id="comment-form">
+          <div class="comment-form-grid">
+            <label class="comment-field">
+              <span>昵称</span>
+              <input
+                id="comment-nickname"
+                name="nickname"
+                type="text"
+                maxlength="24"
+                autocomplete="nickname"
+                placeholder="访客"
+              >
+            </label>
+
+            <label class="comment-field">
+              <span>邮箱</span>
+              <input
+                id="comment-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="可选，不会公开显示"
+              >
+            </label>
+
+            <label class="comment-field comment-field--wide">
+              <span>网站</span>
+              <input
+                id="comment-website"
+                name="website"
+                type="url"
+                autocomplete="url"
+                placeholder="可选，例如 https://example.com"
+              >
+            </label>
+          </div>
+
+          <div class="comment-rating" aria-label="评分">
+            <span class="comment-rating-label">评分</span>
+            <div class="comment-rating-stars" id="comment-rating-stars"></div>
+            <span class="comment-rating-value" id="comment-rating-value">5.0</span>
+          </div>
+
+          <label class="comment-field comment-field--content">
+            <span>留言内容</span>
+            <textarea
+              id="comment-content"
+              name="content"
+              maxlength="1000"
+              rows="6"
+              required
+              placeholder="写点什么吧……"
+            ></textarea>
+          </label>
+
+          <div class="comment-form-footer">
+            <p class="comment-form-note">请友善交流。留言提交后会保存到本站自研留言数据库。</p>
+            <button class="comment-submit-btn" type="submit" id="comment-submit-btn">
+              提交留言
+            </button>
+          </div>
+
+          <div class="comment-form-message" id="comment-form-message" hidden></div>
+        </form>
+      </section>
+
+      <section class="comment-list-section card" aria-labelledby="comment-list-title">
+        <div class="comment-list-head">
+          <div>
+            <p class="comment-kicker">RECENT COMMENTS</p>
+            <h3 id="comment-list-title">最近留言</h3>
+          </div>
+          <button type="button" class="comment-refresh-btn" id="comment-refresh-btn">刷新</button>
+        </div>
+
+        <div id="comment-list" class="comment-list">
+          <article class="comment-status-card is-loading">
+            <div class="comment-status-title">正在加载留言</div>
+            <div class="comment-status-text">请稍候……</div>
+          </article>
+        </div>
+
+        <div class="comment-pagination" id="comment-pagination" hidden>
+          <button type="button" id="comment-prev-page">上一页</button>
+          <span id="comment-page-info"></span>
+          <button type="button" id="comment-next-page">下一页</button>
+        </div>
+      </section>
+    `;
+
+    renderRatingStars(root);
+  }
+
+  function bindEvents(root) {
+    const form = root.querySelector("#comment-form");
+    const refreshBtn = root.querySelector("#comment-refresh-btn");
+    const prevBtn = root.querySelector("#comment-prev-page");
+    const nextBtn = root.querySelector("#comment-next-page");
+
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await submitComment(root);
+    });
+
+    refreshBtn?.addEventListener("click", () => loadComments(root, state.page));
+
+    prevBtn?.addEventListener("click", () => {
+      if (state.page > 1) loadComments(root, state.page - 1);
+    });
+
+    nextBtn?.addEventListener("click", () => {
+      if (state.page < state.totalPages) loadComments(root, state.page + 1);
     });
   }
-}
 
-function ensureWalineStyle() {
-  return new Promise((resolve, reject) => {
-    const id = "waline-client-style";
-    if (document.getElementById(id)) {
-      resolve();
+  function renderRatingStars(root) {
+    const box = root.querySelector("#comment-rating-stars");
+    const valueEl = root.querySelector("#comment-rating-value");
+    if (!box || !valueEl) return;
+
+    box.innerHTML = "";
+
+    for (let i = 1; i <= 10; i += 1) {
+      const value = i / 2;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "comment-rating-dot";
+      btn.dataset.value = String(value);
+      btn.setAttribute("aria-label", `${value} 分`);
+      btn.textContent = value <= state.rating ? "★" : "☆";
+      btn.addEventListener("click", () => {
+        state.rating = value;
+        valueEl.textContent = value.toFixed(1);
+        renderRatingStars(root);
+      });
+      box.appendChild(btn);
+    }
+  }
+
+  async function loadComments(root, page = 1) {
+    const list = root.querySelector("#comment-list");
+    if (!list) return;
+
+    state.page = page;
+
+    list.innerHTML = `
+      <article class="comment-status-card is-loading">
+        <div class="comment-status-title">正在加载留言</div>
+        <div class="comment-status-text">请稍候……</div>
+      </article>
+    `;
+
+    try {
+      const url = `${COMMENTS_ENDPOINT}?page=${encodeURIComponent(page)}&pageSize=${encodeURIComponent(state.pageSize)}`;
+      const data = await fetchJson(url);
+
+      if (!data.ok) throw new Error(data.message || "留言加载失败");
+
+      const comments = data.data?.comments || [];
+      const pagination = data.data?.pagination || {};
+
+      state.page = pagination.page || page;
+      state.totalPages = pagination.totalPages || 0;
+
+      renderCommentList(root, comments);
+      renderPagination(root, pagination);
+    } catch (error) {
+      console.error("留言加载失败：", error);
+      list.innerHTML = `
+        <article class="comment-status-card is-error">
+          <div class="comment-status-title">留言加载失败</div>
+          <div class="comment-status-text">请检查网络或稍后重试。</div>
+          <div class="comment-status-actions">
+            <button type="button" class="comment-retry-btn" id="comment-retry-load">重新加载</button>
+          </div>
+        </article>
+      `;
+      root.querySelector("#comment-retry-load")?.addEventListener("click", () => loadComments(root, state.page));
+    }
+  }
+
+  function renderCommentList(root, comments) {
+    const list = root.querySelector("#comment-list");
+    if (!list) return;
+
+    if (!comments.length) {
+      list.innerHTML = `
+        <article class="comment-empty">
+          <div class="comment-empty-icon">…</div>
+          <h4>还没有留言</h4>
+          <p>第一条留言等你来写。</p>
+        </article>
+      `;
       return;
     }
 
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href = WALINE_CSS_URL;
-    link.onload = resolve;
-    link.onerror = () => reject(new Error("Waline CSS 加载失败"));
-    document.head.appendChild(link);
-  });
-}
-
-function loadWalineModule(forceReload = false) {
-  if (!walineModulePromise || forceReload) {
-    walineModulePromise = import(WALINE_JS_URL);
+    list.innerHTML = comments.map(comment => renderCommentItem(comment)).join("");
   }
-  return walineModulePromise;
-}
 
-function needVpn(error) {
-  const msg = String(error?.message || error || "").toLowerCase();
-  return (
-    msg.includes("failed to fetch") ||
-    msg.includes("network") ||
-    msg.includes("timeout") ||
-    msg.includes("importing a module script failed")
-  );
-}
+  function renderCommentItem(comment) {
+    const nickname = escapeHTML(comment.nickname || "访客");
+    const content = escapeHTML(comment.content || "").replace(/\n/g, "<br>");
+    const website = normalizeWebsite(comment.website);
+    const rating = typeof comment.rating === "number" ? comment.rating : null;
+    const date = formatDate(comment.created_at);
+    const letter = nickname.trim().slice(0, 1).toUpperCase() || "访";
 
-function getCurrentCommentPath() {
-  return window.location.pathname + window.location.search;
-}
+    return `
+      <article class="comment-item">
+        <div class="comment-avatar" aria-hidden="true">${escapeHTML(letter)}</div>
+        <div class="comment-item-main">
+          <header class="comment-item-head">
+            <div>
+              <div class="comment-author-row">
+                ${website
+                  ? `<a class="comment-author" href="${escapeAttribute(website)}" target="_blank" rel="noopener noreferrer">${nickname}</a>`
+                  : `<span class="comment-author">${nickname}</span>`
+                }
+                <span class="comment-role-badge">Guest</span>
+              </div>
+              <time class="comment-time">${escapeHTML(date)}</time>
+            </div>
+            ${rating !== null ? `<div class="comment-item-rating" aria-label="评分 ${rating} 分">${renderRatingText(rating)}</div>` : ""}
+          </header>
+          <div class="comment-content">${content}</div>
+        </div>
+      </article>
+    `;
+  }
 
-async function initWalineComment(forceReload = false) {
-  const root = document.getElementById("waline");
-  if (!root) return;
+  function renderPagination(root, pagination) {
+    const wrap = root.querySelector("#comment-pagination");
+    const info = root.querySelector("#comment-page-info");
+    const prev = root.querySelector("#comment-prev-page");
+    const next = root.querySelector("#comment-next-page");
 
-  try {
-    await ensureWalineStyle();
-    const { init } = await loadWalineModule(forceReload);
+    if (!wrap || !info || !prev || !next) return;
 
-    if (walineObserver) {
-      walineObserver.disconnect();
-      walineObserver = null;
+    const totalPages = pagination.totalPages || 0;
+
+    if (totalPages <= 1) {
+      wrap.hidden = true;
+      return;
     }
 
-    if (walineInstance?.destroy) {
-      walineInstance.destroy();
+    wrap.hidden = false;
+    info.textContent = `${pagination.page || 1} / ${totalPages}`;
+    prev.disabled = (pagination.page || 1) <= 1;
+    next.disabled = (pagination.page || 1) >= totalPages;
+  }
+
+  async function submitComment(root) {
+    if (state.isSubmitting) return;
+
+    const form = root.querySelector("#comment-form");
+    const submitBtn = root.querySelector("#comment-submit-btn");
+    const message = root.querySelector("#comment-form-message");
+    if (!form || !submitBtn || !message) return;
+
+    const payload = {
+      nickname: form.nickname.value.trim() || "访客",
+      email: form.email.value.trim(),
+      website: form.website.value.trim(),
+      content: form.content.value.trim(),
+      rating: state.rating,
+    };
+
+    if (!payload.content) {
+      showFormMessage(message, "留言内容不能为空。", "error");
+      return;
     }
 
-    root.innerHTML = "";
-    root.classList.remove("editor-expanded");
-    root.dataset.currentRating = "0";
-    delete root.dataset.editorBound;
-    enhanceScheduled = false;
+    state.isSubmitting = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "提交中……";
+    showFormMessage(message, "正在提交留言……", "info");
 
-    walineInstance = init({
-      el: "#waline",
-      serverURL: WALINE_SERVER_URL,
-      path: getCurrentCommentPath(),
-      lang: "zh-CN",
-      login: "disable",
-      emoji: false,
-      search: false,
-      pageSize: 20,
-      commentSorting: "latest",
-      meta: ["nick", "mail", "link"],
-      requiredMeta: ["nick"],
-      wordLimit: 500,
-      dark: "auto",
-      reaction: false,
+    try {
+      const data = await fetchJson(COMMENTS_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!data.ok) throw new Error(data.message || "提交失败");
+
+      form.reset();
+      state.rating = 5;
+      renderRatingStars(root);
+      root.querySelector("#comment-rating-value").textContent = "5.0";
+
+      showFormMessage(message, "留言提交成功。", "success");
+      await loadComments(root, 1);
+    } catch (error) {
+      console.error("留言提交失败：", error);
+      showFormMessage(message, error.message || "留言提交失败，请稍后再试。", "error");
+    } finally {
+      state.isSubmitting = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = "提交留言";
+    }
+  }
+
+  async function fetchJson(url, options = {}) {
+    const res = await fetch(url, {
+      cache: "no-cache",
+      ...options,
     });
 
-    setTimeout(() => {
-      const panel = root.querySelector(".wl-panel");
-      const editor = root.querySelector(".wl-editor");
-
-      if (!panel || !editor) {
-        throw new Error("Waline 初始化失败");
-      }
-
-      bindEditorBehavior();
-      runEnhancements();
-      observeWalineUpdates();
-    }, 500);
-  } catch (error) {
-    console.error("Waline 加载失败：", error);
-    if (needVpn(error)) {
-      showVpnNotice(root);
-    } else {
-      showGenericError(root);
+    let data = null;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
     }
-  }
-}
 
-function bindEditorBehavior() {
-  const root = document.getElementById("waline");
-  if (!root || root.dataset.editorBound === "true") return;
+    if (!res.ok) {
+      throw new Error(data?.message || `请求失败：${res.status}`);
+    }
 
-  root.dataset.editorBound = "true";
-
-  let lastReplyClickAt = 0;
-
-  // 拦截评论里的 reply 按钮:Waline 自己不会把焦点送到主编辑器
-  root.addEventListener("click", (e) => {
-    const replyBtn = e.target.closest(".wl-cards .wl-reply");
-    if (!replyBtn) return;
-
-    lastReplyClickAt = Date.now();
-    root.classList.add("editor-expanded");
-
-    setTimeout(() => {
-      const editor = root.querySelector(".wl-editor");
-      if (editor && document.contains(editor)) editor.focus();
-    }, 50);
-  });
-
-  // focusin 只对真正的输入元素响应,避免点赞按钮临时获焦时误展开
-  root.addEventListener("focusin", (e) => {
-    if (!e.target.matches(".wl-editor, .wl-input, input, textarea")) return;
-    root.classList.add("editor-expanded");
-    ensureRatingUI();
-  });
-
-  root.addEventListener("focusout", () => {
-    setTimeout(() => {
-      const activeInside = root.contains(document.activeElement);
-      const editor = root.querySelector(".wl-editor");
-      const hasText = !!getEditorText(editor).trim();
-      const stickyForReply = Date.now() - lastReplyClickAt < 600;
-
-      if (!activeInside && !hasText && !stickyForReply) {
-        root.classList.remove("editor-expanded");
-      }
-    }, 120);
-  });
-}
-
-function getEditorText(editor) {
-  if (!editor) return "";
-  return typeof editor.value === "string" ? editor.value : editor.textContent || "";
-}
-
-function setEditorText(editor, text) {
-  if (!editor) return;
-
-  if (typeof editor.value === "string") {
-    editor.value = text;
-  } else {
-    editor.textContent = text;
+    return data;
   }
 
-  editor.dispatchEvent(new Event("input", { bubbles: true }));
-}
-
-function createRatingBox(root) {
-  const box = document.createElement("div");
-  box.className = "rating-box";
-  box.innerHTML = `
-    <div class="rating-label">评分</div>
-    <div class="rating-stars" aria-label="评分选择">
-      <button type="button" class="rating-star" data-value="1">★</button>
-      <button type="button" class="rating-star" data-value="2">★</button>
-      <button type="button" class="rating-star" data-value="3">★</button>
-      <button type="button" class="rating-star" data-value="4">★</button>
-      <button type="button" class="rating-star" data-value="5">★</button>
-    </div>
-    <div class="rating-text">可选，不打分也可以直接评论</div>
-  `;
-
-  const stars = [...box.querySelectorAll(".rating-star")];
-  const text = box.querySelector(".rating-text");
-
-  function paint(value) {
-    stars.forEach((star) => {
-      star.classList.toggle("active", Number(star.dataset.value) <= value);
-    });
-    text.textContent = value > 0 ? `已选择 ${value} 星` : "可选，不打分也可以直接评论";
+  function showFormMessage(el, text, type) {
+    el.hidden = false;
+    el.className = `comment-form-message is-${type}`;
+    el.textContent = text;
   }
 
-  stars.forEach((star) => {
-    star.addEventListener("mouseenter", () => paint(Number(star.dataset.value)));
-    star.addEventListener("click", () => {
-      const clicked = Number(star.dataset.value);
-      const current = Number(root.dataset.currentRating || "0");
-      const next = current === clicked ? 0 : clicked;
-      root.dataset.currentRating = String(next);
-      paint(next);
-      root.classList.add("editor-expanded");
-    });
-  });
+  function normalizeWebsite(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
 
-  box.addEventListener("mouseleave", () => {
-    paint(Number(root.dataset.currentRating || "0"));
-  });
-
-  paint(Number(root.dataset.currentRating || "0"));
-  return box;
-}
-
-function ensureRatingUI() {
-  const root = document.getElementById("waline");
-  if (!root) return;
-
-  const panel = root.querySelector(".wl-panel");
-  if (!panel) return;
-
-  if (!panel.querySelector(".rating-box")) {
-    panel.prepend(createRatingBox(root));
-  }
-
-  const submitBtn = root.querySelector(".wl-submit");
-  if (!submitBtn || submitBtn.dataset.ratingSubmitBound === "true") return;
-
-  submitBtn.dataset.ratingSubmitBound = "true";
-  submitBtn.addEventListener(
-    "click",
-    () => {
-      const ratingValue = Number(root.dataset.currentRating || "0");
-      if (!ratingValue) return;
-
-      const editor = root.querySelector(".wl-editor");
-      if (!editor) return;
-
-      const currentText = getEditorText(editor).trim();
-      if (!currentText) return;
-      if (/^评分：★{1,5}\n/.test(currentText)) return;
-
-      setEditorText(editor, `评分：${"★".repeat(ratingValue)}\n${currentText}`);
-    },
-    { capture: true }
-  );
-}
-
-function createLetterAvatar(letter, isAdmin) {
-  const avatar = document.createElement("div");
-  avatar.className = "custom-letter-avatar";
-  if (isAdmin) avatar.classList.add("is-admin");
-  avatar.textContent = letter;
-  return avatar;
-}
-
-function isAdminComment(cardItem) {
-  if (!cardItem) return false;
-
-  // 1. Waline 早期版本：通过 wl-admin class 标记
-  if (cardItem.classList.contains("wl-admin")) return true;
-  if (cardItem.querySelector(".wl-admin")) return true;
-
-  const nick = cardItem.querySelector(".wl-card .wl-head .wl-nick");
-  if (nick?.classList.contains("wl-admin")) return true;
-
-  // 2. Waline 新版：通过徽章文字判断
-  const badge = cardItem.querySelector(".wl-badge");
-  if (badge && /admin|管理员/i.test(badge.textContent.trim())) return true;
-
-  // 3. 兜底：按昵称白名单匹配（Waline 不在 DOM 暴露 user.type，只能这样）
-  if (nick) {
-    const nickText = nick.textContent.trim().toLowerCase();
-    if (ADMIN_NICKNAMES.some(name => name.trim().toLowerCase() === nickText)) {
-      return true;
+    try {
+      const url = new URL(raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`);
+      if (!["http:", "https:"].includes(url.protocol)) return "";
+      return url.href;
+    } catch {
+      return "";
     }
   }
 
-  return false;
-}
+  function formatDate(value) {
+    if (!value) return "刚刚";
 
-function ensureRoleBadge(head, isAdmin) {
-  let badge = head.querySelector(".custom-role-badge");
-  if (!badge) {
-    badge = document.createElement("span");
-    badge.className = "custom-role-badge";
-  }
+    const normalized = String(value).includes("T") ? value : String(value).replace(" ", "T") + "Z";
+    const date = new Date(normalized);
 
-  badge.textContent = isAdmin ? "管理员" : "游客";
-  badge.classList.toggle("is-admin", isAdmin);
-  badge.classList.toggle("is-visitor", !isAdmin);
+    if (Number.isNaN(date.getTime())) return String(value).slice(0, 16);
 
-  return badge;
-}
-
-function ensureAvatar(head, nickText, isAdmin) {
-  let slot = head.querySelector(".custom-avatar-slot");
-  if (!slot) {
-    slot = document.createElement("div");
-    slot.className = "custom-avatar-slot";
-  }
-
-  let avatar = slot.querySelector(".custom-letter-avatar");
-  const letter = (nickText || "?").charAt(0).toUpperCase();
-
-  if (!avatar) {
-    avatar = createLetterAvatar(letter, isAdmin);
-    slot.appendChild(avatar);
-  } else {
-    avatar.textContent = letter;
-    avatar.classList.toggle("is-admin", isAdmin);
-  }
-
-  return slot;
-}
-
-function ensureActionSlot(head) {
-  let slot = head.querySelector(".custom-action-slot");
-  if (!slot) {
-    slot = document.createElement("div");
-    slot.className = "custom-action-slot";
-  }
-
-  const actionNodes = [
-    ...head.querySelectorAll(".wl-like, .wl-reply, .wl-likecount, .wl-action, .wl-actions")
-  ];
-
-  actionNodes.forEach((node) => {
-    if (node !== slot && !slot.contains(node)) {
-      slot.appendChild(node);
-    }
-  });
-
-  return slot;
-}
-
-function rebuildCommentHead(cardItem) {
-  const card = cardItem.querySelector(".wl-card");
-  const head = card?.querySelector(".wl-head");
-  const nick = head?.querySelector(".wl-nick");
-  const time = head?.querySelector(".wl-time");
-  const meta = head?.querySelector(".wl-meta");
-  const user = cardItem.querySelector(".wl-user");
-  const avatarImg = user?.querySelector("img.wl-user-avatar");
-
-  if (!card || !head || !nick) return;
-
-  const isAdmin = isAdminComment(cardItem);
-  // 把识别结果记到 dataset 上，方便从 DevTools 直接排查
-  cardItem.dataset.role = isAdmin ? "admin" : "visitor";
-  const avatar = ensureAvatar(head, nick.textContent.trim(), isAdmin);
-  const badge = ensureRoleBadge(head, isAdmin);
-  const actions = ensureActionSlot(head);
-
-  if (user) user.style.display = "none";
-  if (avatarImg) avatarImg.style.display = "none";
-  cardItem.classList.add("avatar-inside-card");
-
-  const left = document.createElement("div");
-  left.className = "custom-head-left";
-  left.append(avatar, badge, nick);
-  if (time) left.append(time);
-
-  head.innerHTML = "";
-  head.append(left, actions);
-  if (meta) head.append(meta);
-
-  card.classList.toggle("is-admin", isAdmin);
-  card.classList.toggle("is-visitor", !isAdmin);
-}
-
-function decorateLikeButtons() {
-  const root = document.getElementById("waline");
-  if (!root) return;
-
-  root.querySelectorAll(".wl-like").forEach((btn) => {
-    if (btn.dataset.likeEnhanced === "true") return;
-    btn.dataset.likeEnhanced = "true";
-
-    btn.addEventListener("click", () => {
-      btn.classList.remove("like-burst");
-      void btn.offsetWidth;
-      btn.classList.add("like-burst");
-      setTimeout(() => btn.classList.remove("like-burst"), 380);
+    return date.toLocaleString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     });
-  });
-}
+  }
 
-function decorateReplyThreads() {
-  const root = document.getElementById("waline");
-  if (!root) return;
+  function renderRatingText(value) {
+    const full = Math.floor(value);
+    const half = value % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return `${"★".repeat(full)}${half ? "☆" : ""}${"·".repeat(Math.max(empty, 0))} <span>${value.toFixed(1)}</span>`;
+  }
 
-  // 兼容老的 .wl-replies（如果 Waline 版本用这个类名也处理一下）
-  root.querySelectorAll(".wl-replies").forEach((item) => {
-    if (item.dataset.replyEnhanced === "true") return;
-    item.dataset.replyEnhanced = "true";
-    item.classList.add("reply-thread-enhanced");
-  });
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[char]));
+  }
 
-  // 新：给每个 .wl-quote 嵌套回复容器加 YouTube 式「查看 N 条回复 ▾」
-  root.querySelectorAll(".wl-quote").forEach((quote) => {
-    if (quote.dataset.replyToggleBound === "true") return;
-
-    // 只处理直接装着回复 card-item 的 quote；空 quote 跳过
-    const replyItems = quote.querySelectorAll(":scope > .wl-card-item");
-    if (replyItems.length === 0) return;
-
-    quote.dataset.replyToggleBound = "true";
-    quote.classList.add("is-collapsed");
-
-    const toggle = document.createElement("button");
-    toggle.type = "button";
-    toggle.className = "reply-toggle";
-    toggle.setAttribute("aria-expanded", "false");
-
-    const count = replyItems.length;
-    const label = document.createElement("span");
-    label.className = "reply-toggle-label";
-    label.textContent = `查看 ${count} 条回复`;
-
-    const icon = document.createElement("span");
-    icon.className = "reply-toggle-icon";
-    icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>`;
-
-    toggle.append(icon, label);
-
-    toggle.addEventListener("click", () => {
-      const nowOpen = quote.classList.toggle("is-collapsed") === false;
-      toggle.classList.toggle("is-open", nowOpen);
-      toggle.setAttribute("aria-expanded", nowOpen ? "true" : "false");
-      label.textContent = nowOpen ? `收起回复` : `查看 ${count} 条回复`;
-    });
-
-    quote.insertBefore(toggle, quote.firstChild);
-  });
-}
-
-function enhanceCommentCards() {
-  const root = document.getElementById("waline");
-  if (!root) return;
-
-  root.querySelectorAll(".wl-cards .wl-card-item").forEach((cardItem) => {
-    rebuildCommentHead(cardItem);
-  });
-}
-
-function runEnhancements() {
-  ensureRatingUI();
-  decorateLikeButtons();
-  decorateReplyThreads();
-  enhanceCommentCards();
-}
-
-function scheduleEnhancements() {
-  if (enhanceScheduled) return;
-  enhanceScheduled = true;
-
-  requestAnimationFrame(() => {
-    enhanceScheduled = false;
-    runEnhancements();
-  });
-}
-
-function observeWalineUpdates() {
-  const root = document.getElementById("waline");
-  if (!root) return;
-
-  if (walineObserver) walineObserver.disconnect();
-
-  walineObserver = new MutationObserver(() => {
-    scheduleEnhancements();
-  });
-
-  walineObserver.observe(root, {
-    childList: true,
-    subtree: true,
-  });
-}
-
-if (!window.__walineEscBound) {
-  window.__walineEscBound = true;
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-
-    const root = document.getElementById("waline");
-    if (!root) return;
-
-    const editor = root.querySelector(".wl-editor");
-    if (!editor) return;
-
-    if (!getEditorText(editor).trim()) {
-      editor.blur();
-      root.classList.remove("editor-expanded");
-    }
-  });
-}
+  function escapeAttribute(value) {
+    return escapeHTML(value).replace(/`/g, "&#96;");
+  }
+})();

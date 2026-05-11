@@ -73,7 +73,7 @@
       version: "v1.1.0",
       stack: [
         "HTML · CSS/SCSS · JavaScript",
-        "Waline · KaTeX · 原生 SVG",
+        "自研留言系统 · KaTeX · 原生 SVG",
       ],
     },
   };
@@ -724,7 +724,7 @@
       ? archive.status
       : [
           { label: "内容统计", value: "自动生成", type: "auto" },
-          { label: "留言系统", value: "迁移中", type: "migrating" },
+          { label: "留言系统", value: "自研 API 已接入", type: "enabled" },
           { label: "移动端适配", value: "优化中", type: "progress" },
           { label: "数据中心", value: "已启用", type: "enabled" },
         ];

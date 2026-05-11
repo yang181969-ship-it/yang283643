@@ -1,16 +1,25 @@
 <main id="main-content">
-  <section class="comment-page no-card" aria-labelledby="comment-disabled-title">
-    <article class="card">
-      <h2 id="comment-disabled-title">留言页面暂时停用</h2>
-      <p>
-        这个网站的留言系统目前依赖境外服务，中国大陆用户通常需要代理或 VPN 才能完整访问。
-      </p>
-      <p>
-        我正在计划把留言系统迁移到境内服务。迁移完成前，这个页面会先暂停开放，避免大家进入后遇到加载失败或访问不完整的问题。
-      </p>
-      <p>
-        等新的留言系统准备好后，这里会重新开放。
-      </p>
+  <section class="comment-page" aria-labelledby="comment-page-title">
+    <article class="comment-hero card">
+      <div class="comment-hero-text">
+        <p class="comment-kicker">MESSAGE BOARD</p>
+        <h2 id="comment-page-title">留言板</h2>
+        <p>
+          这里已经迁移到自研留言系统，留言数据会直接保存到我的服务器。
+          目前先开放基础留言和评分功能，后续会继续加入回复、管理、审核等能力。
+        </p>
+      </div>
+      <div class="comment-hero-badge" aria-hidden="true">
+        <span>自研</span>
+        <strong>API</strong>
+      </div>
     </article>
+
+    <div id="custom-comment-root" class="custom-comment-root" aria-live="polite">
+      <article class="comment-status-card is-loading">
+        <div class="comment-status-title">留言系统加载中</div>
+        <div class="comment-status-text">正在连接自研留言服务，请稍候……</div>
+      </article>
+    </div>
   </section>
 </main>
