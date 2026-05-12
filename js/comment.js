@@ -96,6 +96,21 @@
         likeBtn.classList.toggle("is-liked");
       }
     });
+
+    // 展开态:点击 composer 外部 → 收起(若 textarea 无内容)
+    document.addEventListener("click", (event) => {
+      const composerEl = root.querySelector("#comment-composer");
+      if (!composerEl || !composerEl.classList.contains("is-expanded")) return;
+      if (composerEl.contains(event.target)) return;
+      // 「回复」按钮刚刚展开 composer,跳过这一次
+      if (event.target.closest && event.target.closest("[data-action='reply']")) return;
+
+      const ta = root.querySelector("#comment-content");
+      if (ta && ta.value.trim()) return; // 有内容时保留,避免误丢
+
+      clearReplyTarget(root);
+      collapseComposer(root);
+    });
   }
 
   // ============================================================
@@ -224,7 +239,7 @@
     const isAdmin = comment.role === "admin";
     const roleBadge = isAdmin
       ? `<span class="comment-role-badge is-owner">站长</span>`
-      : `<span class="comment-role-badge">Guest</span>`;
+      : `<span class="comment-role-badge">访客</span>`;
     const website = normalizeWebsite(comment.website);
     const authorEl = website
       ? `<a class="comment-author" href="${escapeAttribute(website)}" target="_blank" rel="noopener noreferrer">${nickname}</a>`
@@ -273,7 +288,7 @@
     const isAdmin = reply.role === "admin";
     const roleBadge = isAdmin
       ? `<span class="comment-role-badge is-owner">站长</span>`
-      : `<span class="comment-role-badge">Guest</span>`;
+      : `<span class="comment-role-badge">访客</span>`;
     const website = normalizeWebsite(reply.website);
     const authorEl = website
       ? `<a class="comment-author" href="${escapeAttribute(website)}" target="_blank" rel="noopener noreferrer">${nickname}</a>`
