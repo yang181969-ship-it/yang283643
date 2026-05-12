@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check c:/Users/xyy18/Desktop/my-website/js/comment-admin.js)",
+      "Bash(node --check c:/Users/xyy18/Desktop/my-website/js/main.js)"
+    ]
+  }
+}
