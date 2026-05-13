@@ -57,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
     update: "html/update.html",
     stats: "html/stats.html",
     comment: "html/comment.html",
-    "comment-admin": "html/comment-admin.html",
     about: "html/about.html",
   };
 
@@ -210,7 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function runPageInit(page) {
     if (page === "home"    && typeof window.initHomeCards === "function") window.initHomeCards();
     if (page === "comment" && typeof initCommentPage === "function") initCommentPage();
-    if (page === "comment-admin" && typeof window.initCommentAdminPage === "function") window.initCommentAdminPage();
     if (page === "anime"   && typeof initAnimePage   === "function") initAnimePage();
     if (page === "gallery" && typeof initGalleryPage === "function") initGalleryPage();
     if (page === "notes"   && typeof window.initNotesPage === "function") window.initNotesPage();
