@@ -16,7 +16,7 @@
 
   const state = {
     page: 1,
-    pageSize: 20,
+    pageSize: 100,
     totalPages: 0,
     totalComments: 0,
     isSubmitting: false,
@@ -34,6 +34,38 @@
     bindEvents(root);
     loadComments(root, 1);
     syncComposerCollapsed(root);
+    syncMainHeightWithSidebar(root);
+  }
+
+  // ============================================================
+  // 高度对齐：让左侧大卡片底部与右侧侧栏（站长的话）底部齐平
+  // 仅在两栏布局（>900px）下生效；窄屏由 CSS 媒体查询接管
+  // ============================================================
+  function syncMainHeightWithSidebar(root) {
+    const main = root.querySelector(".comment-main");
+    const sidebar = root.querySelector(".comment-sidebar");
+    if (!main || !sidebar || typeof ResizeObserver === "undefined") return;
+
+    const mq = window.matchMedia("(min-width: 901px)");
+
+    const apply = () => {
+      if (mq.matches) {
+        main.style.setProperty("--comment-main-height", `${sidebar.offsetHeight}px`);
+      } else {
+        main.style.removeProperty("--comment-main-height");
+      }
+    };
+
+    const ro = new ResizeObserver(apply);
+    ro.observe(sidebar);
+
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", apply);
+    } else if (typeof mq.addListener === "function") {
+      mq.addListener(apply);
+    }
+
+    apply();
   }
 
   window.initCommentPage = initCommentPage;
@@ -43,8 +75,6 @@
   // ============================================================
   function bindEvents(root) {
     const refreshBtn = root.querySelector("#comment-refresh-btn");
-    const prevBtn = root.querySelector("#comment-prev-page");
-    const nextBtn = root.querySelector("#comment-next-page");
     const tabs = root.querySelectorAll(".comment-tab");
     const composer = root.querySelector("#comment-composer");
     const textarea = root.querySelector("#comment-content");
@@ -52,14 +82,6 @@
     const list = root.querySelector("#comment-list");
 
     refreshBtn?.addEventListener("click", () => loadComments(root, state.page));
-
-    prevBtn?.addEventListener("click", () => {
-      if (state.page > 1) loadComments(root, state.page - 1);
-    });
-
-    nextBtn?.addEventListener("click", () => {
-      if (state.page < state.totalPages) loadComments(root, state.page + 1);
-    });
 
     tabs.forEach(tab => {
       tab.addEventListener("click", () => {
@@ -107,6 +129,22 @@
       const likeBtn = event.target.closest("[data-action='like']");
       if (likeBtn) {
         likeBtn.classList.toggle("is-liked");
+        return;
+      }
+
+      const toggleBtn = event.target.closest("[data-action='toggle-replies']");
+      if (toggleBtn) {
+        const article = toggleBtn.closest(".comment-item");
+        const repliesEl = article?.querySelector(".comment-replies");
+        const labelEl = toggleBtn.querySelector(".comment-replies-toggle__label");
+        if (!repliesEl) return;
+        const count = repliesEl.children.length;
+        const willHide = !repliesEl.hidden;
+        repliesEl.hidden = willHide;
+        toggleBtn.setAttribute("aria-expanded", willHide ? "false" : "true");
+        if (labelEl) {
+          labelEl.textContent = willHide ? `展开 ${count} 条回复` : `收起 ${count} 条回复`;
+        }
       }
     });
 
@@ -168,7 +206,6 @@
       state.rawComments = comments;
 
       renderCommentList(root, comments);
-      renderPagination(root, pagination);
       renderStats(root, comments, pagination);
     } catch (error) {
       console.error("留言加载失败：", error);
@@ -294,8 +331,13 @@
       ? `<a class="comment-author" href="${escapeAttribute(website)}" target="_blank" rel="noopener noreferrer">${nickname}</a>`
       : `<span class="comment-author">${nickname}</span>`;
 
-    const repliesHtml = comment.replies.length
-      ? `<div class="comment-replies">${comment.replies.map(r => renderReplyItem(r)).join("")}</div>`
+    const replyCount = comment.replies.length;
+    const repliesHtml = replyCount
+      ? `<button type="button" class="comment-replies-toggle" data-action="toggle-replies" aria-expanded="false">
+           <span class="comment-replies-toggle__icon" aria-hidden="true"></span>
+           <span class="comment-replies-toggle__label">展开 ${replyCount} 条回复</span>
+         </button>
+         <div class="comment-replies" hidden>${comment.replies.map(r => renderReplyItem(r)).join("")}</div>`
       : "";
 
     const imagesHtml = renderImageList(comment.images);
@@ -311,19 +353,18 @@
               <span class="comment-item__sep" aria-hidden="true">·</span>
               <time class="comment-time">${escapeHTML(date)}</time>
             </div>
+            <div class="comment-item__actions">
+              <button type="button" class="comment-action comment-action--icon" data-action="reply" data-comment-id="${escapeAttribute(comment.id)}" data-comment-name="${safeName}" aria-label="回复" title="回复">
+                <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="comment-action comment-action--icon" data-action="like" data-comment-id="${escapeAttribute(comment.id)}" aria-label="点赞" title="点赞">
+                <span class="comment-action__icon comment-action__icon--like" aria-hidden="true"></span>
+                ${comment.likes ? `<span class="comment-action__count">${comment.likes}</span>` : ""}
+              </button>
+            </div>
           </header>
           <div class="comment-content">${content}</div>
           ${imagesHtml}
-          <div class="comment-item__actions">
-            <button type="button" class="comment-action" data-action="reply" data-comment-id="${escapeAttribute(comment.id)}" data-comment-name="${safeName}">
-              <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
-              回复
-            </button>
-            <button type="button" class="comment-action" data-action="like" data-comment-id="${escapeAttribute(comment.id)}">
-              <span class="comment-action__icon comment-action__icon--like" aria-hidden="true"></span>
-              点赞${comment.likes ? `(${comment.likes})` : ""}
-            </button>
-          </div>
           ${repliesHtml}
         </div>
       </article>
@@ -356,50 +397,27 @@
         <div class="comment-avatar comment-avatar--sm" aria-hidden="true">${escapeHTML(letter)}</div>
         <div class="comment-reply__main">
           <header class="comment-reply__head">
-            ${authorEl}
-            ${roleBadge}
-            <span class="comment-item__sep" aria-hidden="true">·</span>
-            <time class="comment-time">${escapeHTML(date)}</time>
+            <div class="comment-item__author">
+              ${authorEl}
+              ${roleBadge}
+              <span class="comment-item__sep" aria-hidden="true">·</span>
+              <time class="comment-time">${escapeHTML(date)}</time>
+            </div>
+            <div class="comment-item__actions">
+              <button type="button" class="comment-action comment-action--icon" data-action="reply" data-comment-id="${escapeAttribute(reply.id)}" data-comment-name="${safeName}" aria-label="回复" title="回复">
+                <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="comment-action comment-action--icon" data-action="like" data-comment-id="${escapeAttribute(reply.id)}" aria-label="点赞" title="点赞">
+                <span class="comment-action__icon comment-action__icon--like" aria-hidden="true"></span>
+                ${reply.likes ? `<span class="comment-action__count">${reply.likes}</span>` : ""}
+              </button>
+            </div>
           </header>
           <div class="comment-content">${mention}${content}</div>
           ${imagesHtml}
-          <div class="comment-item__actions">
-            <button type="button" class="comment-action" data-action="reply" data-comment-id="${escapeAttribute(reply.id)}" data-comment-name="${safeName}">
-              <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
-              回复
-            </button>
-            <button type="button" class="comment-action" data-action="like" data-comment-id="${escapeAttribute(reply.id)}">
-              <span class="comment-action__icon comment-action__icon--like" aria-hidden="true"></span>
-              点赞${reply.likes ? `(${reply.likes})` : ""}
-            </button>
-          </div>
         </div>
       </article>
     `;
-  }
-
-  // ============================================================
-  // 分页
-  // ============================================================
-  function renderPagination(root, pagination) {
-    const wrap = root.querySelector("#comment-pagination");
-    const info = root.querySelector("#comment-page-info");
-    const prev = root.querySelector("#comment-prev-page");
-    const next = root.querySelector("#comment-next-page");
-
-    if (!wrap || !info || !prev || !next) return;
-
-    const totalPages = pagination.totalPages || 0;
-
-    if (totalPages <= 1) {
-      wrap.hidden = true;
-      return;
-    }
-
-    wrap.hidden = false;
-    info.textContent = `${pagination.page || 1} / ${totalPages}`;
-    prev.disabled = (pagination.page || 1) <= 1;
-    next.disabled = (pagination.page || 1) >= totalPages;
   }
 
   // ============================================================
