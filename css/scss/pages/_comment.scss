@@ -125,11 +125,12 @@
 // ============================================================
 .comment-main {
   position: relative;
-  padding: 24px 24px 110px; // 留出底部浮浮输入框的空间
-  min-height: 480px;
+  padding: 24px;
+  height: var(--comment-main-height, clamp(560px, calc(100vh - 140px), 820px));
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow: hidden;
 }
 
 .comment-main__head {
@@ -229,32 +230,58 @@
 // 5. 留言列表 / 主评论
 // ============================================================
 .comment-thread {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0;
+  padding-right: 6px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--primary) 28%, transparent);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 .comment-item {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);
   gap: 14px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--bg-card) 92%, var(--primary-soft));
-  border: 1px solid color-mix(in srgb, var(--border-soft) 85%, var(--primary-soft));
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  padding: 18px 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid var(--border-soft);
+  transition: none;
 
   &:hover {
-    transform: translateY(-1px);
-    border-color: color-mix(in srgb, var(--primary) 36%, var(--border-soft));
-    box-shadow: var(--shadow-soft);
+    transform: none;
+    box-shadow: none;
+  }
+
+  &:first-child {
+    padding-top: 4px;
+  }
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 4px;
   }
 
   &.is-owner {
-    background: linear-gradient(135deg,
-      color-mix(in srgb, var(--primary-soft) 70%, var(--bg-card)),
-      var(--bg-card));
-    border-color: color-mix(in srgb, var(--primary) 28%, var(--border-soft));
+    background: transparent;
+    border-color: var(--border-soft);
   }
 }
 
@@ -291,6 +318,7 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .comment-item__author {
@@ -298,6 +326,7 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .comment-author {
@@ -352,10 +381,11 @@
 
 // ----- 操作按钮（回复 / 点赞）-----
 .comment-item__actions {
-  margin-top: 8px;
-  display: flex;
+  margin: 0 0 0 auto;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
+  flex: 0 0 auto;
 }
 
 .comment-action {
@@ -383,6 +413,22 @@
   &.is-liked {
     color: #e11d48;
   }
+
+  &--icon {
+    padding: 6px;
+    border-radius: 999px;
+    min-width: 30px;
+    min-height: 30px;
+    justify-content: center;
+    gap: 4px;
+  }
+}
+
+.comment-action__count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  padding-right: 2px;
 }
 
 .comment-action__icon {
@@ -406,44 +452,83 @@
 // 6. 一级回复容器（仅缩进一次）
 // ============================================================
 .comment-replies {
-  margin: 14px 0 4px 14px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--primary-soft) 35%, var(--bg-main));
+  margin: 4px 0 4px;
+  padding: 0 0 0 16px;
+  background: transparent;
+  border-radius: 0;
+  border-left: 2px solid color-mix(in srgb, var(--primary) 22%, transparent);
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
 
   &::before {
-    content: "";
-    position: absolute;
-    top: 14px;
-    bottom: 14px;
-    left: -14px;
-    width: 2px;
-    border-radius: 2px;
-    background: color-mix(in srgb, var(--primary) 28%, transparent);
-    opacity: 0.55;
+    content: none;
   }
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.comment-replies-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--primary-dark);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 5px 10px;
+  margin: 8px 0 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  transition: background 0.18s ease, color 0.18s ease;
+
+  &:hover {
+    background: var(--primary-soft);
+  }
+}
+
+.comment-replies-toggle__icon {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 0.2s ease;
+}
+
+.comment-replies-toggle[aria-expanded="false"] .comment-replies-toggle__icon {
+  transform: rotate(-90deg);
 }
 
 .comment-reply {
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr);
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--bg-card);
-  border: 1px solid color-mix(in srgb, var(--border-soft) 80%, transparent);
-  transition: border-color 0.18s ease;
+  padding: 10px 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  transition: none;
+
+  & + & {
+    border-top: 1px solid var(--border-soft);
+  }
 
   &:hover {
-    border-color: color-mix(in srgb, var(--primary) 32%, var(--border-soft));
+    border-color: transparent;
   }
 
   &.is-owner {
-    border-color: color-mix(in srgb, var(--primary) 30%, var(--border-soft));
+    border-color: transparent;
   }
 }
 
@@ -607,11 +692,11 @@
   --composer-field-border: #e5e7eb;
   --composer-field-bg: #ffffff;
 
-  position: sticky;
-  bottom: 18px;
+  position: relative;
+  flex: 0 0 auto;
   z-index: 5;
   width: min(640px, calc(100% - 32px));
-  margin: 16px auto 0;
+  margin: 4px auto 0;
   padding: 8px 8px 8px 14px;
   border-radius: 999px;
   background: var(--bg-card);
@@ -1438,9 +1523,16 @@
   }
 
   .comment-main {
-    padding: 18px 16px 24px;
+    height: auto;
     min-height: 0;
+    overflow: visible;
+    padding: 18px 16px 24px;
     border-radius: var(--radius-card);
+  }
+
+  .comment-thread {
+    overflow: visible;
+    padding-right: 0;
   }
 
   .comment-main__head {
@@ -1471,7 +1563,7 @@
 
   .comment-item {
     grid-template-columns: 38px minmax(0, 1fr);
-    padding: 14px;
+    padding: 14px 0;
     gap: 12px;
   }
 
@@ -1487,18 +1579,14 @@
   }
 
   .comment-replies {
-    margin-left: 8px;
-    padding: 10px;
-
-    &::before {
-      left: -8px;
-    }
+    margin-top: 10px;
+    padding-left: 12px;
   }
 
   .comment-reply {
     grid-template-columns: 32px minmax(0, 1fr);
     gap: 10px;
-    padding: 9px 10px;
+    padding: 9px 0;
   }
 
   .comment-side-card {
