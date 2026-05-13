@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-11T06:25:24.569Z",
+  "generatedAt": "2026-05-13T06:17:48.987Z",
   "siteBirthday": "2026-04-13",
-  "totalDays": 28,
+  "totalDays": 30,
   "totalContent": 47,
   "totals": {
     "notes": 8,
@@ -10,5 +10,5 @@
     "updates": 12
   },
   "latestUpdate": "2026-05-08",
-  "newAnimeCount": 1
+  "newAnimeCount": 0
 }

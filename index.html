@@ -15,6 +15,11 @@
   <script>
     (function () {
       var page = new URLSearchParams(window.location.search).get('page') || 'home';
+      // 旧后台入口已迁移至独立子域名
+      if (page === 'comment-admin') {
+        window.location.replace('https://admin.yang181969.com');
+        return;
+      }
       document.documentElement.dataset.page = page;
     })();
   </script>
@@ -654,7 +659,6 @@
   <!-- JS：全部加 defer，不阻塞页面渲染 -->
   <script defer src="js/main.js"></script>
   <script defer src="js/comment.js"></script>
-  <script defer src="js/comment-admin.js"></script>
   <script defer src="js/animes.js"></script>
   <script defer src="js/gallery.js"></script>
   <script defer src="js/gallery-data.js"></script>
