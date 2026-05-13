@@ -128,7 +128,14 @@
 
       const likeBtn = event.target.closest("[data-action='like']");
       if (likeBtn) {
-        likeBtn.classList.toggle("is-liked");
+        const willLike = !likeBtn.classList.contains("is-liked");
+        likeBtn.classList.toggle("is-liked", willLike);
+        const countEl = likeBtn.querySelector(".comment-action__count");
+        if (countEl) {
+          const current = parseInt(countEl.textContent, 10) || 0;
+          const next = Math.max(0, current + (willLike ? 1 : -1));
+          countEl.textContent = String(next);
+        }
         return;
       }
 
@@ -357,9 +364,9 @@
               <button type="button" class="comment-action comment-action--icon" data-action="reply" data-comment-id="${escapeAttribute(comment.id)}" data-comment-name="${safeName}" aria-label="回复" title="回复">
                 <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
               </button>
-              <button type="button" class="comment-action comment-action--icon" data-action="like" data-comment-id="${escapeAttribute(comment.id)}" aria-label="点赞" title="点赞">
+              <button type="button" class="comment-action comment-action--icon comment-action--like" data-action="like" data-comment-id="${escapeAttribute(comment.id)}" aria-label="点赞" title="点赞">
                 <span class="comment-action__icon comment-action__icon--like" aria-hidden="true"></span>
-                ${comment.likes ? `<span class="comment-action__count">${comment.likes}</span>` : ""}
+                <span class="comment-action__count">${comment.likes || 0}</span>
               </button>
             </div>
           </header>
@@ -407,9 +414,9 @@
               <button type="button" class="comment-action comment-action--icon" data-action="reply" data-comment-id="${escapeAttribute(reply.id)}" data-comment-name="${safeName}" aria-label="回复" title="回复">
                 <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
               </button>
-              <button type="button" class="comment-action comment-action--icon" data-action="like" data-comment-id="${escapeAttribute(reply.id)}" aria-label="点赞" title="点赞">
+              <button type="button" class="comment-action comment-action--icon comment-action--like" data-action="like" data-comment-id="${escapeAttribute(reply.id)}" aria-label="点赞" title="点赞">
                 <span class="comment-action__icon comment-action__icon--like" aria-hidden="true"></span>
-                ${reply.likes ? `<span class="comment-action__count">${reply.likes}</span>` : ""}
+                <span class="comment-action__count">${reply.likes || 0}</span>
               </button>
             </div>
           </header>
