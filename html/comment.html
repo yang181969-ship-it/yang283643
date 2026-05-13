@@ -115,22 +115,12 @@
                 </span>
               </div>
 
+              <div class="comment-upload-preview" id="comment-upload-preview" hidden></div>
+
               <div class="comment-composer__tools" hidden>
                 <div class="comment-composer__icons" aria-label="留言工具">
-                  <button type="button" class="comment-composer__icon" aria-label="表情" title="表情即将开放">
-                    <span class="comment-composer__icon-glyph comment-composer__icon-glyph--emoji" aria-hidden="true"></span>
-                  </button>
-                  <button type="button" class="comment-composer__icon" aria-label="图片" title="图片功能即将开放">
+                  <button type="button" class="comment-composer__icon comment-image-btn" id="comment-image-btn" aria-label="上传图片" title="上传图片">
                     <span class="comment-composer__icon-glyph comment-composer__icon-glyph--image" aria-hidden="true"></span>
-                  </button>
-                  <button type="button" class="comment-composer__icon" aria-label="链接" title="链接功能即将开放">
-                    <span class="comment-composer__icon-glyph comment-composer__icon-glyph--link" aria-hidden="true"></span>
-                  </button>
-                  <button type="button" class="comment-composer__icon" aria-label="代码" title="代码功能即将开放">
-                    <span class="comment-composer__icon-glyph comment-composer__icon-glyph--code" aria-hidden="true"></span>
-                  </button>
-                  <button type="button" class="comment-composer__icon" aria-label="引用" title="引用功能即将开放">
-                    <span class="comment-composer__icon-glyph comment-composer__icon-glyph--quote" aria-hidden="true"></span>
                   </button>
                 </div>
                 <button type="submit" class="comment-composer__submit" id="comment-submit-btn">
@@ -138,15 +128,14 @@
                   <span class="comment-composer__submit-label">发送留言</span>
                 </button>
               </div>
-            </div>
 
-            <div class="comment-composer__inline-icons" id="comment-composer-inline-icons">
-              <button type="button" class="comment-composer__inline-icon" aria-label="表情" title="表情即将开放" tabindex="-1">
-                <span class="comment-composer__icon-glyph comment-composer__icon-glyph--emoji" aria-hidden="true"></span>
-              </button>
-              <button type="button" class="comment-composer__inline-icon" aria-label="图片" title="图片功能即将开放" tabindex="-1">
-                <span class="comment-composer__icon-glyph comment-composer__icon-glyph--image" aria-hidden="true"></span>
-              </button>
+              <input
+                type="file"
+                id="comment-image-input"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+                hidden
+              >
             </div>
 
             <button

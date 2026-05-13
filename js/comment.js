@@ -8,6 +8,11 @@
 
   const COMMENT_API_BASE = "https://comment.yang181969.com";
   const COMMENTS_ENDPOINT = `${COMMENT_API_BASE}/api/comments`;
+  const UPLOAD_ENDPOINT = `${COMMENT_API_BASE}/api/upload`;
+
+  const MAX_IMAGES = 3;
+  const MAX_IMAGE_SIZE = 3 * 1024 * 1024;
+  const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
   const state = {
     page: 1,
@@ -15,9 +20,11 @@
     totalPages: 0,
     totalComments: 0,
     isSubmitting: false,
+    isUploading: false,
     activeTab: "all",
     rawComments: [],
     replyTarget: null, // { commentId, name }
+    selectedImages: [], // [{ url, name }]
   };
 
   function initCommentPage() {
@@ -81,7 +88,13 @@
 
     cancelReplyBtn?.addEventListener("click", () => clearReplyTarget(root));
 
-    // 列表内事件委托：回复 / 点赞
+    // 图片上传
+    const imageBtn = root.querySelector("#comment-image-btn");
+    const imageInput = root.querySelector("#comment-image-input");
+    imageBtn?.addEventListener("click", () => imageInput?.click());
+    imageInput?.addEventListener("change", (event) => handleImageSelection(root, event));
+
+    // 列表内事件委托：回复 / 点赞 / 图片预览
     list?.addEventListener("click", (event) => {
       const replyBtn = event.target.closest("[data-action='reply']");
       if (replyBtn) {
@@ -95,6 +108,17 @@
       if (likeBtn) {
         likeBtn.classList.toggle("is-liked");
       }
+    });
+
+    // 预览区移除按钮
+    const previewBox = root.querySelector("#comment-upload-preview");
+    previewBox?.addEventListener("click", (event) => {
+      const removeBtn = event.target.closest(".comment-upload-remove");
+      if (!removeBtn) return;
+      const index = Number(removeBtn.dataset.index);
+      if (!Number.isInteger(index)) return;
+      state.selectedImages.splice(index, 1);
+      renderUploadPreview(root);
     });
 
     // 展开态:点击 composer 外部 → 收起(若 textarea 无内容)
@@ -175,6 +199,7 @@
       content: raw.content || "",
       created_at: raw.created_at,
       likes: typeof raw.likes === "number" ? raw.likes : 0,
+      images: normalizeImages(raw.images),
       replies,
     };
   }
@@ -188,8 +213,32 @@
       content: raw.content || "",
       created_at: raw.created_at,
       likes: typeof raw.likes === "number" ? raw.likes : 0,
+      images: normalizeImages(raw.images),
       replyToName: raw.reply_to_name || raw.replyToName || "",
     };
+  }
+
+  function normalizeImages(value) {
+    if (Array.isArray(value)) {
+      return value.filter(item => typeof item === "string" && item.trim());
+    }
+    if (typeof value === "string" && value.trim()) {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(item => typeof item === "string" && item.trim());
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return [];
+  }
+
+  function resolveImageUrl(url) {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) return url;
+    return `${COMMENT_API_BASE}${url.startsWith("/") ? url : `/${url}`}`;
   }
 
   // ============================================================
@@ -249,6 +298,8 @@
       ? `<div class="comment-replies">${comment.replies.map(r => renderReplyItem(r)).join("")}</div>`
       : "";
 
+    const imagesHtml = renderImageList(comment.images);
+
     return `
       <article class="comment-item${isAdmin ? " is-owner" : ""}" data-id="${escapeAttribute(comment.id)}">
         <div class="comment-avatar" aria-hidden="true">${escapeHTML(letter)}</div>
@@ -262,6 +313,7 @@
             </div>
           </header>
           <div class="comment-content">${content}</div>
+          ${imagesHtml}
           <div class="comment-item__actions">
             <button type="button" class="comment-action" data-action="reply" data-comment-id="${escapeAttribute(comment.id)}" data-comment-name="${safeName}">
               <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
@@ -297,6 +349,8 @@
       ? `<span class="comment-mention">@${replyToName}</span> `
       : "";
 
+    const imagesHtml = renderImageList(reply.images);
+
     return `
       <article class="comment-reply${isAdmin ? " is-owner" : ""}" data-id="${escapeAttribute(reply.id)}">
         <div class="comment-avatar comment-avatar--sm" aria-hidden="true">${escapeHTML(letter)}</div>
@@ -308,6 +362,7 @@
             <time class="comment-time">${escapeHTML(date)}</time>
           </header>
           <div class="comment-content">${mention}${content}</div>
+          ${imagesHtml}
           <div class="comment-item__actions">
             <button type="button" class="comment-action" data-action="reply" data-comment-id="${escapeAttribute(reply.id)}" data-comment-name="${safeName}">
               <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
@@ -512,11 +567,11 @@
       email,
       website,
       content,
+      images: state.selectedImages.map(item => item.url),
     };
 
     if (state.replyTarget) {
-      payload.parent_id = state.replyTarget.commentId;
-      payload.reply_to_name = state.replyTarget.name;
+      payload.reply_to_id = state.replyTarget.commentId;
     }
 
     state.isSubmitting = true;
@@ -546,6 +601,7 @@
       }
 
       clearReplyTarget(root);
+      clearUploadPreview(root);
       showFormMessage(message, "留言提交成功。", "success");
 
       await loadComments(root, 1);
@@ -568,6 +624,134 @@
         if (label) label.textContent = "发送留言";
       }
     }
+  }
+
+  // ============================================================
+  // 图片：渲染留言/回复中的图片
+  // ============================================================
+  function renderImageList(images) {
+    if (!Array.isArray(images) || !images.length) return "";
+    const items = images.map(url => {
+      const full = resolveImageUrl(url);
+      const safe = escapeAttribute(full);
+      return `<a class="comment-image-link" href="${safe}" target="_blank" rel="noopener noreferrer">
+        <img src="${safe}" alt="留言图片" loading="lazy">
+      </a>`;
+    }).join("");
+    return `<div class="comment-images comment-images--n${images.length}">${items}</div>`;
+  }
+
+  // ============================================================
+  // 图片：本地选择 + 上传 + 预览
+  // ============================================================
+  async function handleImageSelection(root, event) {
+    const input = event.target;
+    const files = Array.from(input.files || []);
+    if (!files.length) return;
+
+    const message = root.querySelector("#comment-form-message");
+
+    const remaining = MAX_IMAGES - state.selectedImages.length;
+    if (remaining <= 0) {
+      if (message) showFormMessage(message, `每条留言最多上传 ${MAX_IMAGES} 张图片`, "error");
+      input.value = "";
+      return;
+    }
+
+    if (files.length > remaining) {
+      if (message) showFormMessage(message, `每条留言最多上传 ${MAX_IMAGES} 张图片`, "error");
+    }
+
+    const toUpload = files.slice(0, remaining);
+
+    for (const file of toUpload) {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        if (message) showFormMessage(message, "仅支持 JPG、PNG、WEBP、GIF 图片", "error");
+        continue;
+      }
+      if (file.size > MAX_IMAGE_SIZE) {
+        if (message) showFormMessage(message, "单张图片不能超过 3MB", "error");
+        continue;
+      }
+
+      state.isUploading = true;
+      try {
+        if (message) showFormMessage(message, "正在上传图片……", "info");
+        const data = await uploadCommentImage(file);
+        if (data?.url) {
+          state.selectedImages.push({ url: data.url, name: data.filename || file.name });
+          renderUploadPreview(root);
+          if (message) {
+            message.hidden = true;
+            message.textContent = "";
+          }
+        }
+      } catch (error) {
+        console.error("图片上传失败：", error);
+        if (message) showFormMessage(message, error.message || "图片上传失败", "error");
+      } finally {
+        state.isUploading = false;
+      }
+    }
+
+    input.value = "";
+  }
+
+  async function uploadCommentImage(file) {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await fetch(UPLOAD_ENDPOINT, {
+      method: "POST",
+      body: formData,
+    });
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    if (!res.ok || !data || data.success === false) {
+      throw new Error((data && data.message) || "图片上传失败");
+    }
+
+    return data;
+  }
+
+  function renderUploadPreview(root) {
+    const box = root.querySelector("#comment-upload-preview");
+    if (!box) return;
+
+    if (!state.selectedImages.length) {
+      box.hidden = true;
+      box.innerHTML = "";
+      return;
+    }
+
+    box.hidden = false;
+    box.innerHTML = state.selectedImages.map((item, index) => {
+      const full = resolveImageUrl(item.url);
+      const safe = escapeAttribute(full);
+      return `
+        <div class="comment-upload-item">
+          <img src="${safe}" alt="留言图片预览">
+          <button type="button" class="comment-upload-remove" data-index="${index}" aria-label="删除图片">×</button>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function clearUploadPreview(root) {
+    state.selectedImages = [];
+    const box = root.querySelector("#comment-upload-preview");
+    if (box) {
+      box.hidden = true;
+      box.innerHTML = "";
+    }
+    const input = root.querySelector("#comment-image-input");
+    if (input) input.value = "";
   }
 
   // ============================================================
