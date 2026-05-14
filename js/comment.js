@@ -6,19 +6,25 @@
 (function () {
   "use strict";
 
-  const COMMENT_API_BASE = "https://comment.yang181969.com";
-  const COMMENTS_ENDPOINT = `${COMMENT_API_BASE}/api/comments`;
-  const UPLOAD_ENDPOINT = `${COMMENT_API_BASE}/api/upload`;
-  const LIKE_ENDPOINT = (id) => `${COMMENT_API_BASE}/api/comments/${encodeURIComponent(id)}/like`;
+  const COMMENT_API_BASE = "https://comment.yang181969.com/api";
+  const COMMENT_ASSET_BASE = COMMENT_API_BASE.replace(/\/api\/?$/, "");
+  const COMMENTS_ENDPOINT = `${COMMENT_API_BASE}/comments`;
+  const UPLOAD_ENDPOINT = `${COMMENT_API_BASE}/upload`;
+  const LIKE_ENDPOINT = (id) => `${COMMENT_API_BASE}/comments/${encodeURIComponent(id)}/like`;
   const VOTER_ID_KEY = "yang_comment_voter_id";
 
   const MAX_IMAGES = 3;
   const MAX_IMAGE_SIZE = 3 * 1024 * 1024;
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
+  let commentEventsBound = false;
+  let commentEventsRoot = null;
+  let activeCommentRoot = null;
+  let documentClickBound = false;
+
   const state = {
     page: 1,
-    pageSize: 100,
+    pageSize: 8,
     totalPages: 0,
     totalComments: 0,
     isSubmitting: false,
@@ -27,6 +33,7 @@
     rawComments: [],
     stats: null,
     likingIds: new Set(),
+    voterId: "",
     replyTarget: null, // { commentId, name }
     selectedImages: [], // [{ url, name }]
   };
@@ -34,6 +41,12 @@
   function initCommentPage() {
     const root = document.querySelector(".comment-page");
     if (!root) return;
+
+    state.voterId = getVoterId();
+    activeCommentRoot = root;
+
+    if (root.dataset.commentInitialized === "1") return;
+    root.dataset.commentInitialized = "1";
 
     bindEvents(root);
     loadComments(root, 1);
@@ -78,6 +91,11 @@
   // 事件绑定
   // ============================================================
   function bindEvents(root) {
+    if (commentEventsBound && commentEventsRoot === root) return;
+
+    commentEventsBound = true;
+    commentEventsRoot = root;
+
     const refreshBtn = root.querySelector("#comment-refresh-btn");
     const tabs = root.querySelectorAll(".comment-tab");
     const composer = root.querySelector("#comment-composer");
@@ -122,17 +140,20 @@
 
     // 列表内事件委托：回复 / 点赞 / 图片预览
     list?.addEventListener("click", (event) => {
+      const likeBtn = event.target.closest("[data-like-id]");
+      if (likeBtn && list.contains(likeBtn)) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation?.();
+        handleLikeClick(root, likeBtn);
+        return;
+      }
+
       const replyBtn = event.target.closest("[data-action='reply']");
       if (replyBtn) {
         const id = replyBtn.dataset.commentId;
         const name = replyBtn.dataset.commentName;
         setReplyTarget(root, { commentId: id, name });
-        return;
-      }
-
-      const likeBtn = event.target.closest("[data-action='like']");
-      if (likeBtn) {
-        handleLikeClick(root, likeBtn);
         return;
       }
 
@@ -163,20 +184,27 @@
       renderUploadPreview(root);
     });
 
-    // 展开态:点击 composer 外部 → 收起(若 textarea 无内容)
-    document.addEventListener("click", (event) => {
-      const composerEl = root.querySelector("#comment-composer");
-      if (!composerEl || !composerEl.classList.contains("is-expanded")) return;
-      if (composerEl.contains(event.target)) return;
-      // 「回复」按钮刚刚展开 composer,跳过这一次
-      if (event.target.closest && event.target.closest("[data-action='reply']")) return;
+    if (!documentClickBound) {
+      document.addEventListener("click", handleDocumentClick);
+      documentClickBound = true;
+    }
+  }
 
-      const ta = root.querySelector("#comment-content");
-      if (ta && ta.value.trim()) return; // 有内容时保留,避免误丢
+  function handleDocumentClick(event) {
+    const root = activeCommentRoot;
+    if (!root || !document.contains(root)) return;
 
-      clearReplyTarget(root);
-      collapseComposer(root);
-    });
+    const composerEl = root.querySelector("#comment-composer");
+    if (!composerEl || !composerEl.classList.contains("is-expanded")) return;
+    if (composerEl.contains(event.target)) return;
+    // 「回复」按钮刚刚展开 composer,跳过这一次
+    if (event.target.closest && event.target.closest("[data-action='reply']")) return;
+
+    const ta = root.querySelector("#comment-content");
+    if (ta && ta.value.trim()) return; // 有内容时保留,避免误丢
+
+    clearReplyTarget(root);
+    collapseComposer(root);
   }
 
   // ============================================================
@@ -199,7 +227,7 @@
       const params = new URLSearchParams({
         page: String(page),
         pageSize: String(state.pageSize),
-        voter_id: getVoterId(),
+        voter_id: state.voterId || getVoterId(),
       });
       const url = `${COMMENTS_ENDPOINT}?${params.toString()}`;
       const data = await fetchJson(url);
@@ -246,8 +274,8 @@
       website: raw.website || "",
       content: raw.content || "",
       created_at: raw.created_at,
-      likes: typeof raw.likes === "number" ? raw.likes : 0,
-      liked: Boolean(raw.liked),
+      likes: normalizeLikes(raw.likes),
+      liked: normalizeBoolean(raw.liked),
       images: normalizeImages(raw.images),
       replies,
     };
@@ -261,8 +289,8 @@
       website: raw.website || "",
       content: raw.content || "",
       created_at: raw.created_at,
-      likes: typeof raw.likes === "number" ? raw.likes : 0,
-      liked: Boolean(raw.liked),
+      likes: normalizeLikes(raw.likes),
+      liked: normalizeBoolean(raw.liked),
       images: normalizeImages(raw.images),
       replyToName: raw.reply_to_name || raw.replyToName || "",
     };
@@ -288,7 +316,7 @@
   function resolveImageUrl(url) {
     if (!url) return "";
     if (/^https?:\/\//i.test(url)) return url;
-    return `${COMMENT_API_BASE}${url.startsWith("/") ? url : `/${url}`}`;
+    return `${COMMENT_ASSET_BASE}${url.startsWith("/") ? url : `/${url}`}`;
   }
 
   // ============================================================
@@ -374,6 +402,7 @@
                 type="button"
                 class="comment-action comment-action--icon comment-action--like${comment.liked ? " is-liked" : ""}"
                 data-action="like"
+                data-like-id="${escapeAttribute(comment.id)}"
                 data-comment-id="${escapeAttribute(comment.id)}"
                 aria-label="点赞"
                 aria-pressed="${comment.liked ? "true" : "false"}"
@@ -432,6 +461,7 @@
                 type="button"
                 class="comment-action comment-action--icon comment-action--like${reply.liked ? " is-liked" : ""}"
                 data-action="like"
+                data-like-id="${escapeAttribute(reply.id)}"
                 data-comment-id="${escapeAttribute(reply.id)}"
                 aria-label="点赞"
                 aria-pressed="${reply.liked ? "true" : "false"}"
@@ -450,49 +480,49 @@
   }
 
   // ============================================================
-  // 点赞：调用后端 + 乐观更新 + 失败回滚
+  // 点赞：调用后端 + pending 防重 + 后端状态更新 + 失败回滚
   // ============================================================
   async function handleLikeClick(root, likeBtn) {
-    const commentId = likeBtn.dataset.commentId;
+    const commentId = likeBtn.dataset.likeId || likeBtn.dataset.commentId;
     if (!commentId) return;
 
-    if (state.likingIds.has(String(commentId))) return;
+    if (state.likingIds.has(String(commentId)) || likeBtn.dataset.pending === "true") return;
 
-    const prevLiked = likeBtn.classList.contains("is-liked");
-    const nextLiked = !prevLiked;
+    const currentLiked = getCurrentLikeState(commentId, likeBtn);
+    const prevLiked = currentLiked;
     const countEl = likeBtn.querySelector(".comment-action__count");
     const prevCount = parseInt(countEl?.textContent || "0", 10) || 0;
-    const optimisticCount = Math.max(0, prevCount + (nextLiked ? 1 : -1));
+    const voterId = state.voterId || getVoterId();
 
     state.likingIds.add(String(commentId));
     likeBtn.disabled = true;
-
-    // 先做乐观更新，让交互更顺滑
-    applyLikeButtonState(likeBtn, {
-      liked: nextLiked,
-      likes: optimisticCount,
-    });
-    updateLocalCommentLike(commentId, {
-      liked: nextLiked,
-      likes: optimisticCount,
-    });
-    renderStats(root, state.rawComments, { total: state.totalComments }, state.stats);
+    likeBtn.dataset.pending = "true";
+    console.log("[comment-like] click", commentId, voterId);
 
     try {
-      const data = await fetchJson(LIKE_ENDPOINT(commentId), {
+      const url = LIKE_ENDPOINT(commentId);
+      console.log("[comment-like] request url", url);
+      const result = await fetchJson(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          voter_id: getVoterId(),
-          liked: nextLiked,
+          voter_id: voterId,
+          liked: !currentLiked,
         }),
       });
+      console.log("[comment-like] response", result);
 
-      if (!data.ok) throw new Error(data.message || "点赞失败");
+      if (result.ok === false) throw new Error(result.message || "点赞失败");
 
-      const payload = data.data || {};
-      const finalLikes = typeof payload.likes === "number" ? payload.likes : optimisticCount;
-      const finalLiked = Boolean(payload.liked);
+      const payload = getLikeResultPayload(result, commentId);
+      if (!payload) {
+        console.warn("[comment-like] response missing likes/liked, reload comments", result);
+        await loadComments(root, state.page);
+        return;
+      }
+
+      const finalLikes = payload.likes;
+      const finalLiked = payload.liked;
 
       applyLikeButtonState(likeBtn, {
         liked: finalLiked,
@@ -503,13 +533,16 @@
         likes: finalLikes,
       });
 
-      if (payload.stats) {
-        state.stats = payload.stats;
+      const stats = findStatsPayload(result);
+      if (stats) {
+        state.stats = stats;
+      } else {
+        syncStatsAfterLike(prevCount, finalLikes);
       }
 
       renderStats(root, state.rawComments, { total: state.totalComments }, state.stats);
     } catch (error) {
-      console.error("点赞失败：", error);
+      console.warn("点赞失败：", error);
 
       // 回滚
       applyLikeButtonState(likeBtn, {
@@ -523,8 +556,114 @@
       renderStats(root, state.rawComments, { total: state.totalComments }, state.stats);
     } finally {
       state.likingIds.delete(String(commentId));
+      delete likeBtn.dataset.pending;
       likeBtn.disabled = false;
     }
+  }
+
+  function getCurrentLikeState(commentId, likeBtn) {
+    const localLiked = findLocalCommentLiked(commentId);
+    if (typeof localLiked === "boolean") return localLiked;
+    return likeBtn.classList.contains("is-liked") || likeBtn.classList.contains("active");
+  }
+
+  function findLocalCommentLiked(commentId) {
+    const targetId = String(commentId);
+
+    for (const comment of state.rawComments) {
+      if (String(comment.id) === targetId && typeof comment.liked !== "undefined") {
+        return normalizeBoolean(comment.liked);
+      }
+
+      for (const reply of comment.replies || []) {
+        if (String(reply.id) === targetId && typeof reply.liked !== "undefined") {
+          return normalizeBoolean(reply.liked);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function getLikeResultPayload(result, commentId) {
+    const candidates = [
+      result?.data,
+      result?.data?.comment,
+      result?.data?.reply,
+      result?.comment,
+      result?.reply,
+      result,
+    ];
+    const targetId = String(commentId);
+
+    for (const candidate of candidates) {
+      const normalized = normalizeLikePayload(candidate);
+      if (!normalized) continue;
+      if (typeof candidate?.id !== "undefined" && String(candidate.id) !== targetId) continue;
+      return normalized;
+    }
+
+    return findLikePayload(result, targetId);
+  }
+
+  function findLikePayload(value, targetId) {
+    if (!value || typeof value !== "object") return null;
+
+    const direct = normalizeLikePayload(value);
+    if (direct) {
+      if (typeof value.id === "undefined" || String(value.id) === targetId) {
+        return direct;
+      }
+    }
+
+    for (const key of Object.keys(value)) {
+      const found = findLikePayload(value[key], targetId);
+      if (found) return found;
+    }
+
+    return null;
+  }
+
+  function normalizeLikePayload(value) {
+    if (!value || typeof value !== "object") return null;
+    if (typeof value.likes === "undefined" || typeof value.liked === "undefined") return null;
+
+    return {
+      likes: normalizeLikes(value.likes),
+      liked: normalizeBoolean(value.liked),
+    };
+  }
+
+  function normalizeLikes(value) {
+    const likes = Number(value);
+    return Number.isFinite(likes) ? Math.max(0, likes) : 0;
+  }
+
+  function normalizeBoolean(value) {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value !== 0;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      return !["", "0", "false", "no", "off", "null", "undefined"].includes(normalized);
+    }
+    return Boolean(value);
+  }
+
+  function findStatsPayload(result) {
+    const stats = result?.data?.stats || result?.stats;
+    return stats && typeof stats === "object" ? stats : null;
+  }
+
+  function syncStatsAfterLike(prevCount, finalLikes) {
+    if (!state.stats || typeof state.stats !== "object") return;
+    if (typeof state.stats.likes === "undefined") return;
+
+    const currentLikes = normalizeLikes(state.stats.likes);
+    const delta = normalizeLikes(finalLikes) - normalizeLikes(prevCount);
+    state.stats = {
+      ...state.stats,
+      likes: Math.max(0, currentLikes + delta),
+    };
   }
 
   function applyLikeButtonState(button, payload) {
@@ -925,19 +1064,26 @@
   // 工具方法
   // ============================================================
   function getVoterId() {
+    if (state.voterId) return state.voterId;
+
     try {
       const existing = localStorage.getItem(VOTER_ID_KEY);
-      if (existing) return existing;
+      if (typeof existing === "string" && existing.trim()) {
+        state.voterId = existing;
+        return state.voterId;
+      }
 
       const id = createVoterId();
       localStorage.setItem(VOTER_ID_KEY, id);
+      state.voterId = id;
       return id;
     } catch {
       // 某些隐私/无痕模式可能禁用 localStorage，退化成会话级 id
       if (!window.__yangCommentVoterId) {
         window.__yangCommentVoterId = createVoterId();
       }
-      return window.__yangCommentVoterId;
+      state.voterId = window.__yangCommentVoterId;
+      return state.voterId;
     }
   }
 
