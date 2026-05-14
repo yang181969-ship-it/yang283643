@@ -9,6 +9,8 @@
   const COMMENT_API_BASE = "https://comment.yang181969.com";
   const COMMENTS_ENDPOINT = `${COMMENT_API_BASE}/api/comments`;
   const UPLOAD_ENDPOINT = `${COMMENT_API_BASE}/api/upload`;
+  const LIKE_ENDPOINT = (id) => `${COMMENT_API_BASE}/api/comments/${encodeURIComponent(id)}/like`;
+  const VOTER_ID_KEY = "yang_comment_voter_id";
 
   const MAX_IMAGES = 3;
   const MAX_IMAGE_SIZE = 3 * 1024 * 1024;
@@ -23,6 +25,8 @@
     isUploading: false,
     activeTab: "all",
     rawComments: [],
+    stats: null,
+    likingIds: new Set(),
     replyTarget: null, // { commentId, name }
     selectedImages: [], // [{ url, name }]
   };
@@ -128,14 +132,7 @@
 
       const likeBtn = event.target.closest("[data-action='like']");
       if (likeBtn) {
-        const willLike = !likeBtn.classList.contains("is-liked");
-        likeBtn.classList.toggle("is-liked", willLike);
-        const countEl = likeBtn.querySelector(".comment-action__count");
-        if (countEl) {
-          const current = parseInt(countEl.textContent, 10) || 0;
-          const next = Math.max(0, current + (willLike ? 1 : -1));
-          countEl.textContent = String(next);
-        }
+        handleLikeClick(root, likeBtn);
         return;
       }
 
@@ -199,21 +196,28 @@
     `;
 
     try {
-      const url = `${COMMENTS_ENDPOINT}?page=${encodeURIComponent(page)}&pageSize=${encodeURIComponent(state.pageSize)}`;
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(state.pageSize),
+        voter_id: getVoterId(),
+      });
+      const url = `${COMMENTS_ENDPOINT}?${params.toString()}`;
       const data = await fetchJson(url);
 
       if (!data.ok) throw new Error(data.message || "留言加载失败");
 
       const comments = (data.data?.comments || []).map(normalizeComment);
       const pagination = data.data?.pagination || {};
+      const stats = data.data?.stats || null;
 
       state.page = pagination.page || page;
       state.totalPages = pagination.totalPages || 0;
       state.totalComments = pagination.total || comments.length;
       state.rawComments = comments;
+      state.stats = stats;
 
       renderCommentList(root, comments);
-      renderStats(root, comments, pagination);
+      renderStats(root, comments, pagination, stats);
     } catch (error) {
       console.error("留言加载失败：", error);
       list.innerHTML = `
@@ -243,6 +247,7 @@
       content: raw.content || "",
       created_at: raw.created_at,
       likes: typeof raw.likes === "number" ? raw.likes : 0,
+      liked: Boolean(raw.liked),
       images: normalizeImages(raw.images),
       replies,
     };
@@ -257,6 +262,7 @@
       content: raw.content || "",
       created_at: raw.created_at,
       likes: typeof raw.likes === "number" ? raw.likes : 0,
+      liked: Boolean(raw.liked),
       images: normalizeImages(raw.images),
       replyToName: raw.reply_to_name || raw.replyToName || "",
     };
@@ -364,7 +370,15 @@
               <button type="button" class="comment-action comment-action--icon" data-action="reply" data-comment-id="${escapeAttribute(comment.id)}" data-comment-name="${safeName}" aria-label="回复" title="回复">
                 <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
               </button>
-              <button type="button" class="comment-action comment-action--icon comment-action--like" data-action="like" data-comment-id="${escapeAttribute(comment.id)}" aria-label="点赞" title="点赞">
+              <button
+                type="button"
+                class="comment-action comment-action--icon comment-action--like${comment.liked ? " is-liked" : ""}"
+                data-action="like"
+                data-comment-id="${escapeAttribute(comment.id)}"
+                aria-label="点赞"
+                aria-pressed="${comment.liked ? "true" : "false"}"
+                title="点赞"
+              >
                 <span class="comment-action__icon comment-action__icon--like" aria-hidden="true"></span>
                 <span class="comment-action__count">${comment.likes || 0}</span>
               </button>
@@ -414,7 +428,15 @@
               <button type="button" class="comment-action comment-action--icon" data-action="reply" data-comment-id="${escapeAttribute(reply.id)}" data-comment-name="${safeName}" aria-label="回复" title="回复">
                 <span class="comment-action__icon comment-action__icon--reply" aria-hidden="true"></span>
               </button>
-              <button type="button" class="comment-action comment-action--icon comment-action--like" data-action="like" data-comment-id="${escapeAttribute(reply.id)}" aria-label="点赞" title="点赞">
+              <button
+                type="button"
+                class="comment-action comment-action--icon comment-action--like${reply.liked ? " is-liked" : ""}"
+                data-action="like"
+                data-comment-id="${escapeAttribute(reply.id)}"
+                aria-label="点赞"
+                aria-pressed="${reply.liked ? "true" : "false"}"
+                title="点赞"
+              >
                 <span class="comment-action__icon comment-action__icon--like" aria-hidden="true"></span>
                 <span class="comment-action__count">${reply.likes || 0}</span>
               </button>
@@ -428,16 +450,136 @@
   }
 
   // ============================================================
+  // 点赞：调用后端 + 乐观更新 + 失败回滚
+  // ============================================================
+  async function handleLikeClick(root, likeBtn) {
+    const commentId = likeBtn.dataset.commentId;
+    if (!commentId) return;
+
+    if (state.likingIds.has(String(commentId))) return;
+
+    const prevLiked = likeBtn.classList.contains("is-liked");
+    const nextLiked = !prevLiked;
+    const countEl = likeBtn.querySelector(".comment-action__count");
+    const prevCount = parseInt(countEl?.textContent || "0", 10) || 0;
+    const optimisticCount = Math.max(0, prevCount + (nextLiked ? 1 : -1));
+
+    state.likingIds.add(String(commentId));
+    likeBtn.disabled = true;
+
+    // 先做乐观更新，让交互更顺滑
+    applyLikeButtonState(likeBtn, {
+      liked: nextLiked,
+      likes: optimisticCount,
+    });
+    updateLocalCommentLike(commentId, {
+      liked: nextLiked,
+      likes: optimisticCount,
+    });
+    renderStats(root, state.rawComments, { total: state.totalComments }, state.stats);
+
+    try {
+      const data = await fetchJson(LIKE_ENDPOINT(commentId), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          voter_id: getVoterId(),
+          liked: nextLiked,
+        }),
+      });
+
+      if (!data.ok) throw new Error(data.message || "点赞失败");
+
+      const payload = data.data || {};
+      const finalLikes = typeof payload.likes === "number" ? payload.likes : optimisticCount;
+      const finalLiked = Boolean(payload.liked);
+
+      applyLikeButtonState(likeBtn, {
+        liked: finalLiked,
+        likes: finalLikes,
+      });
+      updateLocalCommentLike(commentId, {
+        liked: finalLiked,
+        likes: finalLikes,
+      });
+
+      if (payload.stats) {
+        state.stats = payload.stats;
+      }
+
+      renderStats(root, state.rawComments, { total: state.totalComments }, state.stats);
+    } catch (error) {
+      console.error("点赞失败：", error);
+
+      // 回滚
+      applyLikeButtonState(likeBtn, {
+        liked: prevLiked,
+        likes: prevCount,
+      });
+      updateLocalCommentLike(commentId, {
+        liked: prevLiked,
+        likes: prevCount,
+      });
+      renderStats(root, state.rawComments, { total: state.totalComments }, state.stats);
+    } finally {
+      state.likingIds.delete(String(commentId));
+      likeBtn.disabled = false;
+    }
+  }
+
+  function applyLikeButtonState(button, payload) {
+    if (!button) return;
+
+    const liked = Boolean(payload.liked);
+    const likes = Math.max(0, Number(payload.likes || 0));
+    const countEl = button.querySelector(".comment-action__count");
+
+    button.classList.toggle("is-liked", liked);
+    button.setAttribute("aria-pressed", liked ? "true" : "false");
+
+    if (countEl) {
+      countEl.textContent = String(likes);
+    }
+  }
+
+  function updateLocalCommentLike(commentId, payload) {
+    const targetId = String(commentId);
+
+    for (const comment of state.rawComments) {
+      if (String(comment.id) === targetId) {
+        comment.likes = Math.max(0, Number(payload.likes || 0));
+        comment.liked = Boolean(payload.liked);
+        return true;
+      }
+
+      for (const reply of comment.replies || []) {
+        if (String(reply.id) === targetId) {
+          reply.likes = Math.max(0, Number(payload.likes || 0));
+          reply.liked = Boolean(payload.liked);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  // ============================================================
   // 统计卡
   // ============================================================
-  function renderStats(root, comments, pagination) {
-    const total = pagination.total ?? comments.length;
-    const today = countTodayComments(comments);
-    const replies = comments.reduce((sum, c) => sum + (c.replies?.length || 0), 0);
-    const likes = comments.reduce((sum, c) => {
+  function renderStats(root, comments, pagination = {}, stats = null) {
+    const fallbackTotal = pagination.total ?? comments.length;
+    const fallbackToday = countTodayComments(comments);
+    const fallbackReplies = comments.reduce((sum, c) => sum + (c.replies?.length || 0), 0);
+    const fallbackLikes = comments.reduce((sum, c) => {
       const replyLikes = (c.replies || []).reduce((s, r) => s + (r.likes || 0), 0);
       return sum + (c.likes || 0) + replyLikes;
     }, 0);
+
+    const total = stats?.total ?? fallbackTotal;
+    const today = stats?.today ?? fallbackToday;
+    const replies = stats?.replies ?? fallbackReplies;
+    const likes = stats?.likes ?? fallbackLikes;
 
     setStatValue(root, "#comment-stat-total", total);
     setStatValue(root, "#comment-stat-today", today);
@@ -782,6 +924,33 @@
   // ============================================================
   // 工具方法
   // ============================================================
+  function getVoterId() {
+    try {
+      const existing = localStorage.getItem(VOTER_ID_KEY);
+      if (existing) return existing;
+
+      const id = createVoterId();
+      localStorage.setItem(VOTER_ID_KEY, id);
+      return id;
+    } catch {
+      // 某些隐私/无痕模式可能禁用 localStorage，退化成会话级 id
+      if (!window.__yangCommentVoterId) {
+        window.__yangCommentVoterId = createVoterId();
+      }
+      return window.__yangCommentVoterId;
+    }
+  }
+
+  function createVoterId() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID().replace(/-/g, "_");
+    }
+
+    const random = Math.random().toString(36).slice(2);
+    const time = Date.now().toString(36);
+    return `v_${time}_${random}`;
+  }
+
   async function fetchJson(url, options = {}) {
     const res = await fetch(url, {
       cache: "no-cache",
