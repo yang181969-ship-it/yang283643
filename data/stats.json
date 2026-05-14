@@ -10,13 +10,13 @@
       "total": 24
     },
     {
-      "date": "2026-05-13",
+      "date": "2026-05-14",
       "month": "2026-05",
       "notes": 8,
       "anime": 10,
       "gallery": 17,
-      "updates": 12,
-      "total": 47
+      "updates": 14,
+      "total": 49
     }
   ],
   "breakdowns": {
@@ -103,7 +103,7 @@
       },
       {
         "label": "2026-05",
-        "value": 5
+        "value": 7
       }
     ],
     "musicTopArtists": [],
@@ -118,7 +118,7 @@
           {
             "id": "overview-content",
             "name": "内容构成",
-            "total": 59,
+            "total": 61,
             "unit": "项",
             "items": [
               {
@@ -127,7 +127,7 @@
               },
               {
                 "name": "更新日志",
-                "value": 12
+                "value": 14
               },
               {
                 "name": "音乐",
@@ -146,16 +146,20 @@
           {
             "id": "overview-updates",
             "name": "更新概况",
-            "total": 12,
+            "total": 14,
             "unit": "条",
             "items": [
               {
                 "name": "feature",
-                "value": 10
+                "value": 11
               },
               {
                 "name": "optimization",
                 "value": 2
+              },
+              {
+                "name": "fix",
+                "value": 1
               }
             ]
           }
@@ -436,12 +440,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 12676,
+            "total": 15200,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 7255
+                "value": 9779
               },
               {
                 "name": "笔记字数",
@@ -476,16 +480,20 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 7255,
+            "total": 9779,
             "unit": "字",
             "items": [
               {
                 "name": "feature",
-                "value": 5988
+                "value": 7971
               },
               {
                 "name": "optimization",
                 "value": 1267
+              },
+              {
+                "name": "fix",
+                "value": 541
               }
             ]
           },
@@ -506,6 +514,20 @@
     ]
   },
   "recentChanges": [
+    {
+      "date": "2026-05-14",
+      "title": "修复留言页点赞按钮,新增全站启动 Loading",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-05-13",
+      "title": "留言系统重构完成：从外部插件到真正属于小站的交流区",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
     {
       "date": "2026-05-08",
       "title": "画廊和关于页翻新,把展示页面补成真正能逛的入口",
@@ -920,5 +942,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-05-13T06:17:48.987Z"
+  "generatedAt": "2026-05-14T12:52:02.259Z"
 }

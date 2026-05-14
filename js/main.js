@@ -1,3 +1,41 @@
+(() => {
+  const loader = document.getElementById("site-loader");
+  if (!loader) return;
+
+  const MIN_SHOW_TIME = 450;
+  const MAX_SHOW_TIME = 1800;
+  const FADE_REMOVE_DELAY = 480;
+  const startTime = Date.now();
+
+  let hidden = false;
+
+  function hideLoader() {
+    if (hidden) return;
+    hidden = true;
+
+    const elapsed = Date.now() - startTime;
+    const delay = Math.max(0, MIN_SHOW_TIME - elapsed);
+
+    window.setTimeout(() => {
+      loader.classList.add("is-hidden");
+
+      window.setTimeout(() => {
+        if (loader.parentNode) {
+          loader.parentNode.removeChild(loader);
+        }
+      }, FADE_REMOVE_DELAY);
+    }, delay);
+  }
+
+  if (document.readyState === "complete") {
+    hideLoader();
+  } else {
+    window.addEventListener("load", hideLoader, { once: true });
+  }
+
+  window.setTimeout(hideLoader, MAX_SHOW_TIME);
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
   const main = document.getElementById("main-content");
   const navLinks = document.querySelectorAll("nav a");
