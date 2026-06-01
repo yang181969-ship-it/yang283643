@@ -17,6 +17,15 @@
       "gallery": 17,
       "updates": 14,
       "total": 49
+    },
+    {
+      "date": "2026-06-01",
+      "month": "2026-06",
+      "notes": 8,
+      "anime": 10,
+      "gallery": 17,
+      "updates": 14,
+      "total": 49
     }
   ],
   "breakdowns": {
@@ -44,8 +53,12 @@
     ],
     "animeByStatus": [
       {
+        "label": "看完",
+        "value": 9
+      },
+      {
         "label": "在追",
-        "value": 10
+        "value": 1
       }
     ],
     "animeByTag": [
@@ -515,6 +528,90 @@
   },
   "recentChanges": [
     {
+      "date": "2026-06-01",
+      "title": "新增音乐：平凡之路 - 朴树",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：起风了 - 买辣椒也用券",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：泡沫 - G.E.M.邓紫棋",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：鳥の詩 (鸟之诗) - Lia",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：❀ (纯音乐) - MappleHY",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：童话镇 - 陈一发儿",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：Lose My Mind (feat. Doja Cat) - Don Toliver/Doja Cat",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：F1 - Hans Zimmer",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：夏日漱石 (Summer Cozy Rock) - 橘子海",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：鹿 be free - 尚雯婕",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：倒数 - G.E.M.邓紫棋",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-06-01",
+      "title": "新增音乐：Call of Silence × YouSeeBIGGIRL - EYAir",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
       "date": "2026-05-14",
       "title": "修复留言页点赞按钮,新增全站启动 Loading",
       "type": "更新",
@@ -544,72 +641,9 @@
     },
     {
       "date": "2026-05-06",
-      "title": "新增音乐：平凡之路 - 朴树",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：起风了 - 买辣椒也用券",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：泡沫 - G.E.M.邓紫棋",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：鳥の詩 (鸟之诗) - Lia",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：❀ (纯音乐) - MappleHY",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：童话镇 - 陈一发儿",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
       "title": "更新页大改,右上角三个按钮合并成两个",
       "type": "更新",
       "page": "update",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增音乐：Lose My Mind (feat. Doja Cat) - Don Toliver/Doja Cat",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增音乐：F1 - Hans Zimmer",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增音乐：夏日漱石 (Summer Cozy Rock) - 橘子海",
-      "type": "音乐",
-      "page": "home",
       "href": ""
     },
     {
@@ -712,13 +746,6 @@
     },
     {
       "date": "2026-05-04",
-      "title": "新增音乐：倒数 - G.E.M.邓紫棋",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-04",
       "title": "移动端加灵动岛,调色盘补上光晕开关",
       "type": "更新",
       "page": "update",
@@ -729,13 +756,6 @@
       "title": "主页大改:从静态欢迎页到 Bento 仪表盘",
       "type": "更新",
       "page": "update",
-      "href": ""
-    },
-    {
-      "date": "2026-04-30",
-      "title": "新增音乐：Call of Silence × YouSeeBIGGIRL - EYAir",
-      "type": "音乐",
-      "page": "home",
       "href": ""
     },
     {
@@ -900,13 +920,6 @@
       "href": ""
     },
     {
-      "date": "2026-02-26",
-      "title": "新增音乐：鹿 be free - 尚雯婕",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
       "date": "2025-10-21",
       "title": "新增笔记：矩阵的特征值与迹",
       "type": "笔记",
@@ -942,5 +955,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-05-14T12:52:02.259Z"
+  "generatedAt": "2026-06-01T19:31:43.605Z"
 }
