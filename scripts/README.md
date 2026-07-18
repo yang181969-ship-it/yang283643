@@ -13,6 +13,7 @@
 | `npm run build:all` | 依次执行画廊数据、更新索引、标签参考、站点统计、完整 CSS、critical CSS、critical 内联 |
 | `npm run aggregate:updates` | 扫描更新日志 Markdown,生成更新页索引数据 |
 | `npm run aggregate:stats` | 聚合站点统计页数据和 Hero 区单点指标 |
+| `npm run stats:comments` | 从公开留言 API 同步仅含数字的聚合统计 |
 | `npm run optimize:animes` | 处理动漫页图片 |
 | `npm run optimize:gallery` | 处理画廊图片 |
 | `npm run update:refs` | 根据图片重命名映射更新动漫页引用 |
@@ -327,13 +328,38 @@ npm run aggregate:stats
 
 作用:
 
-- 读取 `data/notes-index.json`、`js/anime-data.js`、画廊数据、`data/updates-index.json` 和可选的 `data/music-stats.json`。
+- 读取 `data/notes-index.json`、`js/anime-data.js`、画廊数据、`data/updates-index.json`、`data/playlist.json` 和可选的 `data/comments-stats.json`。
 - 写入 `data/stats.json`,供统计页主图和详情卡片读取。
 - 写入 `data/site-meta.json`,供统计页 Hero 区展示总内容数、建站天数、最新更新等单点指标。
-- 生成笔记分类、番剧状态、番剧题材、画廊分类、更新月份、音乐歌手和评论分布这几组统计源。
+- 音乐总数、艺术家总数和 Top 8 歌手直接根据 `data/playlist.json` 聚合；联合艺人名称不会被擅自拆分。
+- 留言身份分布和留言数据中心读取最近一次有效的 `data/comments-stats.json`,聚合脚本本身不访问网络。
 - 同一个月份重复运行时会覆盖当月快照,不会重复追加。
 
-注意:评论 / Waline 数据不在脚本里聚合,统计页前端会运行时实时拉取。通常需要先运行 `npm run aggregate:updates`,再运行这个脚本；也可以直接用 `npm run build:all` 一并刷新。
+通常需要先运行 `npm run aggregate:updates`,再运行这个脚本；也可以直接用 `npm run build:all` 一并刷新。`build:all` 不强制同步留言，因此离线时仍可使用已提交的最近一份有效留言统计完成构建。
+
+### 14-sync-comment-stats.mjs
+
+命令:
+
+```bash
+npm run stats:comments
+npm run aggregate:stats
+```
+
+作用:
+
+- 分页读取公开留言 API,统计顶级留言、回复、点赞、今日留言以及访客/站长数量。
+- `data/comments-stats.json` 只保存公开聚合数字和生成时间,不保存留言正文、用户资料、单条 ID 或管理员凭证。
+- 使用同目录临时文件校验后替换正式文件；API、超时、HTTP 或 JSON 失败时非零退出并保留上一份有效文件。
+- 可通过 `COMMENT_STATS_API_URL` 指向其他公开或本地模拟接口；测试时可用 `COMMENT_STATS_OUTPUT_PATH` 指定临时输出文件。
+
+无需访问外网的双页分页与失败保护测试:
+
+```bash
+npm run stats:comments:test
+```
+
+月度 GitHub Actions 会在 `aggregate:stats` 前尝试执行同步。同步失败时工作流会记录警告并继续使用仓库中上一份有效数据，不会生成全 0 占位统计。
 
 ### 13-sync-site-tags.mjs
 
@@ -417,7 +443,7 @@ npm run aggregate:stats
 
 ### music-stats.json
 
-这是音乐统计的可选来源文件。`7-aggregate-stats.mjs` 会读取其中的 `topArtists`,并透传到 `data/stats.json` 的 `musicTopArtists`。
+这是保留的兼容/历史统计文件。当前构建不再依赖它；音乐总数、艺术家总数和 `musicTopArtists` 均直接来自 `data/playlist.json`。建议确认没有外部工具继续写入或消费后,在后续独立清理任务中删除。
 
 ## 常见工作流
 

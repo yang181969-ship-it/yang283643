@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-18T12:37:45.930Z",
+  "summary": {
+    "total": 1,
+    "topLevel": 1,
+    "replies": 0,
+    "likes": 1,
+    "today": 0
+  },
+  "roles": {
+    "guest": 1,
+    "admin": 0
+  },
+  "groups": [
+    {
+      "id": "overview",
+      "name": "留言概况",
+      "unit": "条",
+      "items": [
+        {
+          "name": "顶级留言",
+          "value": 1
+        },
+        {
+          "name": "回复",
+          "value": 0
+        },
+        {
+          "name": "点赞",
+          "value": 1
+        },
+        {
+          "name": "今日留言",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "roles",
+      "name": "身份分布",
+      "unit": "条",
+      "items": [
+        {
+          "name": "访客",
+          "value": 1
+        },
+        {
+          "name": "站长",
+          "value": 0
+        }
+      ]
+    }
+  ]
+}

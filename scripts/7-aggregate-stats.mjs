@@ -10,7 +10,8 @@ import vm from 'vm';
 //   - js/anime-data.js             (番剧,vm sandbox 取 animeData)
 //   - data/gallery-data.js | data/gallery.json (画廊,自动探测)
 //   - data/updates-index.json      (更新,需先跑 aggregate:updates)
-//   - data/music-stats.json        (音乐,可选,直接透传)
+//   - data/playlist.json           (音乐与艺术家统计的真实数据源)
+//   - data/comments-stats.json     (公开留言聚合,可选)
 //
 // 写出:
 //   - data/stats.json   ── snapshots[] 累积式 + breakdowns(7 张卡数据源)
@@ -27,7 +28,6 @@ const ANIME_DATA_PATH     = './js/anime-data.js';
 const GALLERY_CANDIDATES  = ['./data/gallery-data.js', './js/gallery-data.js', './data/gallery.json'];
 const UPDATES_INDEX_PATH  = './data/updates-index.json';
 const PLAYLIST_PATH       = './data/playlist.json';
-const MUSIC_STATS_PATH    = './data/music-stats.json';
 const COMMENTS_STATS_PATH = './data/comments-stats.json';
 
 const STATS_OUTPUT        = './data/stats.json';
@@ -287,6 +287,65 @@ function playlistTracks(data) {
   return [];
 }
 
+function normalizeArtistName(value) {
+  return String(value ?? '').trim().replace(/\s+/g, ' ') || '未知歌手';
+}
+
+function buildMusicArtistStats(tracks) {
+  const counts = new Map();
+  tracks.forEach(track => {
+    const artist = normalizeArtistName(track?.artist);
+    counts.set(artist, (counts.get(artist) || 0) + 1);
+  });
+
+  const collator = new Intl.Collator('zh-CN');
+  return [...counts.entries()]
+    .sort(([nameA, countA], [nameB, countB]) =>
+      countB - countA
+      || collator.compare(nameA, nameB)
+      || (nameA < nameB ? -1 : nameA > nameB ? 1 : 0)
+    )
+    .map(([name, count]) => ({ name, count }));
+}
+
+function isNonNegativeNumber(value) {
+  return Number.isFinite(value) && value >= 0;
+}
+
+function loadCommentsStats() {
+  if (!fs.existsSync(COMMENTS_STATS_PATH)) {
+    console.warn(`⚠ ${COMMENTS_STATS_PATH} 不存在,留言统计保持为空;可运行 npm run stats:comments 同步`);
+    return null;
+  }
+
+  const data = safeReadJson(COMMENTS_STATS_PATH, null);
+  const summaryKeys = ['total', 'topLevel', 'replies', 'likes', 'today'];
+  const validGroups = Array.isArray(data?.groups)
+    && data.groups.every(group =>
+      group
+      && typeof group === 'object'
+      && Array.isArray(group.items)
+      && group.items.every(item =>
+        item
+        && typeof item === 'object'
+        && String(item.name || '').trim()
+        && isNonNegativeNumber(item.value)
+      )
+    );
+  const valid = data
+    && typeof data === 'object'
+    && summaryKeys.every(key => isNonNegativeNumber(data.summary?.[key]))
+    && isNonNegativeNumber(data.roles?.guest)
+    && isNonNegativeNumber(data.roles?.admin)
+    && validGroups;
+
+  if (!valid) {
+    console.warn(`⚠ ${COMMENTS_STATS_PATH} 结构无效,留言统计保持为空`);
+    return null;
+  }
+  return data;
+}
+
 function compactChange(item, order) {
   const date = toISODate(item.date);
   const title = String(item.title || '').trim();
@@ -374,7 +433,8 @@ const animeIds   = Object.keys(animeData);
 const gallery    = loadGallery() || [];
 const updates    = safeReadJson(UPDATES_INDEX_PATH, []);
 const tracks     = playlistTracks(safeReadJson(PLAYLIST_PATH, { tracks: [] }));
-const musicStats = safeReadJson(MUSIC_STATS_PATH, null);
+const musicArtists = buildMusicArtistStats(tracks);
+const commentsStats = loadCommentsStats();
 const prevStats  = safeReadJson(STATS_OUTPUT, { snapshots: [], breakdowns: {} });
 
 console.log(`  笔记:${notes.length}  番剧:${animeIds.length}  画廊:${gallery.length}  更新:${updates.length}  音乐:${tracks.length}`);
@@ -455,18 +515,19 @@ const breakdowns = {};
 }
 
 // 6. 音乐 Top 艺术家 ───────────────────────────
-// 直接透传 music-stats.json 的 topArtists 字段(由 9-add-music.mjs 维护)
-// 没有数据源就给占位,前端会渲染 "暂无数据" 状态
-{
-  const arr = musicStats?.topArtists;
-  breakdowns.musicTopArtists = Array.isArray(arr) && arr.length
-    ? arr.slice(0, 8).map(x => ({ label: x.name || x.label, value: x.count ?? x.value ?? 0 }))
-    : [];
-}
+// 直接从 playlist.json 聚合;联合艺人名称保持为一个整体
+breakdowns.musicTopArtists = musicArtists
+  .slice(0, 8)
+  .map(({ name, count }) => ({ label: name, value: count }));
 
 // 7. 评论分布 ─────────────────────────────────
-// 留言统计后续由自研 API 或本地统计文件提供
-breakdowns.commentsByRole = [];
+// 只读取本地公开聚合文件,aggregate:stats 本身不访问网络
+breakdowns.commentsByRole = commentsStats
+  ? [
+      { label: '访客', value: commentsStats.roles.guest },
+      { label: '站长', value: commentsStats.roles.admin },
+    ]
+  : [];
 
 const recentChanges = buildRecentChanges({
   notes,
@@ -572,18 +633,18 @@ const dataCenterGroups = [];
 // 资源 ───────────────────────────────────────
 {
   const galleryCategories = {};
-  const musicArtists = {};
+  const musicArtistBucket = {};
   const imageFormats = {};
 
   gallery.forEach(item => {
     addCount(galleryCategories, galleryCategoryName(item));
     addCount(imageFormats, imageFormat(item.src));
   });
-  tracks.forEach(track => addCount(musicArtists, track.artist || '未分类'));
+  musicArtists.forEach(({ name, count }) => addCount(musicArtistBucket, name, count));
 
   dataCenterGroups.push(makeGroup('resources', '资源', [
     makeChild('resources-gallery', '画廊', galleryCategories, '张'),
-    makeChild('resources-music', '音乐', musicArtists, '首'),
+    makeChild('resources-music', '音乐', musicArtistBucket, '首'),
     makeChild('resources-image-format', '图片格式', imageFormats, '张'),
   ]));
 }
@@ -625,10 +686,9 @@ const dataCenterGroups = [];
   ]));
 }
 
-// 留言:仅在本地统计文件存在时启用,避免迁移期依赖在线接口
+// 留言:仅在本地公开聚合文件有效时启用,普通构建不依赖在线接口
 {
-  const commentsStats = safeReadJson(COMMENTS_STATS_PATH, null);
-  if (commentsStats?.groups) {
+  if (commentsStats) {
     dataCenterGroups.push(makeGroup('comments', '留言', commentsStats.groups.map(group =>
       makeChild(
         group.id || `comments-${slugify(group.name)}`,
@@ -686,6 +746,8 @@ const siteMeta = {
     anime:   animeIds.length,
     gallery: gallery.length,
     updates: updates.length,
+    music: tracks.length,
+    musicArtists: musicArtists.length,
   },
   latestUpdate:   allDates[allDates.length - 1] || '',
   newAnimeCount:  newAnime,

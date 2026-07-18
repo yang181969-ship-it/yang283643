@@ -3,5 +3,5 @@
   "totalTracks": 0,
   "totalArtists": 0,
   "topArtists": [],
-  "_note": "由 scripts/9-add-music.mjs 维护。topArtists 形如 [{ name: '艺术家', count: 12 }],被 7-aggregate-stats.mjs 透传到 stats.json。"
+  "_note": "兼容/历史统计文件。音乐总数、艺术家总数和歌手排行现由 7-aggregate-stats.mjs 直接根据 data/playlist.json 生成；当前构建不再依赖本文件。"
 }

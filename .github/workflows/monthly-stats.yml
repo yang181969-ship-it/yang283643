@@ -31,6 +31,15 @@ jobs:
       - name: Aggregate updates index
         run: npm run aggregate:updates
 
+      - name: Sync public comment stats
+        id: comment_stats
+        continue-on-error: true
+        run: npm run stats:comments
+
+      - name: Warn when comment stats sync fails
+        if: steps.comment_stats.outcome == 'failure'
+        run: echo "::warning::Comment stats sync failed; aggregate:stats will use the last valid committed file."
+
       - name: Aggregate stats snapshot
         run: npm run aggregate:stats
 
@@ -38,7 +47,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/stats.json data/site-meta.json data/updates-index.json
+          git add data/comments-stats.json data/stats.json data/site-meta.json data/updates-index.json
           if git diff --cached --quiet; then
             echo "No stats changes."
           else

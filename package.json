@@ -12,6 +12,8 @@
 
     "aggregate:updates": "node scripts/6-aggregate-updates.mjs",
     "aggregate:stats":   "node scripts/7-aggregate-stats.mjs",
+    "stats:comments": "node scripts/14-sync-comment-stats.mjs",
+    "stats:comments:test": "node scripts/14-sync-comment-stats.test.mjs",
     "gallery:data": "python generate_gallery_data.py",
 
     "optimize:animes": "node scripts/1-rename-anime-images.js",

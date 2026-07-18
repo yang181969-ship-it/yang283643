@@ -1,13 +1,15 @@
 {
-  "generatedAt": "2026-05-14T12:52:02.259Z",
+  "generatedAt": "2026-07-18T12:41:41.812Z",
   "siteBirthday": "2026-04-13",
-  "totalDays": 31,
+  "totalDays": 96,
   "totalContent": 49,
   "totals": {
     "notes": 8,
     "anime": 10,
     "gallery": 17,
-    "updates": 14
+    "updates": 14,
+    "music": 12,
+    "musicArtists": 11
   },
   "latestUpdate": "2026-05-14",
   "newAnimeCount": 0

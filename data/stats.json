@@ -17,6 +17,15 @@
       "gallery": 17,
       "updates": 14,
       "total": 49
+    },
+    {
+      "date": "2026-07-18",
+      "month": "2026-07",
+      "notes": 8,
+      "anime": 10,
+      "gallery": 17,
+      "updates": 14,
+      "total": 49
     }
   ],
   "breakdowns": {
@@ -44,7 +53,7 @@
     ],
     "animeByStatus": [
       {
-        "label": "在追",
+        "label": "看完",
         "value": 10
       }
     ],
@@ -106,8 +115,50 @@
         "value": 7
       }
     ],
-    "musicTopArtists": [],
-    "commentsByRole": []
+    "musicTopArtists": [
+      {
+        "label": "G.E.M.邓紫棋",
+        "value": 2
+      },
+      {
+        "label": "陈一发儿",
+        "value": 1
+      },
+      {
+        "label": "橘子海",
+        "value": 1
+      },
+      {
+        "label": "买辣椒也用券",
+        "value": 1
+      },
+      {
+        "label": "朴树",
+        "value": 1
+      },
+      {
+        "label": "尚雯婕",
+        "value": 1
+      },
+      {
+        "label": "Don Toliver/Doja Cat",
+        "value": 1
+      },
+      {
+        "label": "EYAir",
+        "value": 1
+      }
+    ],
+    "commentsByRole": [
+      {
+        "label": "访客",
+        "value": 1
+      },
+      {
+        "label": "站长",
+        "value": 0
+      }
+    ]
   },
   "dataCenter": {
     "groups": [
@@ -506,6 +557,40 @@
               {
                 "name": "其他",
                 "value": 989
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "comments",
+        "name": "留言",
+        "children": [
+          {
+            "id": "overview",
+            "name": "留言概况",
+            "total": 2,
+            "unit": "条",
+            "items": [
+              {
+                "name": "点赞",
+                "value": 1
+              },
+              {
+                "name": "顶级留言",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "id": "roles",
+            "name": "身份分布",
+            "total": 1,
+            "unit": "条",
+            "items": [
+              {
+                "name": "访客",
+                "value": 1
               }
             ]
           }
@@ -942,5 +1027,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-05-14T12:52:02.259Z"
+  "generatedAt": "2026-07-18T12:41:41.812Z"
 }
