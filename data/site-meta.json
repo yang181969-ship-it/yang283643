@@ -1,13 +1,7 @@
 {
-<<<<<<< HEAD
-  "generatedAt": "2026-07-18T12:41:41.812Z",
+  "generatedAt": "2026-07-24T12:04:19.146Z",
   "siteBirthday": "2026-04-13",
-  "totalDays": 96,
-=======
-  "generatedAt": "2026-07-01T05:00:31.428Z",
-  "siteBirthday": "2026-04-13",
-  "totalDays": 79,
->>>>>>> 503b607c2962d78c8d6fa41a81c2c249a5169043
+  "totalDays": 102,
   "totalContent": 49,
   "totals": {
     "notes": 8,
@@ -17,6 +11,6 @@
     "music": 12,
     "musicArtists": 11
   },
-  "latestUpdate": "2026-07-01",
+  "latestUpdate": "2026-05-14",
   "newAnimeCount": 0
 }
