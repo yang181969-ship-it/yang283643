@@ -44,6 +44,15 @@
       "gallery": 17,
       "updates": 14,
       "total": 49
+    },
+    {
+      "date": "2026-09-01",
+      "month": "2026-09",
+      "notes": 8,
+      "anime": 10,
+      "gallery": 17,
+      "updates": 14,
+      "total": 49
     }
   ],
   "breakdowns": {
@@ -618,84 +627,84 @@
   },
   "recentChanges": [
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：平凡之路 - 朴树",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：起风了 - 买辣椒也用券",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：泡沫 - G.E.M.邓紫棋",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：鳥の詩 (鸟之诗) - Lia",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：❀ (纯音乐) - MappleHY",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：童话镇 - 陈一发儿",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：Lose My Mind (feat. Doja Cat) - Don Toliver/Doja Cat",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：F1 - Hans Zimmer",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：夏日漱石 (Summer Cozy Rock) - 橘子海",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：鹿 be free - 尚雯婕",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：倒数 - G.E.M.邓紫棋",
       "type": "音乐",
       "page": "home",
       "href": ""
     },
     {
-      "date": "2026-08-01",
+      "date": "2026-09-01",
       "title": "新增音乐：Call of Silence × YouSeeBIGGIRL - EYAir",
       "type": "音乐",
       "page": "home",
@@ -1045,5 +1054,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-08-01T03:58:27.246Z"
+  "generatedAt": "2026-09-01T05:23:30.919Z"
 }
