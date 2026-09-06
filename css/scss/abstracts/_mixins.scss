@@ -51,8 +51,8 @@
 // @supports 降级由 --glass-bg-weak 自动兜底（_theme-vars 里已定义）
 @mixin card-surface {
   background: var(--glass-bg-weak);
-  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
   border: var(--glass-border-subtle);
   border-radius: var(--radius-card);
   box-shadow:
@@ -104,8 +104,8 @@
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 // ----- 透明容器（覆盖默认 section 卡片外观）-----
@@ -113,8 +113,8 @@
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 // ----- 圆形图标按钮（header 右上角那一排 46x46 按钮）-----
@@ -125,8 +125,8 @@
   border: var(--glass-border-subtle);
   border-radius: 50%;
   background: var(--glass-bg-weak);
-  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
   -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
+  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
   color: var(--primary);
   cursor: pointer;
   box-shadow:
