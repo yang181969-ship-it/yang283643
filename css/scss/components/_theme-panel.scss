@@ -152,6 +152,7 @@
     hsl(360, 80%, 62%)
   );
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
   user-select: none;
   touch-action: none;
 }
@@ -188,6 +189,7 @@
   font-weight: 600;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -272,3 +274,12 @@
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
   transition: transform 0.18s ease;
 }
+// Preset colors are shared with the startup styles in index.html.
+.theme-preset[data-hue="0"] { --preset: hsl(0, 80%, 62%); }
+.theme-preset[data-hue="20"] { --preset: hsl(20, 85%, 60%); }
+.theme-preset[data-hue="45"] { --preset: hsl(45, 90%, 55%); }
+.theme-preset[data-hue="145"] { --preset: hsl(145, 55%, 48%); }
+.theme-preset[data-hue="180"] { --preset: hsl(180, 60%, 48%); }
+.theme-preset[data-hue="210"] { --preset: hsl(210, 80%, 60%); }
+.theme-preset[data-hue="260"] { --preset: hsl(260, 70%, 65%); }
+.theme-preset[data-hue="330"] { --preset: hsl(330, 80%, 68%); }

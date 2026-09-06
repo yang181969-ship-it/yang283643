@@ -134,13 +134,17 @@ footer {
     height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    @supports (-webkit-overflow-scrolling: touch) {
+      -webkit-overflow-scrolling: touch;
+    }
     gap: 0;
 
     // D3:底部给 tab bar 让位,变量在 _nav.scss 内定义
     padding: 0 0 var(--tab-bar-h, 0px);
 
-    scrollbar-width: none;
+    @supports (scrollbar-width: none) {
+      scrollbar-width: none;
+    }
     &::-webkit-scrollbar { display: none; }
   }
 
@@ -170,8 +174,12 @@ footer {
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     scroll-padding-inline: var(--page-pad-x);
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    @supports (-webkit-overflow-scrolling: touch) {
+      -webkit-overflow-scrolling: touch;
+    }
+    @supports (scrollbar-width: none) {
+      scrollbar-width: none;
+    }
     flex-shrink: 0;
 
     &::-webkit-scrollbar { display: none; }
@@ -237,7 +245,9 @@ footer {
 .content-scroll,
 .rail-extras,
 main {
-  scrollbar-width: none;
+  @supports (scrollbar-width: none) {
+    scrollbar-width: none;
+  }
   -ms-overflow-style: none;
 
   &::-webkit-scrollbar {

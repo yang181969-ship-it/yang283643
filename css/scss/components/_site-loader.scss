@@ -9,8 +9,8 @@
   display: grid;
   place-items: center;
   background: rgba(248, 250, 255, 0.72);
-  backdrop-filter: blur(10px) saturate(1.08);
   -webkit-backdrop-filter: blur(10px) saturate(1.08);
+  backdrop-filter: blur(10px) saturate(1.08);
   opacity: 1;
   visibility: visible;
   pointer-events: auto;

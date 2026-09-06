@@ -167,8 +167,8 @@
   background-image: none !important;
 
   // 搜索浮层不使用毛玻璃
-  backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 
   box-shadow:
     0 24px 60px rgba(15, 23, 42, 0.18),
@@ -252,7 +252,9 @@
   gap: 8px;
   padding: 12px 0;
   overflow-x: auto;
-  scrollbar-width: none;
+  @supports (scrollbar-width: none) {
+    scrollbar-width: none;
+  }
 
   &::-webkit-scrollbar {
     display: none;
@@ -305,8 +307,12 @@
   min-height: 0;
   overflow-y: auto;
   padding-right: 2px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.42) transparent;
+  @supports (scrollbar-width: thin) {
+    scrollbar-width: thin;
+  }
+  @supports (scrollbar-color: rgba(148, 163, 184, 0.42) transparent) {
+    scrollbar-color: rgba(148, 163, 184, 0.42) transparent;
+  }
 }
 
 .search-results-list {
@@ -638,8 +644,8 @@ html[data-theme="dark"] {
     background: transparent !important;
     border-color: transparent !important;
     box-shadow: none !important;
-    backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
   }
 
   // 搜索展开时,隐藏 logo,避免顶部横向挤压
@@ -678,3 +684,6 @@ html[data-theme="dark"] {
     font-size: 16px;
   }
 }
+
+// Initial state; search.js sets an inline display value when needed.
+#search-clear { display: none; }
