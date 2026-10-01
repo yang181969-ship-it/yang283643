@@ -1,15 +1,15 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-01T05:23:30.715Z",
+  "generatedAt": "2026-10-01T06:15:21.053Z",
   "summary": {
-    "total": 2,
-    "topLevel": 2,
+    "total": 3,
+    "topLevel": 3,
     "replies": 0,
-    "likes": 1,
+    "likes": 2,
     "today": 0
   },
   "roles": {
-    "guest": 2,
+    "guest": 3,
     "admin": 0
   },
   "groups": [
@@ -20,7 +20,7 @@
       "items": [
         {
           "name": "顶级留言",
-          "value": 2
+          "value": 3
         },
         {
           "name": "回复",
@@ -28,7 +28,7 @@
         },
         {
           "name": "点赞",
-          "value": 1
+          "value": 2
         },
         {
           "name": "今日留言",
@@ -43,7 +43,7 @@
       "items": [
         {
           "name": "访客",
-          "value": 2
+          "value": 3
         },
         {
           "name": "站长",
