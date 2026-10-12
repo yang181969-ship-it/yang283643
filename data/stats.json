@@ -521,12 +521,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 15622,
+            "total": 15554,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 10201
+                "value": 10133
               },
               {
                 "name": "笔记字数",
@@ -561,7 +561,7 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 10201,
+            "total": 10133,
             "unit": "字",
             "items": [
               {
@@ -570,7 +570,7 @@
               },
               {
                 "name": "optimization",
-                "value": 1689
+                "value": 1621
               },
               {
                 "name": "fix",
@@ -1030,5 +1030,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-12T04:13:06.121Z"
+  "generatedAt": "2026-10-12T04:30:49.283Z"
 }
