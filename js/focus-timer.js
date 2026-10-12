@@ -504,7 +504,12 @@
       const min = Math.round(seconds / 60);
       desc.textContent = '本次专注 ' + min + ' 分钟,继续保持!';
     }
+    window.sitePanels?.adopt('focus-complete', modalRoot, '专注完成', () => {
+      modalRoot.hidden = true;
+      modalRoot.classList.remove('is-visible');
+    });
     modalRoot.hidden = false;
+    window.sitePanels?.open('focus-complete', document.activeElement, true);
     requestAnimationFrame(() => {
       modalRoot.classList.add('is-visible');
     });
@@ -512,6 +517,7 @@
 
   function hideModal() {
     if (!modalRoot) return;
+    if (window.sitePanels) { window.sitePanels.close('focus-complete'); return; }
     modalRoot.classList.remove('is-visible');
     setTimeout(() => { modalRoot.hidden = true; }, 240);
   }

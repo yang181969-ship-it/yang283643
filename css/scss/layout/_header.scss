@@ -1,38 +1,4 @@
-// ============================================================
-// Header —— Phase 3.5 透明 + 窄化版 (v3,胶囊版)
-// 顶栏右侧的搜索 + 调色盘合并为一个胶囊(.header-capsule)
-// 胶囊视觉/按钮见 _header-capsule.scss
-// ============================================================
-
-@use '../abstracts/variables' as *;
-@use '../abstracts/mixins' as *;
-
-.layout > header {
-  grid-area: header;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  padding: 0 16px;
-
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none;
-  border: none;
-
-  position: relative;
-  z-index: $z-header;
-  min-width: 0;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
+// Shared brand styling. Toolbar geometry lives in _shell.scss.
 .logo {
   display: flex;
   align-items: center;
@@ -59,31 +25,5 @@
   }
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
 
-@include laptop {
-  .layout > header {
-    height: 52px;
-    padding: 0 12px;
-  }
-
-  .logo {
-    img { width: 32px; height: 32px; }
-    span { font-size: 16px; }
-  }
-}
-
-@include small {
-  .layout > header { padding: 0 10px; }
-
-  .logo {
-    gap: 8px;
-    img { width: 30px; height: 30px; }
-    span { font-size: 15px; }
-  }
-}
+@media (max-width: 900px) { .logo span { font-size: 16px; } }

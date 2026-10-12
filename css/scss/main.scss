@@ -31,7 +31,6 @@
 // ---------- 3. 组件层 ----------
 @use 'components/card';
 @use 'components/formula';
-@use 'components/header-capsule';
 @use 'components/search';
 @use 'components/theme-panel';
 @use 'components/floating-btns';
@@ -58,3 +57,5 @@
 
 // ---------- 5. 主题层（最后加载）----------
 @use 'themes/dark';
+
+@use 'layout/shell';

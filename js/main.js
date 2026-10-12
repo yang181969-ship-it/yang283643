@@ -38,7 +38,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const main = document.getElementById("main-content");
-  const navLinks = document.querySelectorAll("nav a");
+  const navLinks = document.querySelectorAll(".site-nav a");
 
   // 独立详情页（如 anime-detail.html、notes-detail.html）跳过 SPA 路由逻辑
   if (document.body.dataset.standalone === "true") return;
@@ -146,6 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const linkPage = getPageFromHref(link.getAttribute("href"));
       resetNavLabel(link);
       link.classList.toggle("active", linkPage === displayPage);
+      if (linkPage === displayPage) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
 
       if (linkPage === "home" && navContextLabels[page]) {
         const label = link.querySelector(".nav-label");
@@ -174,7 +176,12 @@ document.addEventListener("DOMContentLoaded", () => {
       url = `${url}${joiner}update=${encodeURIComponent(update)}`;
     }
 
+    const note = page === 'notes' && options.preserveNote
+      ? new URLSearchParams(window.location.search).get('note') : '';
+    if (note) url += `&note=${encodeURIComponent(note)}`;
+
     const state = { page };
+    if (note) state.note = note;
     if (search) state.search = search;
     if (update) state.update = update;
 
@@ -268,7 +275,10 @@ document.addEventListener("DOMContentLoaded", () => {
     main.style.pointerEvents = isLoading ? "none" : "";
   }
 
+  let routeRequest = 0;
   async function loadPage(page, push = true, options = {}) {
+    const request = ++routeRequest;
+    setLoading(false);
     // 未知或已退役的路由统一 replace 回主页，涵盖旧历史记录与站内调用。
     if (!Object.prototype.hasOwnProperty.call(pageMap, page)) {
       page = "home";
@@ -279,6 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (page === "home") {
       const html = await getHomeContent();
+      if (request !== routeRequest) return;
       main.innerHTML = html;
       afterPageLoad("home", push, options);
       return;
@@ -297,6 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(file);
       if (!res.ok) throw new Error(`无法加载 ${file}`);
       const html = await res.text();
+      if (request !== routeRequest) return;
       const cleanHtml = stripInjectedDevServerScripts(html);
       const doc = new DOMParser().parseFromString(cleanHtml, "text/html");
       const newMain = doc.querySelector("#main-content");
@@ -307,19 +319,20 @@ document.addEventListener("DOMContentLoaded", () => {
       main.innerHTML = content;
       afterPageLoad(page, push, options);
     } catch (err) {
+      if (request !== routeRequest) return;
       console.error("页面切换失败：", err);
       main.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444;">
         <p>页面加载失败，请刷新后重试。</p>
       </div>`;
     } finally {
-      setLoading(false);
+      if (request === routeRequest) setLoading(false);
     }
   }
 
   // 暴露给 search.js / update.js 等使用
   window._loadPage = loadPage;
 
-  navLinks.forEach((link) => {
+  document.querySelectorAll('.site-nav a, .rail .logo, .site-toolbar .logo').forEach((link) => {
     link.addEventListener("click", (e) => {
       const href = link.getAttribute("href");
       const page = getPageFromHref(href);
@@ -348,6 +361,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const page = state.page || getCurrentPageFromUrl();
     syncCurrentPage(page);
+
+    if (page === 'notes' && (state.note || new URLSearchParams(location.search).has('note'))) {
+      loadPage('notes', false, { preserveNote: true });
+      return;
+    }
 
     // 笔记详情回退：notes.js 通过 pushState 管理自身历史
     if (page === "notes" && !state.note) {
@@ -429,6 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadPage(initialPage, false, {
       preserveSearch: !!initialSearch,
       preserveUpdate: !!initialUpdate,
+      preserveNote: initialParams.has('note'),
     });
   } else {
     // 当前在主页，抓一份骨架缓存起来
@@ -544,7 +563,7 @@ document.addEventListener("DOMContentLoaded", initFloatingBtns);
 
 /* ===== 导航按钮自动居中（移动端横向滚动时）===== */
 function initNavAutoCenter() {
-  const nav = document.querySelector("nav");
+  const nav = document.querySelector(".site-nav");
   if (!nav) return;
 
   function centerActive() {
@@ -587,69 +606,6 @@ function initNavAutoCenter() {
 document.addEventListener("DOMContentLoaded", initNavAutoCenter);
 
 /* ===== 搜索框折叠/展开（桌面端+手机端统一）===== */
-function initMobileSearch() {
-  const toggleBtn = document.getElementById("search-toggle");
-  const searchBar = document.querySelector(".search-bar");
-  const backdrop  = document.getElementById("search-backdrop");
-  const input     = document.getElementById("search-input");
-  if (!toggleBtn || !searchBar) return;
-
-  function open() {
-    searchBar.classList.add("is-open");
-    toggleBtn.classList.add("is-open");
-    backdrop?.classList.add("is-open");
-    setTimeout(() => input?.focus(), 50);
-  }
-
-  function close(options = {}) {
-    searchBar.classList.remove("is-open");
-    toggleBtn.classList.remove("is-open");
-    backdrop?.classList.remove("is-open");
-    if (!options.silent) {
-      window.dispatchEvent(new CustomEvent("site-search:close"));
-    }
-  }
-
-  // 点击触发按钮：
-  // - 未展开：展开
-  // - 已展开 + 输入框有内容：触发搜索（模拟点击已有的 #search-btn，复用 search.js 的搜索逻辑）
-  // - 已展开 + 输入框为空：关闭
-  toggleBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isOpen = searchBar.classList.contains("is-open");
-    if (!isOpen) {
-      open();
-      return;
-    }
-    const kw = (input?.value || "").trim();
-    if (kw) {
-      // 复用 search.js 绑定在 #search-btn 上的逻辑
-      document.getElementById("search-btn")?.click();
-    } else {
-      close();
-    }
-  });
-
-  // 点击搜索框内部不关闭
-  searchBar.addEventListener("click", (e) => e.stopPropagation());
-
-  // 点击页面其他区域关闭
-  document.addEventListener("click", () => {
-    if (searchBar.classList.contains("is-open")) close();
-  });
-
-  // 遮罩点击关闭（手机端）
-  backdrop?.addEventListener("click", close);
-
-  // ESC 关闭
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") close();
-  });
-
-  window.addEventListener("site-search:open", open);
-  window.addEventListener("site-search:close", () => close({ silent: true }));
-}
-
 // Search open/close is owned by js/search.js for the header capsule.
 
 /* ===== 侧边栏卡片折叠（分类卡 + TOC 卡） ===== */

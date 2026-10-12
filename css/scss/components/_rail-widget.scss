@@ -1,7 +1,6 @@
 // ============================================================
-// 侧栏小组件占位 —— Phase A Commit 3 骨架
-// 三个 widget:月历 / 专注计时器 / 音乐播放器
-// 容器:.rail-extras(220px - padding ≈ 192px 可用宽)
+// 侧栏小组件 —— 月历 / 专注计时器 / 音乐播放器
+// 容器:全站工具弹窗 .tool-dialog(templates/site-tools.html)
 // 逻辑由 Phase C 接入(JS 渲染、计时、音频播放)
 // ============================================================
 
@@ -1051,11 +1050,6 @@
 }
 
 // ============================================================
-// 平板及以下:.rail-extras 已在 _layout.scss 里 display:none
-// 此处无需额外 media query
-// ============================================================
-
-// ============================================================
 // 专注完成 modal —— Phase C Commit 2
 // 静音 + 自画 modal,跑完触发,无音效
 // (作用域全局,可后续抽到 components/_modal.scss)
@@ -1160,34 +1154,6 @@
   &:active { transform: translateY(1px); }
 }
 
-// ============================================================
-// Phase D2:rail-extras 横滑指示点(< 1024 显示)
-// ============================================================
-.rail-extras-dot {
-  width: 8px;
-  height: 8px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--text-muted);
-  opacity: 0.4;
-  cursor: pointer;
-  transition:
-    opacity var(--dur-glass-quick) var(--ease-glass-quick),
-    background var(--dur-glass-quick) var(--ease-glass-quick),
-    transform var(--dur-glass-quick) var(--ease-glass-quick);
-
-  &:hover {
-    opacity: 0.7;
-  }
-
-  &.is-active {
-    opacity: 1;
-    background: var(--primary);
-    transform: scale(1.25);
-  }
-}
-
 // Mobile active state capsule for music/timer when the full rail is hidden.
 .mobile-activity-island {
   display: none;
@@ -1208,7 +1174,7 @@
     --island-control-text: var(--primary-dark);
 
     position: fixed;
-    top: calc(58px + env(safe-area-inset-top, 0px));
+    top: calc(var(--shell-top-visible, 56px) + 6px + env(safe-area-inset-top, 0px));
     left: 50%;
     z-index: 80;
     display: inline-flex;
@@ -1261,9 +1227,6 @@
     display: none;
   }
 
-  html.has-mobile-activity[data-page]:not([data-page="home"]) main {
-    padding-top: calc(var(--page-pad-top) + 52px);
-  }
 
   .mobile-activity-island[data-variant="music"] {
     width: min(330px, calc(100vw - 24px));

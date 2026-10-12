@@ -35,8 +35,9 @@
 
   if (!titleEl || !gridEl) return;
 
-  const today = new Date();
-  const todayKey = ymd(today);
+  let today = new Date();
+  let todayKey = ymd(today);
+  let midnightTimer;
 
   // 当前显示的月份 (year, month-0-indexed)
   let viewYear  = today.getFullYear();
@@ -96,6 +97,7 @@
   }
 
   function goToday() {
+    refreshDate();
     viewYear  = today.getFullYear();
     viewMonth = today.getMonth();
     render();
@@ -105,5 +107,22 @@
   if (nextBtn)  nextBtn.addEventListener('click', () => shiftMonth(+1));
   if (todayBtn) todayBtn.addEventListener('click', goToday);
 
-  render();
+  function refreshDate() {
+    const now = new Date();
+    today = now;
+    todayKey = ymd(now);
+    document.querySelectorAll('[data-date-day]').forEach(el => { el.textContent = now.getDate(); });
+    document.querySelectorAll('[data-date-month]').forEach(el => { el.textContent = (now.getMonth() + 1) + '月'; });
+    document.querySelectorAll('[data-tool="calendar"]').forEach(el => {
+      el.setAttribute('aria-label', `日历，今天 ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`);
+    });
+    render();
+    clearTimeout(midnightTimer);
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    midnightTimer = setTimeout(refreshDate, midnight - now + 50);
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDate(); });
+  window.addEventListener('pageshow', refreshDate);
+  window.addEventListener('focus', refreshDate);
+  refreshDate();
 })();

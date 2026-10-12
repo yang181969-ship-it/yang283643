@@ -146,7 +146,7 @@
     --island-text: var(--primary-dark);
     --island-muted: var(--text-muted);
     position: fixed !important;
-    top: calc(58px + env(safe-area-inset-top, 0px)) !important;
+    top: calc(var(--shell-top-visible, 56px) + 6px + env(safe-area-inset-top, 0px)) !important;
     left: 50% !important;
     z-index: 80 !important;
     display: flex !important;
@@ -181,9 +181,6 @@
     display: none !important;
   }
 
-  html.has-mobile-activity[data-page]:not([data-page="home"]) main {
-    padding-top: calc(var(--page-pad-top) + 52px) !important;
-  }
 
   [data-theme="dark"] .mobile-activity-island[data-island-version="2"] {
     --island-bg: linear-gradient(135deg, hsla(var(--primary-hue), 76%, 50%, 0.36), var(--glass-bg-strong));

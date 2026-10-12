@@ -1,7 +1,6 @@
 // ============================================================
 // 搜索框(胶囊版)
-// 桌面端:在 .header-capsule 内,搜索按钮固定在右,输入框从其左侧展开
-// 手机端:同步桌面端胶囊逻辑,搜索展开后顶部横向铺开
+// 入口:侧栏/移动顶栏的 #search-toggle,面板为 #tool-search 弹窗
 // 搜索结果框:强制使用不透明实色背景,避免后方卡片透出
 // ============================================================
 
@@ -21,7 +20,7 @@
   z-index: $z-theme-panel;
 }
 
-// ----- 搜索按钮:样式由 _header-capsule.scss 的 .capsule-btn 接管 -----
+// ----- 搜索按钮:样式由 _shell.scss 的 .shell-button 接管 -----
 // 这里只处理图标尺寸 fallback,用于胶囊外的旧场景,避免漏掉
 .search-toggle {
   flex-shrink: 0;
@@ -634,7 +633,6 @@ html[data-theme="dark"] {
   }
 
   // 不再使用旧的 fixed 独立搜索按钮
-  .header-capsule .search-toggle.is-open,
   .search-toggle.is-open {
     position: relative;
     top: auto;

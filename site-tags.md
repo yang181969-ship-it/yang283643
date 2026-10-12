@@ -1,6 +1,6 @@
 # 网站标签参考
 
-整理日期：2026-10-12
+整理日期：2026-10-13
 
 > 这个文件由 `npm run tags:sync` 自动生成，请不要手动编辑。
 
@@ -89,7 +89,10 @@
 | `feature` | 功能更新 | 12 |
 | `mobile` | 移动端适配 | 3 |
 | `visual` | 视觉优化 | 3 |
+| `cloudflare` | cloudflare | 1 |
+| `deployment` | deployment | 1 |
 | `fix` | 修复问题 | 1 |
+| `infrastructure` | infrastructure | 1 |
 | `perf` | 性能优化 | 1 |
 
 ### 当前已使用 primary

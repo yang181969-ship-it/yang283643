@@ -1,0 +1,129 @@
+// Shared shell and native top-layer tool panels. Included in Critical CSS too.
+:root { --sidebar-space: 68px; --shell-top-visible: 56px; }
+:root[data-sidebar-pinned="true"] { --sidebar-space: 220px; }
+.shell-button, .tool-close, .shell-settings-link {
+  font: inherit; color: var(--text-main); cursor: pointer;
+  border: 0; background: transparent;
+}
+.shell-button {
+  display: flex; align-items: center; gap: 14px; width: 100%; min-height: 44px;
+  padding: 10px 14px; border-radius: 12px; text-align: left; flex-shrink: 0;
+  svg { width: 22px; height: 22px; flex: 0 0 22px; }
+  &:hover, &[aria-expanded="true"] { background: var(--primary-soft); color: var(--primary-dark); }
+}
+.shell-label { white-space: nowrap; }
+.shell-button:focus-visible, .tool-close:focus-visible, .site-nav a:focus-visible, .rail .logo:focus-visible {
+  outline: 2px solid var(--primary); outline-offset: -2px;
+}
+.date-icon {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex: 0 0 24px; width: 24px; height: 28px; border: 1.5px solid currentColor;
+  border-radius: 6px; overflow: hidden; color: var(--primary-dark); line-height: 1;
+  small { font-size: 8px; width: 100%; text-align: center; background: var(--primary-soft); padding: 2px 0; }
+  b { font-size: 14px; padding: 2px 0; font-variant-numeric: tabular-nums; }
+}
+.layout > .site-toolbar { display: none; align-items: center; justify-content: space-between; min-width: 0; flex-shrink: 0; }
+.rail {
+  position: relative; z-index: 100; width: 68px; height: 100%; max-height: 100dvh;
+  padding: 12px 8px; gap: 8px; overflow-x: hidden; overflow-y: auto;
+  background: var(--glass-bg-strong); backdrop-filter: blur(var(--glass-blur-strong));
+  border-right: var(--glass-border); box-shadow: var(--glass-shadow-rest);
+  transition: width 220ms var(--ease-glass);
+  .logo { min-height: 44px; gap: 14px; padding: 4px 8px; white-space: nowrap; }
+  .logo img { width: 34px; height: 34px; }
+  .logo span { font-size: 16px; }
+  .site-nav { width: 100%; padding: 4px 0; background: transparent; border: 0; box-shadow: none; backdrop-filter: none; border-radius: 0; overflow: visible; }
+  .site-nav a { min-height: 44px; margin: 2px 0; padding: 10px 14px; gap: 14px; }
+  .site-nav a svg { width: 22px; height: 22px; }
+  .nav-label, .shell-label, .logo span { opacity: 0; transition: opacity 150ms ease; }
+}
+.rail-tools, .rail-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.rail-tools { border-top: 1px solid var(--border-soft); padding-top: 10px; }
+.rail-actions { margin-top: auto; padding-top: 12px; }
+.rail-brand { flex-shrink: 0; }
+:root[data-sidebar-pinned="true"] .rail, :root.sidebar-peek .rail {
+  width: 220px;
+  .nav-label, .shell-label, .logo span { opacity: 1; }
+}
+:root[data-sidebar-pinned="true"] .rail-pin svg { transform: rotate(180deg); }
+
+.tool-dialog {
+  padding: 20px; width: min(440px, calc(100vw - 24px)); max-width: none;
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow: auto; overscroll-behavior: contain; color: var(--text-main);
+  background: var(--glass-bg-strong); backdrop-filter: blur(var(--glass-blur-strong));
+  border: var(--glass-border); border-radius: 24px; box-shadow: var(--glass-shadow-hover);
+  &::backdrop { background: rgba(15, 23, 42, .4); backdrop-filter: blur(5px); }
+  &:not([open]) { display: none; }
+  .rail-widget { width: 100%; height: auto; padding: 16px; transform: none; }
+  .rail-widget__body { gap: 12px; }
+  .timer-display { font-size: 42px; padding: 16px 0; }
+  .timer-btn, .timer-tab, .music-btn, .rail-widget__btn { min-height: 44px; }
+  .rail-widget__btn { min-width: 36px; }
+  .music-cover { width: 64px; height: 64px; }
+  .music-lyrics, .music-lyrics__inner { height: 140px; max-height: 140px; }
+  .music-progress { touch-action: none; }
+  .cal-grid { grid-auto-rows: minmax(32px, auto); }
+  .cal-day { font-size: 14px; }
+  .theme-panel { display: block; position: static; width: 100%; padding: 0; border: 0; box-shadow: none; background: transparent; }
+}
+.tool-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.tool-heading h2 { margin: 0; font-size: 19px; }
+.tool-close { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: var(--primary-soft); }
+.shell-setting { display: flex; gap: 10px; align-items: center; min-height: 44px; }
+.shell-settings-link { display: block; width: 100%; min-height: 44px; margin-top: 10px; border-radius: 10px; background: var(--primary-soft); }
+#tool-theme { width: min(320px, calc(100vw - 24px)); }
+@media (min-width: 901px) {
+  #tool-theme { margin-left: calc(var(--sidebar-space) + 16px); }
+  .sidebar-peek #tool-theme { margin-left: 236px; }
+}
+#tool-search {
+  width: min(680px, calc(100vw - 24px));
+  .search-control { position: static; display: block !important; height: auto; }
+  .search-bar, .search-bar.is-open { display: block; position: static; width: 100%; max-width: none; height: auto; opacity: 1; pointer-events: auto; overflow: visible; }
+  .search-input-wrap { width: 100%; height: 48px; background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 12px; }
+  .search-input { width: 100%; border-radius: 12px; padding-right: 90px; }
+  .search-btn { display: block; position: absolute; top: 4px; right: 4px; min-height: 38px; padding: 0 12px; border: 0; border-radius: 9px; background: var(--primary); color: #fff; font: inherit; cursor: pointer; }
+  .search-clear { right: 68px !important; }
+  .search-popover { position: static; width: 100%; max-height: none; margin-top: 12px; box-shadow: none; transform: none; }
+  .search-popover__close { display: none; } // The dialog already has a persistent close control.
+}
+.tool-dialog--legacy {
+  width: min(700px, calc(100vw - 24px)); padding: 0; background: var(--bg-card);
+  .music-modal, .focus-modal { position: static; padding: 0; opacity: 1; display: block; pointer-events: auto; }
+  .music-modal__backdrop, .focus-modal__backdrop { display: none; }
+  .music-modal__panel, .focus-modal__panel { width: 100%; max-width: none; max-height: none; transform: none; border: 0; box-shadow: none; }
+  .music-modal__list { max-height: 55dvh; overflow-y: auto; }
+}
+@media (max-width: 900px) {
+  :root { --sidebar-space: 0px; --shell-top-visible: 56px; }
+  :root.toolbar-hidden { --shell-top-visible: 0px; }
+  .layout { padding-top: calc(56px + env(safe-area-inset-top)); scroll-padding-top: calc(62px + env(safe-area-inset-top)); }
+  .layout > .site-toolbar {
+    display: flex; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+    background: var(--glass-bg-strong); backdrop-filter: blur(var(--glass-blur));
+    border-bottom: var(--glass-border); transition: transform 220ms ease, opacity 220ms ease;
+    .logo { flex-shrink: 0; min-width: 44px; min-height: 44px; }
+    .logo img { width: 32px; height: 32px; }
+  }
+  .toolbar-hidden .layout > .site-toolbar { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+  .mobile-tools { display: flex; align-items: center; flex-shrink: 0; }
+  .mobile-tools .shell-button { width: 44px; height: 44px; padding: 10px; justify-content: center; }
+  .mobile-tools .shell-label { display: none; }
+  .rail, :root[data-sidebar-pinned="true"] .rail, :root.sidebar-peek .rail {
+    position: static; width: 0; height: 0; padding: 0; border: 0; overflow: visible;
+    backdrop-filter: none; background: transparent; box-shadow: none;
+    .rail-brand, .rail-pin, .rail-tools, .rail-actions { display: none; }
+    .site-nav { position: fixed; width: 100%; padding: 6px 8px max(6px, env(safe-area-inset-bottom)); background: var(--glass-bg-strong); backdrop-filter: blur(var(--glass-blur)); border-top: var(--glass-border); border-radius: 18px 18px 0 0; }
+    .site-nav a { min-height: 44px; margin: 0; padding: 4px 2px; gap: 2px; }
+    .nav-label { opacity: 1; }
+  }
+  // Reserve a stable strip while active; scrolling content never passes behind the capsule.
+  html.has-mobile-activity .layout { padding-top: 0; margin-top: calc(var(--shell-top-visible) + 52px + env(safe-area-inset-top)); height: calc(100dvh - var(--shell-top-visible) - 52px - env(safe-area-inset-top)); }
+  .tool-dialog { padding: 14px; border-radius: 20px; }
+}
+@media (max-width: 480px) { .site-toolbar .logo span { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .rail, .rail *, .site-toolbar, .tool-dialog, .tool-dialog * { transition: none !important; animation: none !important; }
+}
