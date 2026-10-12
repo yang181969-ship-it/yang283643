@@ -94,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
     notes: "html/notes.html",
     update: "html/update.html",
     stats: "html/stats.html",
-    comment: "html/comment.html",
     about: "html/about.html",
   };
 
@@ -246,7 +245,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function runPageInit(page) {
     if (page === "home"    && typeof window.initHomeCards === "function") window.initHomeCards();
-    if (page === "comment" && typeof initCommentPage === "function") initCommentPage();
     if (page === "anime"   && typeof initAnimePage   === "function") initAnimePage();
     if (page === "gallery" && typeof initGalleryPage === "function") initGalleryPage();
     if (page === "notes"   && typeof window.initNotesPage === "function") window.initNotesPage();
@@ -271,7 +269,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadPage(page, push = true, options = {}) {
-    if (!Object.prototype.hasOwnProperty.call(pageMap, page)) return;
+    // 未知或已退役的路由统一 replace 回主页，涵盖旧历史记录与站内调用。
+    if (!Object.prototype.hasOwnProperty.call(pageMap, page)) {
+      page = "home";
+      push = false;
+      options = {};
+    }
     document.documentElement.classList.remove("is-modal-open");
 
     if (page === "home") {

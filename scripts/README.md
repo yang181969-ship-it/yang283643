@@ -13,7 +13,6 @@
 | `npm run build:all` | 依次执行画廊数据、更新索引、标签参考、站点统计、完整 CSS、critical CSS、critical 内联 |
 | `npm run aggregate:updates` | 扫描更新日志 Markdown,生成更新页索引数据 |
 | `npm run aggregate:stats` | 聚合站点统计页数据和 Hero 区单点指标 |
-| `npm run stats:comments` | 从公开留言 API 同步仅含数字的聚合统计 |
 | `npm run optimize:animes` | 处理动漫页图片 |
 | `npm run optimize:gallery` | 处理画廊图片 |
 | `npm run update:refs` | 根据图片重命名映射更新动漫页引用 |
@@ -267,7 +266,7 @@ npm run purgecss
 - 对 `css/style.css` 做未使用选择器诊断。
 - 输出到 `css/purged/style.css`。
 
-注意:这是诊断工具,不在正式构建链路里。Waline、KaTeX、highlight.js 等动态类名已经做了 safelist。
+注意:这是诊断工具,不在正式构建链路里。KaTeX、highlight.js 等动态类名已经做了 safelist。
 
 ### 5-inline-critical.mjs
 
@@ -280,10 +279,9 @@ npm run inline:critical
 作用:
 
 - 读取 `css/critical.css`。
-- 内联到 `index.html`、`html/anime-detail.html`、`html/notes-detail.html`。
+- 内联到 `index.html`、`html/anime-detail.html`、`html/notes-detail.html`、`html/stats.html`。
 - 把完整 `css/style.css` 改成异步加载。
-- 修改前会生成 `.bak` 备份。
-- 如果检测到已经内联过,会跳过,避免重复插入。
+- 已有内联块会刷新到当前 critical CSS；重复执行不会重复插入，也不生成 `.bak`。
 
 通常由 `npm run build:all` 间接执行。
 
@@ -328,38 +326,13 @@ npm run aggregate:stats
 
 作用:
 
-- 读取 `data/notes-index.json`、`js/anime-data.js`、画廊数据、`data/updates-index.json`、`data/playlist.json` 和可选的 `data/comments-stats.json`。
+- 读取 `data/notes-index.json`、`js/anime-data.js`、画廊数据、`data/updates-index.json`、`data/playlist.json`。
 - 写入 `data/stats.json`,供统计页主图和详情卡片读取。
 - 写入 `data/site-meta.json`,供统计页 Hero 区展示总内容数、建站天数、最新更新等单点指标。
 - 音乐总数、艺术家总数和 Top 8 歌手直接根据 `data/playlist.json` 聚合；联合艺人名称不会被擅自拆分。
-- 留言身份分布和留言数据中心读取最近一次有效的 `data/comments-stats.json`,聚合脚本本身不访问网络。
 - 同一个月份重复运行时会覆盖当月快照,不会重复追加。
 
-通常需要先运行 `npm run aggregate:updates`,再运行这个脚本；也可以直接用 `npm run build:all` 一并刷新。`build:all` 不强制同步留言，因此离线时仍可使用已提交的最近一份有效留言统计完成构建。
-
-### 14-sync-comment-stats.mjs
-
-命令:
-
-```bash
-npm run stats:comments
-npm run aggregate:stats
-```
-
-作用:
-
-- 分页读取公开留言 API,统计顶级留言、回复、点赞、今日留言以及访客/站长数量。
-- `data/comments-stats.json` 只保存公开聚合数字和生成时间,不保存留言正文、用户资料、单条 ID 或管理员凭证。
-- 使用同目录临时文件校验后替换正式文件；API、超时、HTTP 或 JSON 失败时非零退出并保留上一份有效文件。
-- 可通过 `COMMENT_STATS_API_URL` 指向其他公开或本地模拟接口；测试时可用 `COMMENT_STATS_OUTPUT_PATH` 指定临时输出文件。
-
-无需访问外网的双页分页与失败保护测试:
-
-```bash
-npm run stats:comments:test
-```
-
-月度 GitHub Actions 会在 `aggregate:stats` 前尝试执行同步。同步失败时工作流会记录警告并继续使用仓库中上一份有效数据，不会生成全 0 占位统计。
+通常需要先运行 `npm run aggregate:updates`,再运行这个脚本；也可以直接用 `npm run build:all` 一并刷新。统计聚合只读取本地数据，不依赖在线接口。
 
 ### 13-sync-site-tags.mjs
 
@@ -513,4 +486,4 @@ npm run music:covers
 npm run build:all
 ```
 
-这会先刷新 `js/gallery-data.js`、`data/updates-index.json`、`site-tags.md`、`data/stats.json` 和 `data/site-meta.json`,再构建完整样式和首屏 CSS。检查无误后,可以删除本次生成的 `.bak` 文件。
+这会先刷新 `js/gallery-data.js`、`data/updates-index.json`、`site-tags.md`、`data/stats.json` 和 `data/site-meta.json`,再构建完整样式和首屏 CSS。已有 HTML 内联样式会同步刷新，不生成 `.bak` 文件。

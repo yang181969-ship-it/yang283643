@@ -11,13 +11,11 @@ import vm from 'vm';
 //   - data/gallery-data.js | data/gallery.json (画廊,自动探测)
 //   - data/updates-index.json      (更新,需先跑 aggregate:updates)
 //   - data/playlist.json           (音乐与艺术家统计的真实数据源)
-//   - data/comments-stats.json     (公开留言聚合,可选)
 //
 // 写出:
-//   - data/stats.json   ── snapshots[] 累积式 + breakdowns(7 张卡数据源)
+//   - data/stats.json   ── snapshots[] 累积式 + breakdowns(6 张卡数据源)
 //   - data/site-meta.json ── 总条目/累计天数/最新更新等单点指标
 //
-// 评论统计由本地 data/comments-stats.json 提供(可选),不在线 fetch
 // ============================================================
 
 const SITE_BIRTHDAY = '2026-04-13';
@@ -28,7 +26,6 @@ const ANIME_DATA_PATH     = './js/anime-data.js';
 const GALLERY_CANDIDATES  = ['./data/gallery-data.js', './js/gallery-data.js', './data/gallery.json'];
 const UPDATES_INDEX_PATH  = './data/updates-index.json';
 const PLAYLIST_PATH       = './data/playlist.json';
-const COMMENTS_STATS_PATH = './data/comments-stats.json';
 
 const STATS_OUTPUT        = './data/stats.json';
 const META_OUTPUT         = './data/site-meta.json';
@@ -308,44 +305,6 @@ function buildMusicArtistStats(tracks) {
     .map(([name, count]) => ({ name, count }));
 }
 
-function isNonNegativeNumber(value) {
-  return Number.isFinite(value) && value >= 0;
-}
-
-function loadCommentsStats() {
-  if (!fs.existsSync(COMMENTS_STATS_PATH)) {
-    console.warn(`⚠ ${COMMENTS_STATS_PATH} 不存在,留言统计保持为空;可运行 npm run stats:comments 同步`);
-    return null;
-  }
-
-  const data = safeReadJson(COMMENTS_STATS_PATH, null);
-  const summaryKeys = ['total', 'topLevel', 'replies', 'likes', 'today'];
-  const validGroups = Array.isArray(data?.groups)
-    && data.groups.every(group =>
-      group
-      && typeof group === 'object'
-      && Array.isArray(group.items)
-      && group.items.every(item =>
-        item
-        && typeof item === 'object'
-        && String(item.name || '').trim()
-        && isNonNegativeNumber(item.value)
-      )
-    );
-  const valid = data
-    && typeof data === 'object'
-    && summaryKeys.every(key => isNonNegativeNumber(data.summary?.[key]))
-    && isNonNegativeNumber(data.roles?.guest)
-    && isNonNegativeNumber(data.roles?.admin)
-    && validGroups;
-
-  if (!valid) {
-    console.warn(`⚠ ${COMMENTS_STATS_PATH} 结构无效,留言统计保持为空`);
-    return null;
-  }
-  return data;
-}
-
 function compactChange(item, order) {
   const date = toISODate(item.date);
   const title = String(item.title || '').trim();
@@ -434,13 +393,12 @@ const gallery    = loadGallery() || [];
 const updates    = safeReadJson(UPDATES_INDEX_PATH, []);
 const tracks     = playlistTracks(safeReadJson(PLAYLIST_PATH, { tracks: [] }));
 const musicArtists = buildMusicArtistStats(tracks);
-const commentsStats = loadCommentsStats();
 const prevStats  = safeReadJson(STATS_OUTPUT, { snapshots: [], breakdowns: {} });
 
 console.log(`  笔记:${notes.length}  番剧:${animeIds.length}  画廊:${gallery.length}  更新:${updates.length}  音乐:${tracks.length}`);
 
 // ============================================================
-// breakdowns:7 张详情卡的源数据
+// breakdowns:6 张详情卡的源数据
 // 每个 breakdown 都是 [{label, value}] 的扁平数组,前端拿去画饼+图例
 // ============================================================
 const breakdowns = {};
@@ -519,15 +477,6 @@ const breakdowns = {};
 breakdowns.musicTopArtists = musicArtists
   .slice(0, 8)
   .map(({ name, count }) => ({ label: name, value: count }));
-
-// 7. 评论分布 ─────────────────────────────────
-// 只读取本地公开聚合文件,aggregate:stats 本身不访问网络
-breakdowns.commentsByRole = commentsStats
-  ? [
-      { label: '访客', value: commentsStats.roles.guest },
-      { label: '站长', value: commentsStats.roles.admin },
-    ]
-  : [];
 
 const recentChanges = buildRecentChanges({
   notes,
@@ -684,20 +633,6 @@ const dataCenterGroups = [];
     makeChild('writing-updates', '更新日志字数', updateWords, '字'),
     makeChild('writing-anime', '动漫详情字数', animeWords, '字'),
   ]));
-}
-
-// 留言:仅在本地公开聚合文件有效时启用,普通构建不依赖在线接口
-{
-  if (commentsStats) {
-    dataCenterGroups.push(makeGroup('comments', '留言', commentsStats.groups.map(group =>
-      makeChild(
-        group.id || `comments-${slugify(group.name)}`,
-        group.name || '留言',
-        Object.fromEntries((group.items || []).map(item => [item.name, item.value])),
-        group.unit || '条'
-      )
-    )));
-  }
 }
 
 const dataCenter = {

@@ -13,7 +13,6 @@ The website includes multiple pages, such as:
 - Gallery page
 - Anime page
 - Notes page
-- Comment page
 - Update page
 - About page
 

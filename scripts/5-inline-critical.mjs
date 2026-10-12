@@ -1,8 +1,7 @@
 import fs from 'fs';
-import path from 'path';
 
 // ========================================================
-// 读取编译好的 critical.css,内联进三个 HTML 的 <head>
+// 读取编译好的 critical.css,内联进指定 HTML 的 <head>
 // 并把原 style.css 的 <link> 改成异步加载
 // ========================================================
 
@@ -39,14 +38,14 @@ for (const htmlPath of HTML_FILES) {
 
   let html = fs.readFileSync(htmlPath, 'utf-8');
   
-  // 幂等性守卫:已经内联过就跳过(检测我们注入的注释)
-  if (html.includes('<!-- 关键 CSS:内联,首屏渲染零阻塞 -->')) {
-    console.log(`⏭ 跳过(已内联过):${htmlPath}`);
+  // 更新已有内联块；重复构建得到相同结果，不生成可发布的旧页面备份。
+  const inlineBlock = /(<!-- 关键 CSS:内联,首屏渲染零阻塞 -->\s*<style>)[\s\S]*?(<\/style>)/;
+  if (inlineBlock.test(html)) {
+    html = html.replace(inlineBlock, (_, start, end) => `${start}${criticalCSS}${end}`);
+    fs.writeFileSync(htmlPath, html);
+    console.log(`✓ 已刷新:${htmlPath}`);
     continue;
   }
-
-  // 备份原文件
-  fs.writeFileSync(`${htmlPath}.bak`, html);
 
   // 判断是根目录还是 html/ 子目录(决定 href 路径)
   const isSubdir = htmlPath.includes('/html/');
@@ -79,5 +78,4 @@ for (const htmlPath of HTML_FILES) {
   console.log(`✓ 已处理:${htmlPath}`);
 }
 
-console.log('\n完成!测试无误后可删除 .bak 文件:');
-console.log('  del index.html.bak html\\anime-detail.html.bak html\\notes-detail.html.bak');
+console.log('\n完成：critical CSS 已同步。');

@@ -65,7 +65,6 @@
       { name: "动漫", value: 14 },
       { name: "画廊", value: 9 },
       { name: "更新", value: 7 },
-      { name: "留言", value: 5 },
     ],
     archive: {
       siteBirthday: "2026年4月13日",
@@ -73,7 +72,7 @@
       version: "v1.1.0",
       stack: [
         "HTML · CSS/SCSS · JavaScript",
-        "自研留言系统 · KaTeX · 原生 SVG",
+        "KaTeX · 原生 SVG",
       ],
     },
   };
@@ -129,7 +128,6 @@
       笔记: "notes",
       动漫: "anime",
       画廊: "gallery",
-      留言: "comment",
       数据: "stats",
       关于: "about",
       首页: "home",
@@ -724,7 +722,6 @@
       ? archive.status
       : [
           { label: "内容统计", value: "自动生成", type: "auto" },
-          { label: "留言系统", value: "自研 API 已接入", type: "enabled" },
           { label: "移动端适配", value: "优化中", type: "progress" },
           { label: "数据中心", value: "已启用", type: "enabled" },
         ];

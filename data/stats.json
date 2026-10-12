@@ -53,6 +53,15 @@
       "gallery": 17,
       "updates": 14,
       "total": 49
+    },
+    {
+      "date": "2026-10-12",
+      "month": "2026-10",
+      "notes": 8,
+      "anime": 10,
+      "gallery": 17,
+      "updates": 15,
+      "total": 50
     }
   ],
   "breakdowns": {
@@ -140,6 +149,10 @@
       {
         "label": "2026-05",
         "value": 7
+      },
+      {
+        "label": "2026-10",
+        "value": 1
       }
     ],
     "musicTopArtists": [
@@ -175,16 +188,6 @@
         "label": "EYAir",
         "value": 1
       }
-    ],
-    "commentsByRole": [
-      {
-        "label": "访客",
-        "value": 2
-      },
-      {
-        "label": "站长",
-        "value": 0
-      }
     ]
   },
   "dataCenter": {
@@ -196,7 +199,7 @@
           {
             "id": "overview-content",
             "name": "内容构成",
-            "total": 61,
+            "total": 62,
             "unit": "项",
             "items": [
               {
@@ -205,7 +208,7 @@
               },
               {
                 "name": "更新日志",
-                "value": 14
+                "value": 15
               },
               {
                 "name": "音乐",
@@ -224,7 +227,7 @@
           {
             "id": "overview-updates",
             "name": "更新概况",
-            "total": 14,
+            "total": 15,
             "unit": "条",
             "items": [
               {
@@ -233,7 +236,7 @@
               },
               {
                 "name": "optimization",
-                "value": 2
+                "value": 3
               },
               {
                 "name": "fix",
@@ -518,12 +521,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 15200,
+            "total": 15622,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 9779
+                "value": 10201
               },
               {
                 "name": "笔记字数",
@@ -558,7 +561,7 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 9779,
+            "total": 10201,
             "unit": "字",
             "items": [
               {
@@ -567,7 +570,7 @@
               },
               {
                 "name": "optimization",
-                "value": 1267
+                "value": 1689
               },
               {
                 "name": "fix",
@@ -588,126 +591,15 @@
             ]
           }
         ]
-      },
-      {
-        "id": "comments",
-        "name": "留言",
-        "children": [
-          {
-            "id": "overview",
-            "name": "留言概况",
-            "total": 3,
-            "unit": "条",
-            "items": [
-              {
-                "name": "顶级留言",
-                "value": 2
-              },
-              {
-                "name": "点赞",
-                "value": 1
-              }
-            ]
-          },
-          {
-            "id": "roles",
-            "name": "身份分布",
-            "total": 2,
-            "unit": "条",
-            "items": [
-              {
-                "name": "访客",
-                "value": 2
-              }
-            ]
-          }
-        ]
       }
     ]
   },
   "recentChanges": [
     {
-      "date": "2026-09-01",
-      "title": "新增音乐：平凡之路 - 朴树",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：起风了 - 买辣椒也用券",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：泡沫 - G.E.M.邓紫棋",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：鳥の詩 (鸟之诗) - Lia",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：❀ (纯音乐) - MappleHY",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：童话镇 - 陈一发儿",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：Lose My Mind (feat. Doja Cat) - Don Toliver/Doja Cat",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：F1 - Hans Zimmer",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：夏日漱石 (Summer Cozy Rock) - 橘子海",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：鹿 be free - 尚雯婕",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：倒数 - G.E.M.邓紫棋",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-09-01",
-      "title": "新增音乐：Call of Silence × YouSeeBIGGIRL - EYAir",
-      "type": "音乐",
-      "page": "home",
+      "date": "2026-10-12",
+      "title": "留言功能退役，主页第三行布局调整",
+      "type": "更新",
+      "page": "update",
       "href": ""
     },
     {
@@ -740,9 +632,72 @@
     },
     {
       "date": "2026-05-06",
+      "title": "新增音乐：平凡之路 - 朴树",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：起风了 - 买辣椒也用券",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：泡沫 - G.E.M.邓紫棋",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：鳥の詩 (鸟之诗) - Lia",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：❀ (纯音乐) - MappleHY",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
+      "title": "新增音乐：童话镇 - 陈一发儿",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-06",
       "title": "更新页大改,右上角三个按钮合并成两个",
       "type": "更新",
       "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增音乐：Lose My Mind (feat. Doja Cat) - Don Toliver/Doja Cat",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增音乐：F1 - Hans Zimmer",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-05",
+      "title": "新增音乐：夏日漱石 (Summer Cozy Rock) - 橘子海",
+      "type": "音乐",
+      "page": "home",
       "href": ""
     },
     {
@@ -845,6 +800,13 @@
     },
     {
       "date": "2026-05-04",
+      "title": "新增音乐：倒数 - G.E.M.邓紫棋",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
+      "date": "2026-05-04",
       "title": "移动端加灵动岛,调色盘补上光晕开关",
       "type": "更新",
       "page": "update",
@@ -855,6 +817,13 @@
       "title": "主页大改:从静态欢迎页到 Bento 仪表盘",
       "type": "更新",
       "page": "update",
+      "href": ""
+    },
+    {
+      "date": "2026-04-30",
+      "title": "新增音乐：Call of Silence × YouSeeBIGGIRL - EYAir",
+      "type": "音乐",
+      "page": "home",
       "href": ""
     },
     {
@@ -1019,6 +988,13 @@
       "href": ""
     },
     {
+      "date": "2026-02-26",
+      "title": "新增音乐：鹿 be free - 尚雯婕",
+      "type": "音乐",
+      "page": "home",
+      "href": ""
+    },
+    {
       "date": "2025-10-21",
       "title": "新增笔记：矩阵的特征值与迹",
       "type": "笔记",
@@ -1054,5 +1030,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-09-01T05:23:30.919Z"
+  "generatedAt": "2026-10-12T04:13:06.121Z"
 }

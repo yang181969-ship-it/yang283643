@@ -1,8 +1,8 @@
 // ============================================================
 // js/home-cards.js
-// 主页 9 张 bento 卡数据灌入 —— Phase E
+// 主页 8 张 bento 卡数据灌入 —— Phase E
 //
-// 渲染策略:9 卡并发请求,各自渲染,骨架屏 200-800ms 内逐个褪色
+// 渲染策略:8 卡并发请求,各自渲染,骨架屏 200-800ms 内逐个褪色
 // 缓存层:内存 Map(同会话零延迟) + localStorage(y181_ 前缀,跨会话)
 // 失败兜底:用过期 localStorage 缓存
 // ============================================================
@@ -17,7 +17,6 @@
   const TOKYO_LNG      = 139.6503;
   const MOOD_REFRESH_MS = 1000 * 60 * 60;                       // 60 分钟
   const PORTRAIT_REFRESH_BUFFER_MS = 1000;                      // 零点后 1 秒刷新
-  const COMMENT_API    = "https://comment.yang181969.com";
   const STORAGE_PREFIX = "y181_";
 
   const TTL = {
@@ -26,7 +25,6 @@
     updates:  1000 * 60 * 60 * 24,
     moodMap:  1000 * 60 * 60 * 24,
     mood:     MOOD_REFRESH_MS,
-    comments: 1000 * 60 * 60,        // 1 小时
   };
 
   const COUNT = {
@@ -34,8 +32,13 @@
     anime:    3,
     gallery:  4,
     update:   3,
-    comment:  3,
   };
+
+  // 清理已退役模块的两个已确认键，保留其他功能的所有偏好。
+  try {
+    localStorage.removeItem("y181_comments-recent");
+    localStorage.removeItem("yang_comment_voter_id");
+  } catch {}
 
   // 同会话内存缓存
   const memCache = new Map();
@@ -190,13 +193,6 @@
     };
   }
 
-  async function fetchCommentsRecent() {
-    // 一次拿 100 条:comment 卡用前 N 条,stats 卡数 length
-    const url = `${COMMENT_API}/api/comments?page=1&pageSize=100`;
-    const data = await fetchJson(url);
-    return data?.data?.comments || [];
-  }
-
   // ---------------- 各卡渲染 ----------------
 
   // 1. intro - 关于这个网页
@@ -270,7 +266,7 @@
   const STATS_ICONS = {
     notes:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
     anime:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>`,
-    comment: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    gallery: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
     days:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
   };
 
@@ -278,24 +274,22 @@
     const card = $card("stats");
     if (!card) return;
     try {
-      const [notes, comments] = await Promise.all([
-        cached("notes", TTL.notes, fetchNotes),
-        cached("comments-recent", TTL.comments, fetchCommentsRecent),
-      ]);
+      const notes = await cached("notes", TTL.notes, fetchNotes);
+      const galleryCount = typeof galleryData !== "undefined" && Array.isArray(galleryData)
+        ? galleryData.length : 0;
       const animeCount = (typeof animeData === "object" && animeData)
         ? Object.keys(animeData).length : 0;
       const days = Math.max(1, Math.floor(daysSince(SITE_BIRTHDAY)));
 
-      // 笔记 / 追番 / 留言 三项互相对比(以三者最大值为基准)
+      // 笔记 / 追番 / 画廊 三项互相对比(以三者最大值为基准)
       // 建站固定 100%,不参与归一化(避免天数膨胀后压扁其他三项)
       const notesCount    = notes.length;
-      const commentsCount = comments.length;
-      const normMax = Math.max(notesCount, animeCount, commentsCount, 1);
+      const normMax = Math.max(notesCount, animeCount, galleryCount, 1);
 
       const items = [
         { label: "笔记", value: notesCount,    pct: (notesCount    / normMax) * 100, icon: STATS_ICONS.notes   },
         { label: "追番", value: animeCount,    pct: (animeCount    / normMax) * 100, icon: STATS_ICONS.anime   },
-        { label: "留言", value: commentsCount, pct: (commentsCount / normMax) * 100, icon: STATS_ICONS.comment },
+        { label: "画廊", value: galleryCount, pct: (galleryCount / normMax) * 100, icon: STATS_ICONS.gallery },
         { label: "建站", value: days,          pct: 100,                              icon: STATS_ICONS.days    },
       ];
 
@@ -418,36 +412,7 @@
     }
   }
 
-  // 8. comment - 留言板
-  async function renderComment() {
-    const card = $card("comment");
-    if (!card) return;
-    try {
-      const items = await cached("comments-recent", TTL.comments, fetchCommentsRecent);
-      const recent = items.slice(0, COUNT.comment);
-      if (!recent.length) {
-        setBody(card, `<p class="bento-text bento-text--muted">还没有留言,过来聊聊吧 ~</p>`);
-        return;
-      }
-      const html = recent.map(c => {
-        const text = String(c.content || "").trim().slice(0, 32);
-        return `
-          <li class="bento-list-item">
-            <a class="bento-list-link" href="index.html?page=comment">
-              <span class="bento-list-title">
-                <strong>${escapeHTML(c.nickname || "访客")}</strong>: ${escapeHTML(text)}
-              </span>
-            </a>
-          </li>
-        `;
-      }).join("");
-      setBody(card, `<ul class="bento-list">${html}</ul>`);
-    } catch {
-      setBody(card, `<p class="bento-text bento-text--muted">留言加载失败</p>`);
-    }
-  }
-
-  // 9. about-me - 关于我
+  // 8. about-me - 关于我
   async function renderAboutMe() {
     const card = $card("about-me");
     if (!card) return;
@@ -471,7 +436,6 @@
     renderAnime();
     renderGallery();
     renderUpdate();
-    renderComment();
     renderAboutMe();
   }
 

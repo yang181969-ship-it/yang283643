@@ -5,7 +5,6 @@ const STATIC_PAGES = [
   { title: "画廊",   desc: "我的图片收藏与展示",       page: "gallery", type: "页面" },
   { title: "动漫",   desc: "我看过和想看的动漫作品",   page: "anime",   type: "页面" },
   { title: "笔记",   desc: "数学与物理学习笔记",       page: "notes",   type: "页面" },
-  { title: "留言",   desc: "留言与交流",               page: "comment", type: "页面" },
   { title: "更新",   desc: "网站更新日志",             page: "update",  type: "页面" },
   { title: "关于",   desc: "关于这个网站和站主",       page: "about",   type: "页面" },
 ];

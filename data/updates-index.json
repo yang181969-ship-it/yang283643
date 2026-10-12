@@ -1,5 +1,18 @@
 [
   {
+    "file": "content/updates/2026-10-12.md",
+    "title": "留言功能退役，主页第三行布局调整",
+    "date": "2026-10-12",
+    "category": "建站日志",
+    "meta": "功能退役与主页布局调整",
+    "summary": "本地代码移除自建留言功能及相关统计任务，主页更新公告与关于我各占半行，统计卡改为显示真实画廊图片数。远程发布另行执行。",
+    "tags": [
+      "visual",
+      "mobile"
+    ],
+    "primary": "optimization"
+  },
+  {
     "file": "content/updates/2026-05-14.md",
     "title": "修复留言页点赞按钮,新增全站启动 Loading",
     "date": "2026-05-14",

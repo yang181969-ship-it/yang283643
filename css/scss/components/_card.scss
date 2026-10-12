@@ -14,7 +14,7 @@
 // Phase 2: 复用 card-surface + card-hover,DRY 掉原来手写的三行
 //
 // 额外排除画廊/番剧的自定义工具区,避免通用 section 卡片覆盖页面级样式。
-section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
   @include card-surface;
   @include card-hover;
   padding: 24px;
@@ -44,10 +44,6 @@ section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not
   @include card-hover;
 }
 
-// 评论/状态提示卡 hero 区域里的信息卡(comment-status-card 保持 --bg-card
-// 因为它用渐变色做 is-loading/is-warning/is-error 状态色,不适合毛玻璃)
-// → 不改,维持原样
-
 // ----- 响应式 -----
 @include laptop {
   .card,
@@ -55,7 +51,7 @@ section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not
   .note-card,
   .update-card,
   .update-detail-card,
-  section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+  section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 20px;
     border-radius: var(--radius-card);
   }
@@ -67,7 +63,7 @@ section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not
   .note-card,
   .update-card,
   .update-detail-card,
-  section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.comment-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+  section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 18px;
   }
 }

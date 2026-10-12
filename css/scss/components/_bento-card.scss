@@ -1,5 +1,5 @@
 // ============================================================
-// 主页 9 张主卡片 —— Commit 4 (B1) 视觉精修版
+// 主页 8 张主卡片 —— Commit 4 (B1) 视觉精修版
 //
 // 改动相对 Commit 2:
 //   1. 变量名对齐项目实际 --primary / --primary-soft / --text-main
@@ -64,7 +64,7 @@
 .bento-card[data-span="4"] { grid-column: span 4; }
 .bento-card[data-span="6"] { grid-column: span 6; }
 
-// 移动端在 _layout 里把 grid 改成单列,这里 span 自动失效不用管
+// 移动端单列必须同时重置卡片 span，见下方响应式规则。
 
 // ============================================================
 // 卡片头部:左上小图标 + 标题
@@ -115,7 +115,7 @@
 }
 
 // ============================================================
-// 右上跳转箭头(7 张卡有,intro/mood 例外)
+// 右上跳转箭头(6 张卡有,intro/mood 例外)
 // ============================================================
 .bento-card-link {
   position: absolute;
@@ -230,6 +230,10 @@
 // 移动端:bento-grid 已在 _layout 里改单列;这里只做密度收紧
 // ============================================================
 @media (max-width: 900px) {
+  .bento-card[data-span] {
+    grid-column: 1 / -1;
+  }
+
   .bento-card {
     min-height: 160px;
     padding: 18px;
@@ -272,15 +276,19 @@
 }
 
 // ============================================================
-// Phase D1:平板段(640-1023px)bento 改 6 列
+// Phase D1:窄桌面段(901-1023px)bento 改 6 列
 // span6 占满一行,其余 span3/4 都缩成 span3(1/2 行)
 // ============================================================
-@media (min-width: 640px) and (max-width: 1023px) {
+@media (min-width: 901px) and (max-width: 1023px) {
   .bento-grid {
     grid-template-columns: repeat(6, 1fr);
   }
 
   .bento-card[data-span="6"] { grid-column: span 6; }
+  // 前六张卡在窄桌面保持原有顺序，画廊填满末行，避免退役卡片留下空位。
+  .bento-card[data-card="gallery"][data-span="4"] { grid-column: span 6; }
+  .bento-card[data-card="update"][data-span="6"],
+  .bento-card[data-card="about-me"][data-span="6"] { grid-column: span 3; }
   .bento-card[data-span="4"] { grid-column: span 3; }
   .bento-card[data-span="3"] { grid-column: span 3; }
 }
@@ -289,16 +297,6 @@
 // Phase D2 修订:移动端(< 640)卡片内边距 + 装饰图全面收紧
 // ============================================================
 @media (max-width: 639px) {
-  // ★★ 新增(2026-04-30):重置 span,防止 1fr 单列 grid 被隐式扩展为多列 ★★
-  // _layout.scss @include laptop 把 .bento-grid 设成 1fr,但本文件第 69-71 行
-  // .bento-card[data-span="N"] 仍然声明 span 3/4/6,浏览器会隐式开 N-1 个 auto
-  // 列,导致 span=4 卡片只占 ~2/3 行宽。在 < 640 段统一压回整行。
-  .bento-card[data-span="3"],
-  .bento-card[data-span="4"],
-  .bento-card[data-span="6"] {
-    grid-column: 1 / -1;
-  }
-
   .bento-card {
     padding: 14px;   // 之前 18×16 → 14×14
   }
