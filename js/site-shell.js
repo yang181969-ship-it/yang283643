@@ -5,11 +5,14 @@
   const rail = document.querySelector('.rail');
   if (!rail || window.sitePanels) return;
   const mobile = matchMedia('(max-width: 900px)');
-  const hover = matchMedia('(hover: hover) and (pointer: fine)');
   const panels = new Map();
   const stack = [];
   const focusable = 'button:not(:disabled), a[href], input:not(:disabled), [tabindex]:not([tabindex="-1"])';
 
+  // Modules (search, theme, …) react to these instead of owning the buttons.
+  function emit(type, key) {
+    window.dispatchEvent(new CustomEvent(type, { detail: { key } }));
+  }
   function syncModalState() {
     root.classList.toggle('has-tool-panel', stack.length > 0);
     document.querySelectorAll('[data-tool]').forEach(button => {
@@ -26,24 +29,25 @@
     panel.dialog.close();
     panel.onClose?.();
     syncModalState();
+    emit('site-panel:close', key);
     if (restore) {
       const target = panel.trigger?.isConnected && panel.trigger.getClientRects().length
-        ? panel.trigger : document.getElementById('theme-toggle');
+        ? panel.trigger : document.querySelector(`[data-tool="${key}"]`);
       target?.focus({ preventScroll: true });
     }
-    scheduleCollapse();
   }
   function open(key, trigger = document.activeElement, nested = false) {
     const panel = panels.get(key);
     if (!panel || panel.dialog.open) return;
-    // A settings link inside the theme dialog must return to the visible theme button,
-    // not to an element inside the dialog that is being replaced.
+    // A control inside an open dialog that switches panels returns focus to the
+    // original shell button, not to an element inside the dialog being replaced.
     if (!nested && trigger?.closest('dialog[open]') && stack.length) trigger = panels.get(stack.at(-1)).trigger;
     if (!nested) while (stack.length) close(stack.at(-1), false);
     panel.trigger = trigger;
     panel.dialog.showModal();
     stack.push(key);
     syncModalState();
+    emit('site-panel:open', key);
     const first = panel.dialog.querySelector('[autofocus], input:not([type="hidden"]):not([hidden])');
     (first || panel.dialog.querySelector(focusable))?.focus({ preventScroll: true });
   }
@@ -71,13 +75,7 @@
     return dialog;
   }
   window.sitePanels = { open, close, adopt, get active() { return stack.at(-1); } };
-  document.querySelectorAll('dialog[id^="tool-"]').forEach(dialog => {
-    const key = dialog.id.slice(5);
-    register(key, dialog, () => {
-      if (key === 'search') window.dispatchEvent(new Event('site-search:close'));
-      if (key === 'theme') document.getElementById('theme-panel').classList.remove('show');
-    });
-  });
+  document.querySelectorAll('dialog[id^="tool-"]').forEach(dialog => register(dialog.id.slice(5), dialog));
   // Capture Esc before legacy document handlers; exactly one layer closes per press.
   document.addEventListener('keydown', event => {
     if (!stack.length) return;
@@ -93,60 +91,66 @@
     }
   }, true);
 
+  // One delegated handler for every shell tool, desktop rail and mobile toolbar alike.
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-tool]');
-    if (!button) return;
-    const key = button.dataset.tool;
-    if (key === 'search' || key === 'theme') return; // Existing modules retain their controls.
-    open(key, button);
+    if (!button || !panels.has(button.dataset.tool)) return;
+    open(button.dataset.tool, button);
   });
-  let enterTimer, leaveTimer;
-  function expand() { clearTimeout(leaveTimer); root.classList.add('sidebar-peek'); }
-  function scheduleCollapse() {
-    clearTimeout(enterTimer); clearTimeout(leaveTimer);
-    leaveTimer = setTimeout(() => {
-      if (!stack.length && !rail.matches(':hover') && !rail.querySelector(':focus-visible')) root.classList.remove('sidebar-peek');
-    }, 250);
-  }
-  rail.addEventListener('pointerenter', event => {
-    if (mobile.matches || !hover.matches || event.pointerType === 'touch') return;
-    clearTimeout(leaveTimer); enterTimer = setTimeout(expand, 180);
-  });
-  rail.addEventListener('pointerleave', scheduleCollapse);
-  rail.addEventListener('focusin', expand);
-  rail.addEventListener('focusout', scheduleCollapse);
-  function setPinned(value) {
-    root.dataset.sidebarPinned = String(value);
-    root.classList.remove('sidebar-peek');
-    try { localStorage.setItem('y181_sidebar_pinned', String(value)); } catch (_) {}
-    syncPin();
-  }
+
+  // Desktop sidebar: two states, changed only by the toggle button.
+  const pin = rail.querySelector('.rail-pin');
   function syncPin() {
-    const value = root.dataset.sidebarPinned === 'true';
-    const pin = document.querySelector('.rail-pin');
-    pin.setAttribute('aria-pressed', String(value));
-    pin.setAttribute('aria-label', value ? '取消固定侧栏' : '固定展开侧栏');
-    pin.querySelector('.shell-label').textContent = value ? '取消固定' : '固定侧栏';
-    document.querySelector('[data-pin-setting]').checked = value;
+    const expanded = root.dataset.sidebarPinned === 'true';
+    const label = expanded ? '收起侧栏' : '展开侧栏';
+    pin.setAttribute('aria-expanded', String(expanded));
+    pin.setAttribute('aria-label', label);
+    pin.title = label;
+    pin.querySelector('.shell-label').textContent = label;
   }
-  document.querySelector('.rail-pin').addEventListener('click', () => setPinned(root.dataset.sidebarPinned !== 'true'));
-  document.querySelector('[data-pin-setting]').addEventListener('change', event => setPinned(event.target.checked));
+  pin.addEventListener('click', () => {
+    const expanded = root.dataset.sidebarPinned !== 'true';
+    root.dataset.sidebarPinned = String(expanded);
+    try { localStorage.setItem('y181_sidebar_pinned', String(expanded)); } catch (_) {}
+    syncPin();
+  });
   window.addEventListener('storage', event => {
     if (event.key === 'y181_sidebar_pinned') { root.dataset.sidebarPinned = String(event.newValue === 'true'); syncPin(); }
   });
   syncPin();
+
+  // Date button: owned here so it never stays blank, even if the month widget fails.
+  let today = '', midnightTimer;
+  function refreshDate() {
+    const now = new Date();
+    const key = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    clearTimeout(midnightTimer);
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    midnightTimer = setTimeout(refreshDate, midnight - now + 50);
+    if (key === today) return;
+    today = key;
+    document.querySelectorAll('[data-date-month]').forEach(el => { el.textContent = `${now.getMonth() + 1}月`; });
+    document.querySelectorAll('[data-date-day]').forEach(el => { el.textContent = now.getDate(); });
+    document.querySelectorAll('[data-tool="calendar"]').forEach(el => {
+      el.setAttribute('aria-label', `日历，今天 ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`);
+    });
+    window.dispatchEvent(new CustomEvent('site:datechange', { detail: { date: now } }));
+  }
+  // Timers can be throttled or frozen in the background; re-check whenever the page returns.
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDate(); });
+  window.addEventListener('pageshow', refreshDate);
+  window.addEventListener('focus', refreshDate);
+  window.siteDate = { refresh: refreshDate };
+  refreshDate();
 
   const tools = [...document.querySelectorAll('.rail-tools > button')];
   const actions = [...document.querySelectorAll('.rail-actions > button')];
   const toolbar = document.querySelector('[data-mobile-tools]');
   toolbar.addEventListener('focusin', () => root.classList.remove('toolbar-hidden'));
   function responsive() {
-    root.classList.remove('sidebar-peek', 'toolbar-hidden');
-    clearTimeout(enterTimer); clearTimeout(leaveTimer);
+    root.classList.remove('toolbar-hidden');
     tools.forEach(button => (mobile.matches ? toolbar : document.querySelector('.rail-tools')).append(button));
-    actions.forEach(button => {
-      (mobile.matches && button.dataset.tool !== 'settings' ? toolbar : document.querySelector('.rail-actions')).append(button);
-    });
+    actions.forEach(button => (mobile.matches ? toolbar : document.querySelector('.rail-actions')).append(button));
   }
   mobile.addEventListener('change', responsive);
   responsive();
@@ -167,7 +171,11 @@
       travel = 0;
     }
   }, { passive: true });
-  window.addEventListener('locationchange', () => root.classList.remove('toolbar-hidden'));
+  const showToolbar = () => { root.classList.remove('toolbar-hidden'); previous = Math.max(0, layout.scrollTop); travel = 0; };
+  window.addEventListener('locationchange', showToolbar);
+  window.addEventListener('popstate', showToolbar);
+  // Only a back/forward-cache restore; the initial load's pageshow can land after the user scrolled.
+  window.addEventListener('pageshow', event => { if (event.persisted) showToolbar(); });
   if (document.body.dataset.standalone === 'true') {
     const page = document.body.dataset.page || (location.pathname.includes('anime-detail') ? 'anime' : 'notes');
     root.dataset.page = page;

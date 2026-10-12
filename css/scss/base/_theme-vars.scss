@@ -6,7 +6,11 @@
 
 :root {
   // ----- 页面尺寸 -----
-  --page-max-width: 1320px;
+  // 足够在 ≤1920px 视口内铺满侧栏右侧的可用宽度,侧栏收起/展开会真正改变内容宽度;
+  // 更宽的屏幕才居中留白
+  --page-max-width: 1840px;
+  // 长文页面(笔记、关于、更新)保留原阅读宽度,避免宽屏文字行过长
+  --page-reading-max-width: 1320px;
   --page-pad-top: 16px;
   --page-pad-x: 40px;
   --page-pad-bottom: 40px;

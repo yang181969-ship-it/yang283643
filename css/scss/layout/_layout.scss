@@ -10,11 +10,13 @@
 @use '../abstracts/mixins' as *;
 
 // ============================================================
-// .layout —— 三区 grid,左列固定 220px
+// .layout —— 两列 grid,左列宽度跟随侧栏状态(68px / 220px,见 _shell.scss)
 // ============================================================
 .layout {
   display: grid;
   grid-template-columns: var(--sidebar-space, 68px) minmax(0, 1fr);
+  // 与侧栏宽度动画同步,展开/收起时主内容一起让位,而不是瞬间跳变
+  transition: grid-template-columns 220ms var(--ease-glass);
   grid-template-rows: minmax(0, 1fr);
   grid-template-areas:
     "rail page";
@@ -65,6 +67,11 @@ main {
   gap: var(--page-gap);
   background: transparent;
   min-width: 0;
+}
+
+// 卡片/网格页铺满可用宽度;长文页(含笔记详情)限制阅读宽度,居中
+:root:is([data-page="notes"], [data-page="about"], [data-page="update"]) main {
+  max-width: var(--page-reading-max-width);
 }
 
 .page-container,
@@ -125,8 +132,10 @@ footer {
     }
     gap: 0;
 
-    // D3:底部给 tab bar 让位,变量在 _nav.scss 内定义
-    padding: 0 0 var(--tab-bar-h, 0px);
+    // 顶部给工具栏(+活动胶囊)让位,底部给 tab bar 让位;
+    // 数值统一在 _shell.scss / _nav.scss 计算,这里只负责应用
+    padding: var(--shell-top-space, 0px) 0 var(--tab-bar-h, 0px);
+    scroll-padding-top: calc(var(--shell-top-space, 0px) + 6px);
 
     @supports (scrollbar-width: none) {
       scrollbar-width: none;

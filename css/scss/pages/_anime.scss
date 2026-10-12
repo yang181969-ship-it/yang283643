@@ -17,7 +17,9 @@
 // ----- 顶部切换栏 -----
 .anime-tabs {
   position: sticky;
-  top: 0;
+  // 移动端停在工具栏/活动胶囊下方,随工具栏显隐移动(变量见 _shell.scss)
+  top: var(--shell-sticky-top, 0px);
+  transition: top 220ms ease;
   z-index: $z-nav;
   display: flex;
   gap: 10px;

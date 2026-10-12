@@ -13,7 +13,7 @@ const SEARCH_SITE_ROOT_URL = getSearchSiteRootUrl();
 
 function getSearchSiteRootUrl() {
   const script = document.currentScript
-    || document.querySelector('script[src$="search.js"]');
+    || document.querySelector('script[src*="js/search.js"]');
   return script?.src ? new URL("../", script.src) : new URL("./", document.baseURI);
 }
 
@@ -508,7 +508,6 @@ function doSearchFromInput() {
 /* ---------- 初始化搜索框 ---------- */
 function initSearch() {
   const input    = document.getElementById("search-input");
-  const toggle   = document.getElementById("search-toggle");
   const clear    = document.getElementById("search-clear");
   const legacyBtn = document.getElementById("search-btn"); // 旧的隐藏提交按钮(如果存在)
   if (!input) return;
@@ -526,27 +525,12 @@ function initSearch() {
     legacyBtn.addEventListener("click", doSearchFromInput);
   }
 
-  // 主搜索按钮:三段逻辑
-  // - 未展开 → 展开 + focus
-  // - 已展开 + 有内容 → 提交搜索
-  // - 已展开 + 无内容 → 收起
-  if (toggle) {
-    toggle.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const isOpen = document.querySelector(".search-bar")?.classList.contains("is-open");
-
-      if (!isOpen) {
-        openSearchControl();
-        // 展开动画结束后再 focus,避免抖动
-        setTimeout(() => input.focus(), 60);
-      } else if (input.value.trim()) {
-        doSearchFromInput();
-      } else {
-        closeSearchControl();
-        closeSearchPanel();
-      }
-    });
-  }
+  // 搜索按钮由 site-shell.js 统一打开弹窗;重新打开时恢复上次的结果
+  window.addEventListener("site-panel:open", (event) => {
+    if (event.detail?.key !== "search") return;
+    document.querySelector(".search-bar")?.classList.add("is-open");
+    if (searchViewState.keyword && input.value.trim() === searchViewState.keyword) openSearchPanel();
+  });
 
   // 清空
   if (clear) {
@@ -574,22 +558,11 @@ function initSearch() {
     runSearch(urlKw).then(results => renderSearchResults(urlKw, results));
   }
 
-  // 点击外部:同时关闭浮层和搜索框
-  document.addEventListener("click", (event) => {
-    if (!event.target.closest(".search-control")) {
-      closeSearchPanel();
-      closeSearchControl();
-    }
-  });
-
-  // Esc:关闭浮层和搜索框,焦点回到搜索按钮
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      const wasOpen = document.querySelector(".search-bar")?.classList.contains("is-open");
-      closeSearchPanel();
-      closeSearchControl();
-      if (wasOpen) toggle?.focus();
-    }
+  // 关闭(Esc、关闭按钮、遮罩)由 site-shell.js 的弹窗管理器处理
+  window.addEventListener("site-panel:close", (event) => {
+    if (event.detail?.key !== "search") return;
+    closeSearchPanel();
+    closeSearchControl();
   });
 
   window.addEventListener("site-search:close", () => {

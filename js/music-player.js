@@ -45,7 +45,7 @@
 
   function getSiteRootUrl() {
     const script = document.currentScript
-      || document.querySelector('script[src$="music-player.js"]');
+      || document.querySelector('script[src*="js/music-player.js"]');
     return script?.src ? new URL('../', script.src) : new URL('./', document.baseURI);
   }
 

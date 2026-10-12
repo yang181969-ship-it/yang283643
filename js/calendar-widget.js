@@ -37,7 +37,6 @@
 
   let today = new Date();
   let todayKey = ymd(today);
-  let midnightTimer;
 
   // 当前显示的月份 (year, month-0-indexed)
   let viewYear  = today.getFullYear();
@@ -107,22 +106,18 @@
   if (nextBtn)  nextBtn.addEventListener('click', () => shiftMonth(+1));
   if (todayBtn) todayBtn.addEventListener('click', goToday);
 
-  function refreshDate() {
-    const now = new Date();
-    today = now;
-    todayKey = ymd(now);
-    document.querySelectorAll('[data-date-day]').forEach(el => { el.textContent = now.getDate(); });
-    document.querySelectorAll('[data-date-month]').forEach(el => { el.textContent = (now.getMonth() + 1) + '月'; });
-    document.querySelectorAll('[data-tool="calendar"]').forEach(el => {
-      el.setAttribute('aria-label', `日历，今天 ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`);
-    });
+  // 导航日期按钮与跨午夜检测由 site-shell.js 负责;这里只跟随"今天"重绘月历。
+  function refreshDate(date = new Date()) {
+    const wasCurrent = viewYear === today.getFullYear() && viewMonth === today.getMonth();
+    today = date;
+    todayKey = ymd(date);
+    // 正在看当月时跟着跨月;翻到别的月份时保持用户的位置
+    if (wasCurrent) {
+      viewYear = today.getFullYear();
+      viewMonth = today.getMonth();
+    }
     render();
-    clearTimeout(midnightTimer);
-    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    midnightTimer = setTimeout(refreshDate, midnight - now + 50);
   }
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDate(); });
-  window.addEventListener('pageshow', refreshDate);
-  window.addEventListener('focus', refreshDate);
+  window.addEventListener('site:datechange', event => refreshDate(event.detail?.date));
   refreshDate();
 })();

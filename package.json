@@ -11,6 +11,7 @@
 
     "build:critical": "sass css/scss/critical.scss:css/critical.css --style=compressed --no-source-map",
     "inline:critical": "node scripts/5-inline-critical.mjs",
+    "postinline:critical": "node scripts/15-version-assets.mjs",
 
     "aggregate:updates": "node scripts/6-aggregate-updates.mjs",
     "aggregate:stats":   "node scripts/7-aggregate-stats.mjs",

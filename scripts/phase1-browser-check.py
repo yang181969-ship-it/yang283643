@@ -45,11 +45,14 @@ with sync_playwright() as pw:
     page.set_viewport_size({'width':1440,'height':900})
     page.mouse.move(1000,100)
     page.wait_for_timeout(500)
-    left = page.locator('.page-card, .content-scroll').first.bounding_box()['x']
+    pane = page.locator('.page-card, .content-scroll').first
+    before = pane.bounding_box()
     page.locator('.rail').hover()
     page.wait_for_timeout(450)
-    check('hover expands without moving content', page.locator('.rail').bounding_box()['width']==220 and page.locator('.page-card, .content-scroll').first.bounding_box()['x']==left)
-    page.locator('.rail-pin').click()
+    check('hover never expands sidebar', page.locator('.rail').bounding_box()['width']==68 and pane.bounding_box()==before)
+    page.locator('.rail-pin').click(); page.mouse.move(1000,100); page.wait_for_timeout(450)
+    after = pane.bounding_box()
+    check('button expands sidebar and narrows content', page.locator('.rail').bounding_box()['width']==220 and after['width']==before['width']-152 and page.locator('.rail-pin').get_attribute('aria-expanded')=='true')
     page.reload(wait_until='domcontentloaded'); page.wait_for_timeout(700)
     check('pinned refresh', page.locator('.rail').bounding_box()['width']==220)
     page.locator('[data-tool="timer"]').click()

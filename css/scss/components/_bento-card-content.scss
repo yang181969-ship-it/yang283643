@@ -254,6 +254,10 @@
 .bento-anime-item {
   flex: 1 1 0;
   min-width: 0;
+
+  // 封面按宽度定高(9:16),桌面 bento 行高固定;卡片随宽屏变宽时限制封面宽度,
+  // 避免封面撑高把标题挤出卡片(移动端行高自适应,不受限制)
+  @media (min-width: 901px) { max-width: 76px; }
   margin: 0;
   padding: 0;
 }

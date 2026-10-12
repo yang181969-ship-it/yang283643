@@ -53,7 +53,6 @@ function applyGlow(state, root) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const themeToggle  = document.getElementById("theme-toggle");
   const themePanel   = document.getElementById("theme-panel");
   const hueSlider    = document.getElementById("hue-slider");
   const modeBtns     = document.querySelectorAll(".theme-mode-btn");
@@ -61,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const glowToggle   = document.getElementById("glow-toggle");
   const root         = document.documentElement;
 
-  if (!themeToggle || !themePanel || !hueSlider) return;
+  if (!themePanel || !hueSlider) return;
 
   /* ===== 初始化色相滑块显示值 ===== */
   const savedHue = localStorage.getItem("primary-hue");
@@ -90,19 +89,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   syncGlowActive();
 
-  /* ===== 面板开关 ===== */
-  themeToggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (window.sitePanels) {
-      themePanel.classList.add("show");
-      window.sitePanels.open("theme", themeToggle);
-    } else themePanel.classList.toggle("show");
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".theme-control")) {
-      themePanel.classList.remove("show");
+  /* ===== 面板开关:按钮与弹窗由 site-shell.js 统一管理,这里只同步面板状态 ===== */
+  window.addEventListener("site-panel:open", (e) => {
+    if (e.detail?.key !== "theme") return;
+    const hue = localStorage.getItem("primary-hue");
+    if (hue !== null && hueSlider.value !== hue) {
+      hueSlider.value = hue;
+      // 让 main.js 的色相条 thumb 跟随
+      hueSlider.dispatchEvent(new Event("input", { bubbles: true }));
     }
+    syncModeActive();
+    syncPresetActive();
+    syncGlowActive();
+    themePanel.classList.add("show");
+  });
+  window.addEventListener("site-panel:close", (e) => {
+    if (e.detail?.key === "theme") themePanel.classList.remove("show");
   });
 
   /* ===== 色相滑块 ===== */

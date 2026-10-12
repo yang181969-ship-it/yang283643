@@ -1,7 +1,16 @@
 // Shared shell and native top-layer tool panels. Included in Critical CSS too.
-:root { --sidebar-space: 68px; --shell-top-visible: 56px; }
+// Single source for the space the shell occupies; .layout and sticky content only read these.
+//   --sidebar-space      desktop rail column (68px collapsed / 220px expanded)
+//   --shell-top-visible  height the mobile toolbar currently covers, excluding the safe area
+//   --shell-activity-h   strip reserved under the toolbar for the mobile activity capsule
+//   --shell-top-space    padding above the first card at scrollTop 0 (never changes with toolbar visibility)
+//   --shell-sticky-top   where sticky page elements stop, below whatever is currently covering the top
+:root {
+  --sidebar-space: 68px; --shell-top-visible: 0px; --shell-activity-h: 0px;
+  --shell-top-space: 0px; --shell-sticky-top: 0px;
+}
 :root[data-sidebar-pinned="true"] { --sidebar-space: 220px; }
-.shell-button, .tool-close, .shell-settings-link {
+.shell-button, .tool-close {
   font: inherit; color: var(--text-main); cursor: pointer;
   border: 0; background: transparent;
 }
@@ -41,7 +50,7 @@
 .rail-tools { border-top: 1px solid var(--border-soft); padding-top: 10px; }
 .rail-actions { margin-top: auto; padding-top: 12px; }
 .rail-brand { flex-shrink: 0; }
-:root[data-sidebar-pinned="true"] .rail, :root.sidebar-peek .rail {
+:root[data-sidebar-pinned="true"] .rail {
   width: 220px;
   .nav-label, .shell-label, .logo span { opacity: 1; }
 }
@@ -70,12 +79,9 @@
 .tool-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .tool-heading h2 { margin: 0; font-size: 19px; }
 .tool-close { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: var(--primary-soft); }
-.shell-setting { display: flex; gap: 10px; align-items: center; min-height: 44px; }
-.shell-settings-link { display: block; width: 100%; min-height: 44px; margin-top: 10px; border-radius: 10px; background: var(--primary-soft); }
 #tool-theme { width: min(320px, calc(100vw - 24px)); }
 @media (min-width: 901px) {
   #tool-theme { margin-left: calc(var(--sidebar-space) + 16px); }
-  .sidebar-peek #tool-theme { margin-left: 236px; }
 }
 #tool-search {
   width: min(680px, calc(100vw - 24px));
@@ -96,9 +102,14 @@
   .music-modal__list { max-height: 55dvh; overflow-y: auto; }
 }
 @media (max-width: 900px) {
-  :root { --sidebar-space: 0px; --shell-top-visible: 56px; }
+  :root {
+    --sidebar-space: 0px; --shell-top-visible: 56px;
+    --shell-top-space: calc(56px + env(safe-area-inset-top) + var(--shell-activity-h));
+    --shell-sticky-top: calc(var(--shell-top-visible) + env(safe-area-inset-top) + var(--shell-activity-h));
+  }
   :root.toolbar-hidden { --shell-top-visible: 0px; }
-  .layout { padding-top: calc(56px + env(safe-area-inset-top)); scroll-padding-top: calc(62px + env(safe-area-inset-top)); }
+  // Capsule: 6px offset + 42px height + 4px breathing room; it follows the toolbar, content does not.
+  :root.has-mobile-activity { --shell-activity-h: 52px; }
   .layout > .site-toolbar {
     display: flex; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
@@ -111,7 +122,7 @@
   .mobile-tools { display: flex; align-items: center; flex-shrink: 0; }
   .mobile-tools .shell-button { width: 44px; height: 44px; padding: 10px; justify-content: center; }
   .mobile-tools .shell-label { display: none; }
-  .rail, :root[data-sidebar-pinned="true"] .rail, :root.sidebar-peek .rail {
+  .rail, :root[data-sidebar-pinned="true"] .rail {
     position: static; width: 0; height: 0; padding: 0; border: 0; overflow: visible;
     backdrop-filter: none; background: transparent; box-shadow: none;
     .rail-brand, .rail-pin, .rail-tools, .rail-actions { display: none; }
@@ -119,11 +130,9 @@
     .site-nav a { min-height: 44px; margin: 0; padding: 4px 2px; gap: 2px; }
     .nav-label { opacity: 1; }
   }
-  // Reserve a stable strip while active; scrolling content never passes behind the capsule.
-  html.has-mobile-activity .layout { padding-top: 0; margin-top: calc(var(--shell-top-visible) + 52px + env(safe-area-inset-top)); height: calc(100dvh - var(--shell-top-visible) - 52px - env(safe-area-inset-top)); }
   .tool-dialog { padding: 14px; border-radius: 20px; }
 }
 @media (max-width: 480px) { .site-toolbar .logo span { display: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .rail, .rail *, .site-toolbar, .tool-dialog, .tool-dialog * { transition: none !important; animation: none !important; }
+  .layout, .rail, .rail *, .site-toolbar, .tool-dialog, .tool-dialog * { transition: none !important; animation: none !important; }
 }
