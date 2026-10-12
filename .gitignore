@@ -120,3 +120,5 @@ __pycache__/
 # Local server / 本地服务缓存
 # ==========================================
 .local/
+# Local test artifacts / 本地测试产物
+artifacts/
