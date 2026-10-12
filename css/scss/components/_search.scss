@@ -1,107 +1,107 @@
 // ============================================================
-// 搜索框(胶囊版)
-// 入口:侧栏/移动顶栏的 #search-toggle,面板为 #tool-search 弹窗
-// 搜索结果框:强制使用不透明实色背景,避免后方卡片透出
+// 全站搜索 —— Command Palette
+// 入口:侧栏/移动顶栏的 #search-toggle 或 Ctrl/⌘+K,面板为 #tool-search 弹窗
+// 结构:顶部输入行 → 分类筛选 → 状态行 → 结果列表(仅此处滚动)→ 键盘提示
+// 颜色全部来自主题变量,深色模式自动适配
 // ============================================================
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
+// ----- 搜索按钮:样式由 _shell.scss 的 .shell-button 接管 -----
+.search-toggle svg {
+  width: 22px;
+  height: 22px;
+}
+
 // ============================================================
-// 桌面端:胶囊内搜索结构
+// 面板外框
 // ============================================================
+#tool-search {
+  --palette-top: max(10vh, 24px);
+  margin: var(--palette-top) auto auto;
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100dvh - var(--palette-top) - 24px);
+  padding: 0;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--glass-bg-fallback);
+  box-shadow:
+    var(--glass-shadow-hover),
+    0 0 0 1px var(--border-soft);
+
+  &[open] {
+    display: flex;
+    flex-direction: column;
+    animation-name: palette-in;
+  }
+
+  // 搜索是聚焦操作,但只轻微压暗页面,不模糊
+  &::backdrop {
+    background: rgba(20, 28, 45, 0.08);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@keyframes palette-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.99); }
+}
+
+[data-theme="dark"] #tool-search::backdrop {
+  background: rgba(0, 0, 0, 0.28);
+}
 
 .search-control {
-  position: relative;
   display: flex;
-  align-items: center;
-  flex-direction: row-reverse; // 按钮在右,搜索框从左侧伸出
-  height: 100%;
-  z-index: $z-theme-panel;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
-// ----- 搜索按钮:样式由 _shell.scss 的 .shell-button 接管 -----
-// 这里只处理图标尺寸 fallback,用于胶囊外的旧场景,避免漏掉
-.search-toggle {
-  flex-shrink: 0;
-
-  svg {
-    width: 22px;
-    height: 22px;
-  }
-}
-
-// ----- 搜索框容器:默认隐藏,展开时宽度 0 → auto -----
-
+// ============================================================
+// 输入行
+// ============================================================
 .search-bar {
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  width: 0;
-  max-width: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    max-width 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.22s ease;
-
-  &.is-open {
-    width: auto;
-    max-width: 320px;
-    opacity: 1;
-    pointer-events: auto;
-  }
+  flex: none;
+  border-bottom: 1px solid var(--border-soft);
 }
-
-// ----- 输入框包裹 -----
 
 .search-input-wrap {
-  position: relative;
   display: flex;
   align-items: center;
-  flex-shrink: 0;
-  width: 320px;
-  height: 46px;
+  gap: 8px;
+  height: 60px;
+  padding: 0 12px 0 18px;
 }
 
-// ----- 左侧放大镜图标 -----
-
 .search-icon {
-  position: absolute;
-  left: 14px;
-  pointer-events: none;
-  line-height: 1;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
+  flex: none;
+  color: var(--primary);
+  pointer-events: none;
 
   svg {
-    width: 16px;
-    height: 16px;
     display: block;
+    width: 20px;
+    height: 20px;
   }
 }
 
-// ----- 输入框:透明,和胶囊融为一体 -----
-
-.search-input {
-  width: 100%;
+#tool-search .search-input {
+  flex: 1 1 auto;
+  min-width: 0;
   height: 100%;
-  padding: 0 36px 0 38px;
-  border: none !important;
-  background: transparent !important;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--text-main);
-  font-size: 14.5px;
+  font: inherit;
+  font-size: 17px;
   font-weight: 500;
   outline: none;
   box-shadow: none;
-  transition: none;
-
-  &:focus {
-    border: none !important;
-    box-shadow: none !important;
-  }
 
   &::placeholder {
     color: var(--text-muted);
@@ -109,252 +109,174 @@
   }
 }
 
-// 输入框 focus 时,左侧放大镜变 primary
-
-.search-bar.is-open .search-input:focus + .search-icon,
-.search-bar.is-open:focus-within .search-icon {
-  color: var(--primary);
-}
-
-// ----- 清除按钮 -----
-
 .search-clear {
-  position: absolute;
-  right: 8px !important;
-  width: 22px;
-  height: 22px;
-  border: none;
+  flex: none;
+  display: none; // search.js 有内容时设为 flex
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
   background: transparent;
   color: var(--text-muted);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  font-size: 13px;
   line-height: 1;
-  opacity: 0.72;
-  transition: opacity 0.2s, background 0.2s, color 0.2s;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    opacity: 1;
     background: var(--primary-soft);
     color: var(--primary-dark);
   }
 }
 
-// ============================================================
-// 搜索结果浮层
-// ============================================================
-
-.search-popover {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  width: min(540px, calc(100vw - 32px));
-  max-height: min(640px, calc(100vh - 88px));
-  display: flex;
-  flex-direction: column;
-  padding: 16px !important;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-radius: 18px;
-
-  // 不透明实色背景,不要使用 glass / bg-card 变量,避免后方卡片透出
-  background: #f8fbff !important;
-  background-color: #f8fbff !important;
-  background-image: none !important;
-
-  // 搜索浮层不使用毛玻璃
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-
-  box-shadow:
-    0 24px 60px rgba(15, 23, 42, 0.18),
-    0 8px 22px rgba(15, 23, 42, 0.08);
-  transform: translateY(-8px) scale(0.98);
-  transform-origin: top right;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.18s ease,
-    transform 0.22s var(--ease-glass);
-}
-
-.search-popover[hidden] {
-  display: none;
-}
-
-.search-popover.is-open {
-  transform: translateY(0) scale(1) !important;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.search-popover__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 2px 2px 12px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
-}
-
-.search-popover__eyebrow {
-  margin: 0 0 2px;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.4;
-  color: var(--primary);
-}
-
-.search-popover__title {
-  margin: 0;
-  color: var(--text-main);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.5;
-}
-
-.search-popover__close {
-  width: 32px;
-  height: 32px;
+.search-esc,
+.search-popover__footer kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1px solid var(--border-soft);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--bg-main);
   color: var(--text-muted);
-  cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease;
+  font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
 
-  svg {
-    width: 18px;
-    height: 18px;
-  }
+.search-esc {
+  flex: none;
+}
 
-  &:hover {
-    background: var(--primary-soft);
-    color: var(--primary-dark);
-  }
+// 桌面显示 Esc 提示;触屏/窄屏改为关闭按钮
+#tool-search .search-close {
+  display: none;
+  flex-basis: 40px;
+  width: 40px;
+  height: 40px;
+  font-size: 13px;
 }
 
 // ============================================================
-// 搜索分类筛选
+// 结果区
 // ============================================================
+.search-popover {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
 
 .search-popover__filters {
   display: flex;
-  gap: 8px;
-  padding: 12px 0;
+  flex: none;
+  gap: 6px;
+  padding: 12px 14px 0;
   overflow-x: auto;
-  @supports (scrollbar-width: none) {
-    scrollbar-width: none;
-  }
+  scrollbar-width: none;
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  &::-webkit-scrollbar { display: none; }
+  &:empty { display: none; }
 }
 
 .search-filter {
-  min-width: 0;
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 6px;
-  height: 32px;
+  height: 30px;
   padding: 0 12px;
-  border: 1px solid transparent;
+  border: 1px solid var(--border-soft);
   border-radius: 999px;
-
-  // 不透明筛选按钮
-  background: #edf4fc;
-
+  background: transparent;
   color: var(--text-muted);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 
   strong {
     color: inherit;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
+    opacity: 0.8;
   }
 
-  &:hover:not(:disabled),
+  &:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary-dark);
+  }
+
   &.is-active {
-    background: #dcebff;
-    border-color: hsla(var(--primary-hue), 75%, 60%, 0.28);
+    border-color: transparent;
+    background: var(--primary-soft);
     color: var(--primary-dark);
   }
 
   &:disabled {
     cursor: default;
-    opacity: 0.46;
+    opacity: 0.45;
   }
 }
 
-// ============================================================
-// 搜索结果主体
-// ============================================================
+.search-popover__status {
+  flex: none;
+  margin: 0;
+  padding: 10px 18px 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
 
 .search-popover__body {
+  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding-right: 2px;
-  @supports (scrollbar-width: thin) {
-    scrollbar-width: thin;
-  }
-  @supports (scrollbar-color: rgba(148, 163, 184, 0.42) transparent) {
-    scrollbar-color: rgba(148, 163, 184, 0.42) transparent;
-  }
+  overscroll-behavior: contain;
+  padding: 4px 8px 10px;
+  scrollbar-width: thin;
+  scrollbar-color: hsla(var(--primary-hue), 60%, 60%, 0.4) transparent;
 }
 
 .search-results-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 2px;
 }
 
 .search-result-card {
-  width: 100%;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  padding: 14px 16px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  border-radius: 14px;
-
-  // 不透明结果卡片
-  background: #eef5ff;
-  background-color: #eef5ff;
-  background-image: none;
-
+  gap: 3px;
+  width: 100%;
+  padding: 10px 40px 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
   color: var(--text-main);
+  font: inherit;
   text-align: left;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045);
-  transition:
-    transform 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease,
-    box-shadow 0.18s ease;
+  transition: background 0.12s ease;
 
-  &:hover {
-    transform: translateY(-1px);
-    border-color: hsla(var(--primary-hue), 75%, 60%, 0.34);
-    background: #e8f2ff;
-    background-color: #e8f2ff;
-    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.1);
+  &.is-active {
+    background: var(--primary-soft);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
   }
 }
 
-.search-result-meta {
+#tool-search .search-result-meta {
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -363,64 +285,88 @@
   line-height: 1.4;
 }
 
-.search-result-tag {
+#tool-search .search-result-tag {
   display: inline-flex;
   align-items: center;
-  min-height: 24px;
-  padding: 2px 10px;
+  height: 20px;
+  padding: 0 8px;
   border-radius: 999px;
-  background: var(--primary-soft);
+  background: hsla(var(--primary-hue), 70%, 60%, 0.14);
   color: var(--primary-dark);
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.search-result-date {
-  color: var(--text-muted);
-}
-
-.search-result-title {
-  color: var(--primary-dark);
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1.35;
-}
-
-.search-result-desc {
-  display: -webkit-box;
+#tool-search .search-result-title {
   margin: 0;
-  color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.7;
+  color: var(--text-main);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+#tool-search .search-result-desc {
+  display: -webkit-box;
   overflow: hidden;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 
-.search-result-title mark,
-.search-result-desc mark {
-  padding: 0 3px;
-  border-radius: 5px;
-  background: hsla(var(--primary-hue), 85%, 70%, 0.22);
+.search-result-enter {
+  position: absolute;
+  top: 50%;
+  right: 14px;
   color: var(--primary-dark);
+  font-size: 15px;
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity 0.12s ease;
+}
+
+.search-result-card.is-active .search-result-enter {
+  opacity: 0.7;
+}
+
+#tool-search .search-result-title mark,
+#tool-search .search-result-desc mark {
+  padding: 0 2px;
+  border-radius: 4px;
+  background: hsla(var(--primary-hue), 85%, 65%, 0.26);
+  color: inherit;
 }
 
 // ============================================================
 // 空状态 / 加载状态
 // ============================================================
-
 .search-empty,
 .search-loading {
-  padding: 22px 14px 18px;
+  padding: 18px 10px 14px;
   color: var(--text-muted);
   font-size: 14px;
   line-height: 1.7;
 }
 
 .search-empty p {
-  margin: 0 0 12px;
+  margin: 0 0 4px;
   color: var(--text-main);
   font-weight: 700;
+}
+
+.search-empty__hint {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.search-empty--idle p {
+  margin-bottom: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .search-empty__suggestions {
@@ -430,19 +376,19 @@
 
   button {
     height: 32px;
-    padding: 0 12px;
-    border: 1px solid rgba(148, 163, 184, 0.18);
+    padding: 0 14px;
+    border: 1px solid var(--border-soft);
     border-radius: 999px;
-    background: #edf4fc;
+    background: transparent;
     color: var(--primary-dark);
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.18s ease, border-color 0.18s ease;
+    transition: background 0.15s ease, border-color 0.15s ease;
 
     &:hover {
-      background: #dcebff;
-      border-color: hsla(var(--primary-hue), 75%, 60%, 0.28);
+      border-color: transparent;
+      background: var(--primary-soft);
     }
   }
 }
@@ -463,225 +409,101 @@
 }
 
 @keyframes search-pulse {
-  0%,
-  100% {
-    transform: scale(0.88);
-    opacity: 0.65;
-  }
+  0%, 100% { transform: scale(0.88); opacity: 0.65; }
+  50% { transform: scale(1); opacity: 1; }
+}
 
-  50% {
-    transform: scale(1);
-    opacity: 1;
+// ============================================================
+// 键盘提示
+// ============================================================
+.search-popover__footer {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 9px 16px;
+  border-top: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  font-size: 12px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
+}
+
+.search-popover__shortcut {
+  margin-left: auto;
 }
 
 // ============================================================
 // 旧结构兼容
 // ============================================================
-
-// 嵌入式搜索按钮:已废弃
-.search-btn {
-  display: none;
-}
-
-// 遮罩层:已废弃
+.search-btn,
 .search-backdrop,
 .search-backdrop.is-open {
   display: none !important;
 }
 
 // ============================================================
-// 深色模式:同样保持不透明
+// 触屏 / 窄屏:顶部工具栏下方的宽搜索层,按可见视口(含软键盘)限高
 // ============================================================
-
-html[data-theme="dark"] {
-  .search-popover {
-    background: #111827 !important;
-    background-color: #111827 !important;
-    background-image: none !important;
-    border-color: rgba(148, 163, 184, 0.24);
-    box-shadow:
-      0 24px 60px rgba(0, 0, 0, 0.36),
-      0 8px 22px rgba(0, 0, 0, 0.22);
-  }
-
-  .search-filter {
-    background: #1b2538;
-
-    &:hover:not(:disabled),
-    &.is-active {
-      background: #203553;
-      border-color: hsla(var(--primary-hue), 75%, 60%, 0.32);
-      color: var(--primary);
-    }
-  }
-
-  .search-result-card {
-    background: #172033;
-    background-color: #172033;
-    background-image: none;
-    border-color: rgba(148, 163, 184, 0.2);
-
-    &:hover {
-      background: #1d2940;
-      background-color: #1d2940;
-    }
-  }
-
-  .search-empty__suggestions button {
-    background: #1b2538;
-
-    &:hover {
-      background: #203553;
-    }
-  }
-}
-
-// ============================================================
-// 笔记本断点:输入框宽度收紧
-// ============================================================
-
-@include laptop {
-  .search-bar.is-open {
-    max-width: 280px;
-  }
-
-  .search-input-wrap {
-    width: 280px;
-    height: 42px;
-  }
-
-  .search-input {
-    font-size: 14px;
-  }
-}
-
-// ============================================================
-// 手机端 (≤$bp-mobile):同步桌面端胶囊搜索逻辑
-// 默认:[搜索 | 调色盘]
-// 展开:胶囊横向铺开,输入框从左侧展开,搜索按钮保留在右侧
-// ============================================================
-
-@media (max-width: $bp-mobile) {
-  .search-control {
-    position: relative;
-    display: flex !important;
-    align-items: center;
-    flex-direction: row-reverse;
-    height: 100%;
-    min-width: 0;
-    z-index: $z-theme-panel;
-  }
-
-  .search-bar {
-    position: static;
-    display: flex;
-    align-items: center;
-    height: 100%;
-    width: 0;
-    max-width: 0;
-    opacity: 0;
-    pointer-events: none;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    transition:
-      max-width 0.34s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.24s ease;
-
-    &.is-open {
-      flex: 1;
-      width: auto;
-      max-width: calc(100vw - 84px);
-      opacity: 1;
-      pointer-events: auto;
-    }
-  }
-
-  .search-input-wrap {
-    width: calc(100vw - 84px);
-    height: 48px;
-    flex: 0 0 auto;
-  }
-
-  .search-input {
-    width: 100%;
-    height: 48px;
-    padding: 0 38px 0 18px;
-    border: none !important;
-    border-radius: 999px 0 0 999px;
-    background: transparent !important;
-    color: var(--text-main);
-    box-shadow: none !important;
-
-    &:focus {
-      border: none !important;
-      box-shadow: none !important;
-    }
-  }
-
-  .search-icon {
+@media (hover: none), (max-width: 900px) {
+  .search-esc,
+  .search-popover__footer {
     display: none;
   }
 
-  .search-clear {
-    right: 8px !important;
-  }
-
-  // 不再使用旧的 fixed 独立搜索按钮
-  .search-toggle.is-open {
-    position: relative;
-    top: auto;
-    right: auto;
-    z-index: auto;
-    border-radius: 999px !important;
-    background: transparent !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-  }
-
-  // 搜索展开时,隐藏 logo,避免顶部横向挤压
-  header:has(.search-bar.is-open) .logo {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-
-  .search-popover {
-    position: fixed;
-    top: 68px;
-    right: 12px;
-    left: 12px;
-    width: auto;
-    max-height: calc(100dvh - 142px);
-    padding: 14px !important;
-    border-radius: 16px;
-    transform-origin: top right;
-  }
-
-  .search-popover__header {
-    gap: 12px;
-    padding-bottom: 10px;
-  }
-
-  .search-popover__title {
-    font-size: 14px;
-  }
-
-  .search-result-card {
-    padding: 13px 14px;
-  }
-
-  .search-result-title {
-    font-size: 16px;
+  #tool-search .search-close {
+    display: inline-flex;
   }
 }
 
-// Initial state; search.js sets an inline display value when needed.
-#search-clear { display: none; }
+@media (max-width: 900px) {
+  #tool-search {
+    // 56px 为移动顶栏高度;--vv-* 由 search.js 根据 visualViewport 更新
+    --palette-top: calc(env(safe-area-inset-top) + 56px + 8px);
+    --nav-space: calc(72px + env(safe-area-inset-bottom));
+    position: fixed;
+    inset: auto max(8px, env(safe-area-inset-right)) auto max(8px, env(safe-area-inset-left));
+    top: calc(var(--vv-top, 0px) + var(--palette-top));
+    width: auto;
+    margin: 0;
+    max-height: min(
+      calc(var(--vv-height, 100dvh) - var(--palette-top) - 8px),
+      calc(100dvh - var(--palette-top) - var(--nav-space))
+    );
+    border-radius: 18px;
+  }
+
+  .search-input-wrap {
+    height: 54px;
+    padding: 0 6px 0 14px;
+  }
+
+  #tool-search .search-input {
+    font-size: 16px; // ≥16px 避免 iOS 聚焦时自动缩放
+  }
+
+  .search-popover__filters {
+    padding: 10px 10px 0;
+  }
+
+  .search-popover__status {
+    padding: 8px 14px 2px;
+  }
+
+  .search-popover__body {
+    padding: 4px 6px 8px;
+  }
+
+  .search-result-card {
+    padding: 10px 12px;
+  }
+
+  .search-result-enter {
+    display: none;
+  }
+}

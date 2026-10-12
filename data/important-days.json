@@ -1,0 +1,11 @@
+{
+  "_说明": "日历弹窗的重要日子。date 为 YYYY-MM-DD(本地日期);repeat 为 yearly(每年重复的纪念日)或 none(一次性事件);note 可选。",
+  "events": [
+    {
+      "title": "网站上线纪念日",
+      "date": "2026-04-13",
+      "repeat": "yearly",
+      "note": "来自 data/site-meta.json 的 siteBirthday"
+    }
+  ]
+}

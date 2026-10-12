@@ -1,40 +1,75 @@
-// _rail-calendar.scss —— Phase C Commit 1 + 高亮 badge 化 + 网格收口(2026-04-30)
-// 月历组件样式,延续 rail-widget 通用骨架
-// 依赖变量: --primary-hue / --bg-card / --text-base / --text-muted / --border-soft
+// _rail-calendar.scss —— 日历弹窗(Phase 1.5)
+// 桌面:左侧月历 60% / 右侧选中日期 + 重要日子 40%
+// ≤900px:选中日期 → 月历 → 重要日子,整个面板单一滚动
+// 今天:主题色描边;选中:主题色实底;两者重合时实底 + 白点
+// 依赖变量: --primary-hue / --primary / --primary-soft / --text-main / --text-muted / --border-soft
 
 @use '../abstracts/variables' as *;
 
+.tool-dialog.tool-dialog--calendar {
+  width: min(940px, calc(100vw - 48px));
+}
+
+.calendar-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "cal summary"
+    "cal events";
+  gap: 14px 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+// ---------- 月历 ----------
 .rail-widget--calendar {
-  // 头部按钮组
+  grid-area: cal;
+  gap: 12px;
+  padding: 18px 18px 16px;
+  border-radius: var(--tool-radius-inner);
+
+  &:hover { transform: none; }
+
+  .rail-widget__header {
+    color: var(--text-main);
+    font-size: 17px;
+    font-weight: 700;
+
+    > svg {
+      width: 18px;
+      height: 18px;
+      color: var(--primary);
+    }
+  }
+
   .rail-widget__actions {
-    margin-left: auto;
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
+    margin-left: auto;
   }
 
   .rail-widget__btn {
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    border-radius: 6px;
-    cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s ease, color 0.15s ease;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
-    svg {
-      width: 14px;
-      height: 14px;
-    }
+    svg { width: 16px; height: 16px; }
 
     &:hover {
-      background: hsla(var(--primary-hue), 70%, 60%, 0.12);
-      color: hsl(var(--primary-hue), 60%, 50%);
+      border-color: var(--primary);
+      color: var(--primary-dark);
     }
 
     &[hidden] { display: none; }
@@ -42,135 +77,305 @@
 
   .rail-widget__btn--text {
     width: auto;
-    min-width: 22px;
-    padding: 0 6px;
-    font-size: 11px;
+    padding: 0 12px;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.02em;
   }
 
-  // ============================================================
-  // 周标题行 + 日期网格:每列上限 44px,大 widget 内居中显示
-  // 桌面 220 sidebar:每列被压缩到 ~25px(行为不变);
-  // 移动横滑大 widget:列封顶 44px,左右留白由 justify-content 分配。
-  // ============================================================
-  .cal-weekdays {
+  .cal-weekdays,
+  .cal-grid {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 44px));
-    justify-content: center;          // ← 新增:窄容器无效(列已撑满),宽容器居中
-    gap: 2px;
-    margin-bottom: 4px;
-    font-size: 10px;
-    color: var(--text-muted);
-    text-align: center;
-    line-height: 1.6;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+  }
 
-    span {
-      padding: 2px 0;
-      letter-spacing: 0.02em;
-    }
+  .cal-weekdays {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+
+    span { padding: 2px 0; }
   }
 
   .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 44px));
-    justify-content: center;          // ← 新增:同上,与 weekdays 对齐
-    gap: 2px;
+    grid-auto-rows: 48px;
   }
 
   .cal-day {
-    aspect-ratio: 1 / 1;
-    display: inline-flex;
+    position: relative;
+    display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
-    color: var(--text-base);
-    border-radius: 6px;
-    transition: background 0.15s ease, color 0.15s ease;
-    position: relative;
-    isolation: isolate;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-main);
+    font: inherit;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover { background: var(--primary-soft); }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 1px;
+    }
   }
 
   .cal-day--out {
     color: var(--text-muted);
-    opacity: 0.4;
+    opacity: 0.45;
   }
 
   .cal-day--today {
-    background: transparent;
-    color: #fff;
-    font-weight: 600;
-    box-shadow: none;
+    color: var(--primary-dark);
+    font-weight: 700;
+    box-shadow: inset 0 0 0 2px var(--primary);
+  }
 
-    &::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: min(78%, 30px);
-      height: min(78%, 30px);
-      border-radius: 50%;
-      background: hsl(var(--primary-hue), 70%, 60%);
-      box-shadow: 0 2px 6px hsla(var(--primary-hue), 70%, 60%, 0.35);
-      transform: translate(-50%, -50%);
-      z-index: -1;
-    }
+  .cal-day--selected,
+  .cal-day--selected:hover {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    opacity: 1;
+    box-shadow: 0 6px 14px hsla(var(--primary-hue), 70%, 50%, 0.3);
+  }
+
+  // 有重要日子的日期:底部小圆点
+  .cal-day--event::after,
+  .cal-day--today.cal-day--selected::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--primary);
+    transform: translateX(-50%);
+  }
+
+  .cal-day--selected::after { background: #fff; }
+}
+
+// ---------- 选中日期 ----------
+.cal-summary {
+  grid-area: summary;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 20px;
+  border-radius: var(--tool-radius-inner);
+  background: linear-gradient(135deg, var(--primary-soft), var(--glass-bg-weak));
+  border: 1px solid var(--border-soft);
+}
+
+.cal-summary__day {
+  min-width: 2ch;
+  color: var(--primary-dark);
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.cal-summary__text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cal-summary__date {
+  color: var(--text-main);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.cal-summary__weekday {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.cal-summary__badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+
+  &[hidden] { display: none; }
+}
+
+.cal-summary__today {
+  flex: none;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--primary-dark);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+
+  &:hover:not(:disabled) { background: var(--primary-soft); }
+
+  &:disabled {
+    border-color: var(--border-soft);
+    color: var(--text-muted);
+    cursor: default;
+    opacity: 0.6;
   }
 }
 
+// ---------- 重要日子 ----------
+.cal-events {
+  grid-area: events;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 20px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--tool-radius-inner);
+  background: var(--glass-bg-weak);
+  scrollbar-width: thin;
+}
+
+.cal-events__title {
+  margin: 0 0 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+
+  &:not(:first-child) { margin-top: 16px; }
+}
+
+.cal-events__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &:empty { display: none; }
+}
+
+.cal-event {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border-left: 3px solid var(--primary);
+}
+
+.cal-event__title {
+  overflow: hidden;
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-event__meta {
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cal-event__note {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.cal-events__empty {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--border-soft);
+  color: var(--text-muted);
+  font-size: 13px;
+
+  &[hidden] { display: none; }
+}
+
+// ---------- ≤900px:纵向,整个面板一个滚动区 ----------
 @media (max-width: 900px) {
+  .tool-dialog.tool-dialog--calendar {
+    width: calc(100vw - 16px);
+  }
+
+  .calendar-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0 -4px;
+    padding: 0 4px 4px;
+  }
+
+  .cal-summary {
+    flex: none;
+    gap: 8px 12px;
+    padding: 12px 14px;
+  }
+
+  .cal-summary__day { font-size: 40px; }
+  .cal-summary__date { font-size: 15px; }
+
   .rail-widget--calendar {
-    container-type: inline-size;
-    gap: 6px;
+    flex: none;
+    gap: 8px;
+    padding: 12px 10px;
+
+    .rail-widget__header { font-size: 15px; }
 
     .cal-weekdays,
-    .cal-grid {
-      width: 100%;
-      margin-inline: auto;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      justify-content: stretch;
-      gap: clamp(1px, 0.28cqw, 3px);
-    }
+    .cal-grid { gap: 2px; }
 
-    .cal-weekdays {
-      margin-bottom: 1px;
-      font-size: 10px;
-      line-height: 1.2;
-
-      span {
-        padding: 0;
-      }
-    }
-
-    .cal-grid {
-      grid-auto-rows: clamp(22px, 4.4cqw, 26px);
-    }
+    .cal-grid { grid-auto-rows: clamp(36px, 10.5vw, 46px); }
 
     .cal-day {
-      aspect-ratio: auto;
-      width: 100%;
-      min-width: 0;
-      min-height: 0;
-      font-size: clamp(11px, 1.45cqw, 12px);
-      line-height: 1;
-      border-radius: 7px;
+      border-radius: 10px;
+      font-size: 14px;
     }
 
-    .cal-day--today::before {
-      width: clamp(22px, 4.4cqw, 26px);
-      height: clamp(22px, 4.4cqw, 26px);
-    }
+    .cal-day--event::after,
+    .cal-day--today.cal-day--selected::after { bottom: 4px; }
+  }
+
+  .cal-events {
+    flex: none;
+    overflow: visible;
+    padding: 12px 14px;
   }
 }
 
-// 暗色模式微调
-[data-theme="dark"] .rail-widget--calendar {
-  .cal-day--today::before {
-    background: hsl(var(--primary-hue), 65%, 55%);
-    box-shadow: 0 2px 8px hsla(var(--primary-hue), 65%, 55%, 0.45);
-  }
-
-  .rail-widget__btn:hover {
-    background: hsla(var(--primary-hue), 65%, 60%, 0.18);
+@media (max-width: 360px) {
+  .cal-summary__today {
+    width: 100%;
   }
 }

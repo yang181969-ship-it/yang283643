@@ -263,7 +263,10 @@ async function runSearch(kw) {
   return results;
 }
 
-/* ---------- 搜索浮层 ---------- */
+/* ---------- 搜索面板(Command Palette)----------
+   索引与 runSearch 不变;这里只负责展示与交互:
+   - 输入即搜(防抖),分类筛选,↑/↓ 选择,Enter 打开,Esc/外部点击关闭(site-shell.js)
+   - 输入法组字期间的 Enter 不触发打开 */
 const SEARCH_SUGGESTIONS = ["音乐", "倒数", "F1", "动漫", "笔记", "画廊"];
 const SEARCH_FILTERS = [
   { key: "all", label: "全部" },
@@ -272,11 +275,15 @@ const SEARCH_FILTERS = [
   { key: "音乐", label: "音乐" },
   { key: "笔记", label: "笔记" },
 ];
+const SEARCH_DEBOUNCE = 160;
 
 const searchViewState = {
   keyword: "",
   results: [],
   activeType: "all",
+  activeIndex: -1,  // 在当前筛选结果中的位置
+  seq: 0,
+  pending: null,    // 当前关键词的搜索 Promise(Enter 时等待它)
 };
 
 function getSearchPanel() {
@@ -287,96 +294,72 @@ function getSearchPanel() {
   panel = document.createElement("section");
   panel.id = "search-popover";
   panel.className = "search-popover";
-  panel.hidden = true;
-  panel.setAttribute("role", "dialog");
   panel.setAttribute("aria-label", "搜索结果");
   panel.innerHTML = `
-    <header class="search-popover__header">
-      <div>
-        <p class="search-popover__eyebrow">搜索结果</p>
-        <h2 class="search-popover__title" data-search-panel-title></h2>
-      </div>
-      <button class="search-popover__close" type="button" data-search-panel-close aria-label="关闭搜索结果" title="关闭">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-        </svg>
-      </button>
-    </header>
     <div class="search-popover__filters" data-search-panel-filters></div>
-    <div class="search-popover__body" data-search-panel-body></div>
+    <p class="search-popover__status" data-search-panel-title aria-live="polite"></p>
+    <div class="search-popover__body" id="search-results" role="listbox" aria-label="搜索结果" data-search-panel-body></div>
+    <footer class="search-popover__footer" aria-hidden="true">
+      <span><kbd>↑</kbd><kbd>↓</kbd> 选择</span>
+      <span><kbd>Enter</kbd> 打开</span>
+      <span><kbd>Esc</kbd> 关闭</span>
+      <span class="search-popover__shortcut"><kbd>${/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"}</kbd><kbd>K</kbd> 随时唤起</span>
+    </footer>
   `;
 
   panel.addEventListener("click", (event) => {
-    event.stopPropagation();
-
+    const input = document.getElementById("search-input");
     const filterBtn = event.target.closest("[data-search-filter]");
     if (filterBtn) {
       searchViewState.activeType = filterBtn.dataset.searchFilter || "all";
+      searchViewState.activeIndex = 0;
       renderSearchPanel();
+      input?.focus({ preventScroll: true });
       return;
     }
 
     const suggestionBtn = event.target.closest("[data-search-suggestion]");
-    if (suggestionBtn) {
-      const input = document.getElementById("search-input");
+    if (suggestionBtn && input) {
       input.value = suggestionBtn.dataset.searchSuggestion || "";
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      doSearchFromInput();
+      syncClearButton();
+      performSearch(input.value);
+      input.focus({ preventScroll: true });
       return;
     }
 
     const resultBtn = event.target.closest("[data-result-idx]");
-    if (resultBtn) {
-      const idx = Number(resultBtn.dataset.resultIdx);
-      const result = searchViewState.results[idx];
-      if (result?.action) {
-        closeSearchPanel();
-        closeSearchControl();
-        window.dispatchEvent(new CustomEvent("site-search:close"));
-        result.action();
-      }
-    }
+    if (resultBtn) activateResult(searchViewState.results[Number(resultBtn.dataset.resultIdx)]);
   });
 
-  panel.querySelector("[data-search-panel-close]")?.addEventListener("click", () => {
-    closeSearchPanel();
-    closeSearchControl();
-    window.dispatchEvent(new CustomEvent("site-search:close"));
+  // 鼠标悬停同步键盘高亮(触摸不触发,避免滚动时跳动)
+  panel.addEventListener("pointermove", (event) => {
+    if (event.pointerType !== "mouse") return;
+    const option = event.target.closest("[data-option-idx]");
+    if (option) setActiveOption(Number(option.dataset.optionIdx), false);
   });
 
   (control || document.body).appendChild(panel);
   return panel;
 }
 
+function activateResult(result) {
+  if (!result?.action) return;
+  closeSearchControl();
+  result.action();
+}
+
 function openSearchControl() {
   window.sitePanels?.open("search", document.getElementById("search-toggle"));
-  document.querySelector(".search-bar")?.classList.add("is-open");
-  document.getElementById("search-toggle")?.classList.add("is-open");
-  document.getElementById("search-backdrop")?.classList.add("is-open");
 }
 
 function closeSearchControl() {
   window.sitePanels?.close("search");
-  document.querySelector(".search-bar")?.classList.remove("is-open");
-  document.getElementById("search-toggle")?.classList.remove("is-open");
-  document.getElementById("search-backdrop")?.classList.remove("is-open");
 }
 
-function openSearchPanel() {
-  const panel = getSearchPanel();
-  panel.hidden = false;
-  requestAnimationFrame(() => panel.classList.add("is-open"));
-}
-
-function closeSearchPanel() {
-  const panel = document.getElementById("search-popover");
-  if (!panel) return;
-
-  panel.classList.remove("is-open");
-  window.setTimeout(() => {
-    if (!panel.classList.contains("is-open")) panel.hidden = true;
-  }, 180);
+function syncClearButton() {
+  const input = document.getElementById("search-input");
+  const clear = document.getElementById("search-clear");
+  if (clear && input) clear.style.display = input.value ? "flex" : "none";
 }
 
 function getCounts(results) {
@@ -392,14 +375,36 @@ function getFilteredResults() {
   return searchViewState.results.filter(item => item.type === searchViewState.activeType);
 }
 
-function renderSearchPanelLoading(kw) {
-  searchViewState.keyword = kw;
-  searchViewState.results = [];
-  searchViewState.activeType = "all";
-  openSearchPanel();
+function setListboxExpanded(expanded) {
+  const input = document.getElementById("search-input");
+  input?.setAttribute("aria-expanded", String(expanded));
+  if (!expanded) input?.removeAttribute("aria-activedescendant");
+}
 
+function renderSearchIdle() {
   const panel = getSearchPanel();
-  panel.querySelector("[data-search-panel-title]").textContent = `正在搜索「${kw}」`;
+  panel.dataset.state = "idle";
+  panel.querySelector("[data-search-panel-title]").textContent = "输入关键词,实时搜索笔记、动漫、音乐和页面";
+  panel.querySelector("[data-search-panel-filters]").innerHTML = "";
+  panel.querySelector("[data-search-panel-body]").innerHTML = `
+    <div class="search-empty search-empty--idle">
+      <p>试试搜索</p>
+      <div class="search-empty__suggestions">
+        ${SEARCH_SUGGESTIONS.map(item => `
+          <button type="button" data-search-suggestion="${escapeHtml(item)}">${escapeHtml(item)}</button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+  setListboxExpanded(false);
+}
+
+function renderSearchPanelLoading(kw) {
+  const panel = getSearchPanel();
+  panel.querySelector("[data-search-panel-title]").textContent = `正在搜索「${kw}」…`;
+  // 已有结果时保留旧列表,避免边输入边闪烁
+  if (searchViewState.results.length) return;
+  panel.dataset.state = "loading";
   panel.querySelector("[data-search-panel-filters]").innerHTML = "";
   panel.querySelector("[data-search-panel-body]").innerHTML = `
     <div class="search-loading">
@@ -407,6 +412,7 @@ function renderSearchPanelLoading(kw) {
       <span>搜索中...</span>
     </div>
   `;
+  setListboxExpanded(false);
 }
 
 function renderSearchPanel() {
@@ -419,14 +425,15 @@ function renderSearchPanel() {
   }
 
   const filtered = getFilteredResults();
+  panel.dataset.state = filtered.length ? "results" : "empty";
   panel.querySelector("[data-search-panel-title]").textContent =
-    `关键词「${kw}」共找到 ${searchViewState.results.length} 条结果`;
+    `「${kw}」共找到 ${searchViewState.results.length} 条结果`;
 
   panel.querySelector("[data-search-panel-filters]").innerHTML = SEARCH_FILTERS.map(filter => {
     const count = counts[filter.key] || 0;
-    const active = searchViewState.activeType === filter.key ? " is-active" : "";
+    const active = searchViewState.activeType === filter.key;
     return `
-      <button class="search-filter${active}" type="button" data-search-filter="${escapeHtml(filter.key)}" ${count ? "" : "disabled"}>
+      <button class="search-filter${active ? " is-active" : ""}" type="button" data-search-filter="${escapeHtml(filter.key)}" aria-pressed="${active}" ${count ? "" : "disabled"}>
         <span>${escapeHtml(filter.label)}</span>
         <strong>${count}</strong>
       </button>
@@ -436,7 +443,8 @@ function renderSearchPanel() {
   if (!searchViewState.results.length) {
     panel.querySelector("[data-search-panel-body]").innerHTML = `
       <div class="search-empty">
-        <p>没有找到相关内容</p>
+        <p>没有找到「${escapeHtml(kw)}」相关内容</p>
+        <span class="search-empty__hint">换个关键词,或试试:</span>
         <div class="search-empty__suggestions">
           ${SEARCH_SUGGESTIONS.map(item => `
             <button type="button" data-search-suggestion="${escapeHtml(item)}">${escapeHtml(item)}</button>
@@ -444,144 +452,183 @@ function renderSearchPanel() {
         </div>
       </div>
     `;
-    openSearchPanel();
+    setListboxExpanded(false);
     return;
   }
 
   panel.querySelector("[data-search-panel-body]").innerHTML = `
     <div class="search-results-list">
-      ${filtered.map((r) => {
+      ${filtered.map((r, i) => {
         const originalIndex = searchViewState.results.indexOf(r);
         return `
-          <button class="search-result-card" type="button" data-result-idx="${originalIndex}">
+          <button class="search-result-card" type="button" role="option" id="search-opt-${i}" tabindex="-1"
+            aria-selected="false" data-option-idx="${i}" data-result-idx="${originalIndex}">
             <span class="search-result-meta">
               <span class="search-result-tag">${escapeHtml(r.tag)}</span>
               ${r.date ? `<span class="search-result-date">${escapeHtml(r.date)}</span>` : ""}
             </span>
             <span class="search-result-title">${r.titleHl}</span>
-            <span class="search-result-desc">${r.descHl}</span>
+            ${r.descHl ? `<span class="search-result-desc">${r.descHl}</span>` : ""}
+            <span class="search-result-enter" aria-hidden="true">↵</span>
           </button>
         `;
       }).join("")}
     </div>
   `;
-  openSearchPanel();
+  setListboxExpanded(true);
+  const max = filtered.length - 1;
+  setActiveOption(Math.min(Math.max(searchViewState.activeIndex, 0), max), false);
 }
 
-function renderSearchResults(kw, results) {
-  searchViewState.keyword = kw;
-  searchViewState.results = results;
-  renderSearchPanel();
-}
-
-function updateSearchUrl(kw) {
-  const url = new URL(window.location.href);
-  url.searchParams.set("search", kw);
-  history.pushState({ search: kw }, "", url.toString());
-}
-
-function clearSearchUrl() {
-  const url = new URL(window.location.href);
-  url.searchParams.delete("search");
-  history.replaceState({ page: url.searchParams.get("page") || "home" }, "", url.toString());
-}
-
-function doSearchFromInput() {
-  const input = document.getElementById("search-input");
-  const clear = document.getElementById("search-clear");
-  if (!input) return;
-
-  const kw = input.value.trim();
-  if (!kw) return;
-
-  updateSearchUrl(kw);
-  renderSearchPanelLoading(kw);
-  openSearchControl();
-
-  runSearch(kw).then(results => {
-    renderSearchResults(kw, results);
+function setActiveOption(index, scroll) {
+  const panel = getSearchPanel();
+  const options = panel.querySelectorAll("[data-option-idx]");
+  if (!options.length) return;
+  const next = (index + options.length) % options.length;
+  searchViewState.activeIndex = next;
+  options.forEach((el, i) => {
+    el.classList.toggle("is-active", i === next);
+    el.setAttribute("aria-selected", String(i === next));
   });
+  document.getElementById("search-input")?.setAttribute("aria-activedescendant", options[next].id);
+  if (scroll) options[next].scrollIntoView({ block: "nearest" });
+}
 
-  if (clear) clear.style.display = "flex";
+function setSearchUrl(kw) {
+  const url = new URL(window.location.href);
+  if (kw) url.searchParams.set("search", kw);
+  else url.searchParams.delete("search");
+  if (url.href !== window.location.href) history.replaceState(history.state, "", url.toString());
+}
+
+function performSearch(raw) {
+  const kw = String(raw ?? "").trim();
+  const seq = ++searchViewState.seq;
+  if (!kw) {
+    searchViewState.keyword = "";
+    searchViewState.results = [];
+    searchViewState.activeIndex = -1;
+    searchViewState.pending = null;
+    setSearchUrl("");
+    renderSearchIdle();
+    return Promise.resolve();
+  }
+  if (kw !== searchViewState.keyword) searchViewState.activeIndex = 0;
+  searchViewState.keyword = kw;
+  renderSearchPanelLoading(kw);
+  searchViewState.pending = runSearch(kw).then(results => {
+    if (seq !== searchViewState.seq) return; // 已有更新的输入
+    searchViewState.results = results;
+    searchViewState.pending = null;
+    setSearchUrl(kw);
+    renderSearchPanel();
+  });
+  return searchViewState.pending;
 }
 
 /* ---------- 初始化搜索框 ---------- */
 function initSearch() {
-  const input    = document.getElementById("search-input");
-  const clear    = document.getElementById("search-clear");
-  const legacyBtn = document.getElementById("search-btn"); // 旧的隐藏提交按钮(如果存在)
+  const input = document.getElementById("search-input");
+  const clear = document.getElementById("search-clear");
+  const dialog = document.getElementById("tool-search");
   if (!input) return;
 
-  // 暴露给 main.js 使用的 loadPage 引用
-  // main.js 在 DOMContentLoaded 后把 loadPage 挂到 window._loadPage
+  getSearchPanel();
+  renderSearchIdle();
 
-  // 回车触发提交
-  input.addEventListener("keydown", e => {
-    if (e.key === "Enter") doSearchFromInput();
+  let timer = 0;
+  const flush = () => {
+    clearTimeout(timer);
+    timer = 0;
+    return performSearch(input.value);
+  };
+
+  input.addEventListener("input", () => {
+    syncClearButton();
+    clearTimeout(timer);
+    timer = setTimeout(flush, input.value.trim() ? SEARCH_DEBOUNCE : 0);
   });
 
-  // 旧的隐藏 search-btn(兼容,可能不存在)
-  if (legacyBtn) {
-    legacyBtn.addEventListener("click", doSearchFromInput);
-  }
+  input.addEventListener("keydown", async (e) => {
+    if (e.isComposing || e.keyCode === 229) return; // 输入法组字中
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveOption(searchViewState.activeIndex + (e.key === "ArrowDown" ? 1 : -1), true);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const kw = input.value.trim();
+      if (!kw) return;
+      if (timer || kw !== searchViewState.keyword) await flush();
+      else if (searchViewState.pending) await searchViewState.pending;
+      const filtered = getFilteredResults();
+      activateResult(filtered[Math.max(searchViewState.activeIndex, 0)]);
+    }
+  });
 
-  // 搜索按钮由 site-shell.js 统一打开弹窗;重新打开时恢复上次的结果
+  clear?.addEventListener("click", () => {
+    input.value = "";
+    syncClearButton();
+    clearTimeout(timer);
+    performSearch("");
+    input.focus({ preventScroll: true });
+  });
+
+  // 移动端软键盘:按可见视口限制面板高度,结果区在剩余空间内滚动
+  const viewport = window.visualViewport;
+  const fitViewport = () => {
+    if (!dialog || !viewport) return;
+    dialog.style.setProperty("--vv-height", `${Math.round(viewport.height)}px`);
+    dialog.style.setProperty("--vv-top", `${Math.round(viewport.offsetTop)}px`);
+  };
+
+  // 按钮/快捷键由 site-shell.js 打开弹窗;重新打开时保留上次的关键词和结果
   window.addEventListener("site-panel:open", (event) => {
     if (event.detail?.key !== "search") return;
-    document.querySelector(".search-bar")?.classList.add("is-open");
-    if (searchViewState.keyword && input.value.trim() === searchViewState.keyword) openSearchPanel();
+    fitViewport();
+    viewport?.addEventListener("resize", fitViewport);
+    viewport?.addEventListener("scroll", fitViewport);
+    if (input.value.trim() && input.value.trim() === searchViewState.keyword && searchViewState.results.length) {
+      setSearchUrl(searchViewState.keyword);
+      renderSearchPanel();
+    } else if (input.value.trim()) {
+      performSearch(input.value);
+    } else {
+      renderSearchIdle();
+    }
+    syncClearButton();
+    requestAnimationFrame(() => input.select());
   });
 
-  // 清空
-  if (clear) {
-    clear.addEventListener("click", () => {
-      input.value = "";
-      clear.style.display = "none";
-      input.focus();
-      closeSearchPanel();
-      clearSearchUrl();
-    });
-  }
-
-  // 实时显示清空按钮
-  input.addEventListener("input", () => {
-    if (clear) clear.style.display = input.value ? "flex" : "none";
+  // 关闭(Esc、关闭按钮、外部点击)由 site-shell.js 处理;这里释放临时状态
+  window.addEventListener("site-panel:close", (event) => {
+    if (event.detail?.key !== "search") return;
+    clearTimeout(timer);
+    timer = 0;
+    viewport?.removeEventListener("resize", fitViewport);
+    viewport?.removeEventListener("scroll", fitViewport);
+    setListboxExpanded(false);
+    setSearchUrl("");
   });
+
+  // 兼容旧的外部关闭事件
+  window.addEventListener("site-search:close", closeSearchControl);
 
   // 页面加载时如果 URL 带 search 参数,自动执行
   const urlKw = new URLSearchParams(window.location.search).get("search");
   if (urlKw) {
     input.value = urlKw;
-    if (clear) clear.style.display = "flex";
     openSearchControl();
-    renderSearchPanelLoading(urlKw);
-    runSearch(urlKw).then(results => renderSearchResults(urlKw, results));
   }
-
-  // 关闭(Esc、关闭按钮、遮罩)由 site-shell.js 的弹窗管理器处理
-  window.addEventListener("site-panel:close", (event) => {
-    if (event.detail?.key !== "search") return;
-    closeSearchPanel();
-    closeSearchControl();
-  });
-
-  window.addEventListener("site-search:close", () => {
-    closeSearchPanel();
-    closeSearchControl();
-  });
 
   window.addEventListener("popstate", () => {
     const kw = new URLSearchParams(window.location.search).get("search");
     if (!kw) {
-      closeSearchPanel();
+      if (document.getElementById("tool-search")?.open) closeSearchControl();
       return;
     }
-
     input.value = kw;
-    if (clear) clear.style.display = "flex";
-    openSearchControl();
-    renderSearchPanelLoading(kw);
-    runSearch(kw).then(results => renderSearchResults(kw, results));
+    if (document.getElementById("tool-search")?.open) performSearch(kw);
+    else openSearchControl();
   });
 }
 

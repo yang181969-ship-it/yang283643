@@ -13,8 +13,10 @@
   function emit(type, key) {
     window.dispatchEvent(new CustomEvent(type, { detail: { key } }));
   }
+  // Popovers (theme) are non-modal: no backdrop, no focus trap, the page stays usable.
+  const isPopover = key => panels.get(key)?.dialog.dataset.panel === 'popover';
   function syncModalState() {
-    root.classList.toggle('has-tool-panel', stack.length > 0);
+    root.classList.toggle('has-tool-panel', stack.some(key => !isPopover(key)));
     document.querySelectorAll('[data-tool]').forEach(button => {
       button.setAttribute('aria-expanded', String(Boolean(panels.get(button.dataset.tool)?.dialog.open)));
     });
@@ -27,6 +29,7 @@
     while (stack.length > index + 1) close(stack.at(-1), false);
     stack.splice(index, 1);
     panel.dialog.close();
+    if (isPopover(key)) popoverCleanup();
     panel.onClose?.();
     syncModalState();
     emit('site-panel:close', key);
@@ -44,11 +47,19 @@
     if (!nested && trigger?.closest('dialog[open]') && stack.length) trigger = panels.get(stack.at(-1)).trigger;
     if (!nested) while (stack.length) close(stack.at(-1), false);
     panel.trigger = trigger;
-    panel.dialog.showModal();
+    if (isPopover(key)) {
+      panel.dialog.show();
+      placePopover(key);
+      popoverWatch(key);
+    } else {
+      panel.dialog.showModal();
+    }
     stack.push(key);
     syncModalState();
     emit('site-panel:open', key);
-    const first = panel.dialog.querySelector('[autofocus], input:not([type="hidden"]):not([hidden])');
+    // Text inputs (search) take focus; music focuses its play button rather than the playlist filter,
+    // so touch devices do not pop the keyboard on open.
+    const first = panel.dialog.querySelector('[data-autofocus]:not(:disabled), [autofocus], input[type="text"]:not([hidden])');
     (first || panel.dialog.querySelector(focusable))?.focus({ preventScroll: true });
   }
   function register(key, dialog, onClose) {
@@ -74,14 +85,74 @@
     register(key, dialog, onClose);
     return dialog;
   }
-  window.sitePanels = { open, close, adopt, get active() { return stack.at(-1); } };
+  function toggle(key, trigger) {
+    if (panels.get(key)?.dialog.open) close(key);
+    else open(key, trigger);
+  }
+
+  // Popover placement: desktop beside the rail button, mobile under the toolbar button, always on screen.
+  function anchorFor(key) {
+    const trigger = panels.get(key).trigger;
+    if (trigger?.isConnected && trigger.getClientRects().length) return trigger;
+    return [...document.querySelectorAll(`[data-tool="${key}"]`)].find(el => el.getClientRects().length);
+  }
+  function placePopover(key) {
+    const { dialog } = panels.get(key);
+    const anchor = anchorFor(key);
+    if (!anchor || !dialog.open) return;
+    const r = anchor.getBoundingClientRect();
+    const view = window.visualViewport;
+    const vw = document.documentElement.clientWidth, vh = view ? view.height : innerHeight;
+    const edge = 8, gap = 10;
+    let top = mobile.matches ? r.bottom + gap : edge;
+    dialog.style.maxHeight = `${Math.max(160, vh - top - edge)}px`;
+    const w = dialog.offsetWidth, h = dialog.offsetHeight;
+    let left;
+    if (mobile.matches) {
+      left = r.right - w;
+    } else {
+      left = r.right + gap;
+      top = r.bottom - h; // The theme button sits near the rail bottom, so the panel grows upward.
+    }
+    left = Math.min(Math.max(left, edge), vw - w - edge);
+    top = Math.min(Math.max(top, edge), vh - h - edge);
+    dialog.style.left = `${Math.round(left)}px`;
+    dialog.style.top = `${Math.round(top)}px`;
+    dialog.dataset.side = mobile.matches ? 'bottom' : 'right';
+  }
+  let popoverStop = null;
+  function popoverWatch(key) {
+    popoverCleanup();
+    const { dialog } = panels.get(key);
+    const reposition = () => placePopover(key);
+    // The rail animates its width when pinned; follow it frame by frame.
+    const observer = new ResizeObserver(reposition);
+    observer.observe(rail);
+    observer.observe(dialog);
+    const outside = event => {
+      if (dialog.contains(event.target) || event.target.closest?.(`[data-tool="${key}"]`)) return;
+      close(key, false); // The click still reaches the page; focus goes where the user clicked.
+    };
+    window.addEventListener('resize', reposition);
+    window.visualViewport?.addEventListener('resize', reposition);
+    document.addEventListener('pointerdown', outside, true);
+    popoverStop = () => {
+      observer.disconnect();
+      window.removeEventListener('resize', reposition);
+      window.visualViewport?.removeEventListener('resize', reposition);
+      document.removeEventListener('pointerdown', outside, true);
+    };
+  }
+  function popoverCleanup() { popoverStop?.(); popoverStop = null; }
+
+  window.sitePanels = { open, close, toggle, adopt, get active() { return stack.at(-1); } };
   document.querySelectorAll('dialog[id^="tool-"]').forEach(dialog => register(dialog.id.slice(5), dialog));
   // Capture Esc before legacy document handlers; exactly one layer closes per press.
   document.addEventListener('keydown', event => {
     if (!stack.length) return;
     if (event.key === 'Escape') {
       event.preventDefault(); event.stopImmediatePropagation(); close(stack.at(-1));
-    } else if (event.key === 'Tab') {
+    } else if (event.key === 'Tab' && !isPopover(stack.at(-1))) {
       const dialog = panels.get(stack.at(-1)).dialog;
       const items = [...dialog.querySelectorAll(focusable)].filter(el => el.getClientRects().length && !el.closest('[hidden]'));
       const first = items[0], last = items.at(-1);
@@ -95,7 +166,17 @@
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-tool]');
     if (!button || !panels.has(button.dataset.tool)) return;
-    open(button.dataset.tool, button);
+    toggle(button.dataset.tool, button);
+  });
+
+  // Ctrl+K / Cmd+K toggles search, but never hijacks typing in another field.
+  document.addEventListener('keydown', event => {
+    if (event.key?.toLowerCase() !== 'k' || !(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])') && !target.closest('#tool-search')) return;
+    if (!panels.has('search')) return;
+    event.preventDefault();
+    toggle('search', document.getElementById('search-toggle'));
   });
 
   // Desktop sidebar: two states, changed only by the toggle button.
