@@ -4,6 +4,8 @@
   "description": "Yang181969 的个人网站",
   "private": true,
   "scripts": {
+    "build:shell": "node scripts/14-sync-shell.mjs",
+    "prebuild": "npm run build:shell",
     "dev": "sass css/scss/main.scss:css/style.css --watch",
     "build": "sass css/scss/main.scss:css/style.css --style=compressed --no-source-map",
 

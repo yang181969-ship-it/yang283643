@@ -1,14 +1,17 @@
 [
   {
     "file": "content/updates/2026-10-12.md",
-    "title": "留言功能退役，主页第三行布局调整",
+    "title": "留言系统正式退役，网站全面迁移至 Cloudflare",
     "date": "2026-10-12",
     "category": "建站日志",
-    "meta": "功能退役与主页布局调整",
-    "summary": "本地代码移除自建留言功能及相关统计任务，主页更新公告与关于我各占半行，统计卡改为显示真实画廊图片数。远程发布另行执行。",
+    "meta": "功能退役、主页布局优化与网站托管迁移",
+    "summary": "正式移除自建留言系统及相关维护任务，调整主页第三行布局并优化站点统计；同时将主站与 Work 子站从 GitHub Pages 迁移至 Cloudflare Pages，完成 DNS 托管切换、自定义域名绑定、HTTPS 配置及 WWW 永久重定向，保留 GitHub 自动部署工作流。",
     "tags": [
       "visual",
-      "mobile"
+      "mobile",
+      "infrastructure",
+      "cloudflare",
+      "deployment"
     ],
     "primary": "optimization"
   },

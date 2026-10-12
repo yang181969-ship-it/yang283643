@@ -93,7 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ===== 面板开关 ===== */
   themeToggle.addEventListener("click", (e) => {
     e.stopPropagation();
-    themePanel.classList.toggle("show");
+    if (window.sitePanels) {
+      themePanel.classList.add("show");
+      window.sitePanels.open("theme", themeToggle);
+    } else themePanel.classList.toggle("show");
   });
 
   document.addEventListener("click", (e) => {

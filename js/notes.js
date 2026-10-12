@@ -287,7 +287,7 @@ function renderTocSidebar(tocItems, scrollContainer) {
 }
 
 /* ===== 详情页视图（在 SPA 内渲染） ===== */
-function renderDetailView(note, onBack) {
+function renderDetailView(note, onBack, pushHistory = true) {
   const dateDisplay = note.date
     ? `<span class="note-date">${formatDate(note.date)}</span>` : "";
 
@@ -362,7 +362,7 @@ function renderDetailView(note, onBack) {
   const url = new URL(window.location.href);
   url.searchParams.set("note", encodeURIComponent(note.file));
   url.searchParams.delete("noteIndex"); // 清掉旧参数(如果是老链接带进来的)
-  history.pushState({ page: "notes", note: note.file }, "", url.toString());
+  if (pushHistory) history.pushState({ page: "notes", note: note.file }, "", url.toString());
 }
 
 /* ===== 从 JSON 索引渲染所有笔记卡片 ===== */
@@ -586,6 +586,27 @@ function bindNotesFilter(noteCards) {
 async function initNotesPage() {
   const notesPage = document.querySelector(".notes-page");
   if (!notesPage) return;
+
+  const encodedFile = new URLSearchParams(location.search).get('note');
+  if (encodedFile) {
+    let file = encodedFile;
+    try { file = decodeURIComponent(encodedFile); } catch (_) {}
+    // Resolve only a known note from the site's index, including legacy double-encoded URLs.
+    try {
+      const index = await fetch('data/notes-index.json').then(res => res.json());
+      const item = index.find(note => note.file === file);
+      if (item) {
+        const markdown = await loadNoteMarkdown(file);
+        if (notesPage.isConnected && new URLSearchParams(location.search).get('note') === encodedFile) {
+          renderDetailView(parseMarkdownToNote(markdown, item), () => initNotesPage(), false);
+        }
+        return;
+      }
+    } catch (err) {
+      // A failed deep link falls back to the list instead of leaving the page empty.
+      console.warn('笔记深链接恢复失败：', err);
+    }
+  }
 
   const noteCards = await renderNotesFromJSON();
   bindNotesFilter(noteCards);

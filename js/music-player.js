@@ -546,10 +546,17 @@
 
   function openModal() {
     if (!modalEl) return;
+    window.sitePanels?.adopt('playlist', modalEl, '歌单', () => {
+      modalEl.hidden = true;
+      modalEl.classList.remove('is-visible');
+      modalEl.setAttribute('aria-hidden', 'true');
+      clearPlaylistSearch();
+    });
     modalEl.hidden = false;
     modalEl.setAttribute('aria-hidden', 'false');
     applyPlaylistSearch();
     modalEl.classList.add('is-visible');
+    window.sitePanels?.open('playlist', document.activeElement, true);
     requestAnimationFrame(() => {
       modalSearchEl?.focus({ preventScroll: true });
     });
@@ -557,6 +564,7 @@
 
   function closeModal() {
     if (!modalEl) return;
+    if (window.sitePanels) { window.sitePanels.close('playlist'); return; }
     modalEl.classList.remove('is-visible');
     setTimeout(() => {
       modalEl.hidden = true;
@@ -629,12 +637,23 @@
       applyLyricsToggle();
     });
 
-    // 进度条 seek(点击)
-    progressEl.addEventListener('click', (e) => {
+    // Pointer capture supports continuous mouse/touch seeking without losing the audio instance.
+    const seek = (e) => {
       if (!Number.isFinite(audio.duration)) return;
       const rect = progressEl.getBoundingClientRect();
       const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
       audio.currentTime = pct * audio.duration;
+    };
+    progressEl.addEventListener('pointerdown', (e) => {
+      progressEl.setPointerCapture(e.pointerId);
+      seek(e);
+    });
+    progressEl.addEventListener('pointermove', (e) => {
+      if (progressEl.hasPointerCapture(e.pointerId)) seek(e);
+    });
+    progressEl.addEventListener('pointerup', (e) => {
+      seek(e);
+      if (progressEl.hasPointerCapture(e.pointerId)) progressEl.releasePointerCapture(e.pointerId);
     });
     // 进度条 seek(键盘:← →)
     progressEl.addEventListener('keydown', (e) => {

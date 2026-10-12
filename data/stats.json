@@ -521,12 +521,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 15554,
+            "total": 17836,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 10133
+                "value": 12415
               },
               {
                 "name": "笔记字数",
@@ -561,7 +561,7 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 10133,
+            "total": 12415,
             "unit": "字",
             "items": [
               {
@@ -570,7 +570,7 @@
               },
               {
                 "name": "optimization",
-                "value": 1621
+                "value": 3903
               },
               {
                 "name": "fix",
@@ -597,7 +597,7 @@
   "recentChanges": [
     {
       "date": "2026-10-12",
-      "title": "留言功能退役，主页第三行布局调整",
+      "title": "留言系统正式退役，网站全面迁移至 Cloudflare",
       "type": "更新",
       "page": "update",
       "href": ""
@@ -1030,5 +1030,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-12T04:30:49.283Z"
+  "generatedAt": "2026-10-12T16:08:54.465Z"
 }

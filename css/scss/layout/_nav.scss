@@ -8,9 +8,9 @@
 @use '../abstracts/mixins' as *;
 
 // ============================================================
-// nav 卡片本体 —— 桌面端参与 rail 列流式布局,固定 220px 展开
+// .site-nav 卡片本体 —— 桌面端参与 rail 列流式布局,固定 220px 展开
 // ============================================================
-nav {
+.site-nav {
   position: relative;
   width: 100%;
   flex-shrink: 0;
@@ -36,9 +36,9 @@ nav {
 }
 
 // ============================================================
-// nav 链接 —— 桌面态
+// .site-nav 链接 —— 桌面态
 // ============================================================
-nav a {
+.site-nav a {
   position: relative;
   text-decoration: none;
   color: var(--text-main);
@@ -86,11 +86,11 @@ nav a {
   &.active svg { color: #fff; }
 }
 
-nav a:first-of-type { margin-top: 4px; }
-nav a:last-of-type { margin-bottom: 8px; }
+.site-nav a:first-of-type { margin-top: 4px; }
+.site-nav a:last-of-type { margin-bottom: 8px; }
 
 // ============================================================
-// D3 移动端 nav → 底部固定 tab bar
+// D3 移动端 .site-nav → 底部固定 tab bar
 // 关键:
 //   ① position: fixed 钉在视口底部,JS 路由逻辑零改动
 //   ② flex column 单元(图标+文字),6 tab 等分
@@ -105,7 +105,7 @@ nav a:last-of-type { margin-bottom: 8px; }
     --tab-bar-h: calc(56px + env(safe-area-inset-bottom, 0px));
   }
 
-  nav {
+  .site-nav {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -142,7 +142,7 @@ nav a:last-of-type { margin-bottom: 8px; }
     &::-webkit-scrollbar { display: none; }
   }
 
-  nav a {
+  .site-nav a {
     flex: 1 1 0;
     min-width: 0;
     margin: 0;
@@ -190,12 +190,12 @@ nav a:last-of-type { margin-bottom: 8px; }
     &.active svg { color: var(--primary-dark); }
   }
 
-  nav a:first-of-type,
-  nav a:last-of-type {
+  .site-nav a:first-of-type,
+  .site-nav a:last-of-type {
     margin: 0;
   }
 
-  [data-theme="light"] nav {
+  [data-theme="light"] .site-nav {
     border-top-color: var(--border-soft);
   }
 }
@@ -204,13 +204,13 @@ nav a:last-of-type { margin-bottom: 8px; }
 // 极小屏:6 tab 在 360px 屏宽下文字进一步收紧
 // ============================================================
 @include small {
-  nav {
+  .site-nav {
     padding: 5px 4px;
     padding-bottom: max(5px, env(safe-area-inset-bottom));
     gap: 2px;
   }
 
-  nav a {
+  .site-nav a {
     font-size: 10px;
     padding: 5px 2px;
     border-radius: 10px;
@@ -227,7 +227,7 @@ nav a:last-of-type { margin-bottom: 8px; }
 // 给 html[data-nav-mobile-mode="icon"] 设置时只显示图标
 // ============================================================
 @include laptop {
-  html[data-nav-mobile-mode="icon"] nav a {
+  html[data-nav-mobile-mode="icon"] .site-nav a {
     .nav-label { display: none; }
     svg { width: 24px; height: 24px; }
     padding: 8px 4px;

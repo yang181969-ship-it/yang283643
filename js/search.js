@@ -142,7 +142,8 @@ async function runSearch(kw) {
         desc: p.desc,
         tag: "页面",
         action: () => {
-          window._loadPage?.(p.page);
+          if (window._loadPage) window._loadPage(p.page);
+          else location.href = resolveSearchUrl(`index.html?page=${p.page}`);
         },
         titleHl: highlight(p.title, q),
         descHl:  highlight(p.desc,  q),
@@ -159,7 +160,7 @@ async function runSearch(kw) {
         desc: a.desc,
         tag: "动漫",
         action: () => {
-          window.open(`html/anime-detail.html?id=${a.id}`, "_self");
+          window.open(resolveSearchUrl(`html/anime-detail.html?id=${a.id}`), "_self");
         },
         titleHl: highlight(a.title, q),
         descHl:  highlight(a.desc,  q),
@@ -227,8 +228,13 @@ async function runSearch(kw) {
             if (typeof window._loadPage === "function") {
               window._loadPage("notes");
               // 等笔记页加载完毕后再打开详情
+              const deadline = Date.now() + 10000;
               const waitForNotes = setInterval(() => {
-                if (document.getElementById("notes-content")) {
+                if (Date.now() > deadline) {
+                  clearInterval(waitForNotes);
+                  return;
+                }
+                if (document.querySelector(".note-card")) {
                   clearInterval(waitForNotes);
                   // 通过 notes-index 找到对应卡片并模拟点击
                   const cards = document.querySelectorAll(".note-card");
@@ -240,6 +246,11 @@ async function runSearch(kw) {
                   }
                 }
               }, 80);
+            } else {
+              const target = new URL('html/notes-detail.html', SEARCH_SITE_ROOT_URL);
+              target.searchParams.set('file', resolveSearchUrl(note.file));
+              target.searchParams.set('index', String(idx));
+              location.href = target.href;
             }
           },
           titleHl: highlight(blockTitle, q),
@@ -339,12 +350,14 @@ function getSearchPanel() {
 }
 
 function openSearchControl() {
+  window.sitePanels?.open("search", document.getElementById("search-toggle"));
   document.querySelector(".search-bar")?.classList.add("is-open");
   document.getElementById("search-toggle")?.classList.add("is-open");
   document.getElementById("search-backdrop")?.classList.add("is-open");
 }
 
 function closeSearchControl() {
+  window.sitePanels?.close("search");
   document.querySelector(".search-bar")?.classList.remove("is-open");
   document.getElementById("search-toggle")?.classList.remove("is-open");
   document.getElementById("search-backdrop")?.classList.remove("is-open");

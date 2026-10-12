@@ -1,7 +1,7 @@
 // ============================================================
 // 主题切换面板
 // 触发按钮 + 面板 + 模式切换 + 预设色 + 色相滑块
-// 触发按钮 #theme-toggle 的视觉由 _header-capsule.scss 接管
+// 触发按钮 #theme-toggle 的视觉由 _shell.scss 的 .shell-button 接管
 // ============================================================
 
 @use '../abstracts/variables' as *;
@@ -13,7 +13,7 @@
 }
 
 // ----- 调色盘触发按钮 -----
-// 视觉(尺寸/边框/hover)由 _header-capsule.scss 的 .capsule-btn 控制
+// 视觉(尺寸/边框/hover)由 _shell.scss 的 .shell-button 控制
 // 这里只兜底图标尺寸
 #theme-toggle {
   svg {

@@ -14,15 +14,14 @@
 // ============================================================
 .layout {
   display: grid;
-  grid-template-columns: $rail-width 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: var(--sidebar-space, 68px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   grid-template-areas:
-    "header header"
-    "rail   page";
-  height: 100vh;
+    "rail page";
+  height: 100dvh;
   overflow: hidden;
   gap: 12px;
-  padding: 0 12px 12px;
+  padding: 0 12px 0 0;
 }
 
 // ---------- 左侧卡片列 ----------
@@ -37,19 +36,6 @@
   overflow: visible;
   max-height: 100%;
   padding-top: var(--page-pad-top);
-}
-
-.rail-extras {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: visible;
-}
-
-.rail-extras-dots {
-  display: none;
 }
 
 // ============================================================
@@ -131,7 +117,7 @@ footer {
   .layout {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
     @supports (-webkit-overflow-scrolling: touch) {
@@ -160,50 +146,6 @@ footer {
     max-height: none;
     gap: 0;
     padding-top: 0;
-  }
-
-  // ---------- rail-extras:横滑 swipe ----------
-  .rail-extras {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    --rail-widget-mobile-h: clamp(196px, 34vw, 220px);
-    gap: 10px;
-    padding: 12px var(--page-pad-x) 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--page-pad-x);
-    @supports (-webkit-overflow-scrolling: touch) {
-      -webkit-overflow-scrolling: touch;
-    }
-    @supports (scrollbar-width: none) {
-      scrollbar-width: none;
-    }
-    flex-shrink: 0;
-
-    &::-webkit-scrollbar { display: none; }
-
-    > .rail-widget {
-      flex: 0 0 100%;
-      width: auto;
-      max-width: none;
-      min-width: 0;
-      height: var(--rail-widget-mobile-h);
-      box-sizing: border-box;
-      overflow: hidden;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-    }
-  }
-
-  html[data-page]:not([data-page="home"]) .rail-extras,
-  html[data-page]:not([data-page="home"]) .rail-extras-dots {
-    display: none;
-  }
-
-  .rail-extras-dots {
-    flex-shrink: 0;
   }
 
   .page-card,
@@ -243,7 +185,6 @@ footer {
 // ============================================================
 .page-card,
 .content-scroll,
-.rail-extras,
 main {
   @supports (scrollbar-width: none) {
     scrollbar-width: none;
