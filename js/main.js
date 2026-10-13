@@ -36,6 +36,22 @@
   window.setTimeout(hideLoader, MAX_SHOW_TIME);
 })();
 
+/* ===== 共享 JSON 读取：同一会话内同一地址只请求一次（About 概览 / 统计分区共用） ===== */
+(() => {
+  const cache = new Map();
+  window.y181Json = function (url) {
+    if (!cache.has(url)) {
+      cache.set(url, fetch(url, { cache: "no-cache" })
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${url} ${res.status}`))))
+        .catch((err) => {
+          cache.delete(url); // 失败不缓存，下次再试
+          throw err;
+        }));
+    }
+    return cache.get(url);
+  };
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
   const main = document.getElementById("main-content");
   const navLinks = document.querySelectorAll(".site-nav a");
@@ -85,14 +101,26 @@ document.addEventListener("DOMContentLoaded", () => {
     return homeContentPromise;
   }
 
+  // 片段缓存：按文件缓存 #main-content 的内容（About 的统计 / 更新分区也从这里取原页面骨架）
   const pageCache = new Map();
+
+  async function fetchPageHtml(file) {
+    if (pageCache.has(file)) return pageCache.get(file);
+    const res = await fetch(file);
+    if (!res.ok) throw new Error(`无法加载 ${file}`);
+    const html = stripInjectedDevServerScripts(await res.text());
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const newMain = doc.querySelector("#main-content");
+    if (!newMain) throw new Error(`${file} 中没有找到 #main-content`);
+    pageCache.set(file, newMain.innerHTML);
+    return newMain.innerHTML;
+  }
+  window._fetchPageHtml = fetchPageHtml;
 
   const pageMap = {
     home: null,
     life: "html/life.html",
     notes: "html/notes.html",
-    update: "html/update.html",
-    stats: "html/stats.html",
     about: "html/about.html",
   };
 
@@ -101,6 +129,16 @@ document.addEventListener("DOMContentLoaded", () => {
     anime: { tab: "works", type: "anime" },
     gallery: { tab: "collections", type: "gallery" },
   };
+
+  // 已并入 About 的旧路由：?page=stats / ?page=update 规范化到 About 对应分区
+  const aboutLegacyRoutes = { stats: "stats", update: "update" };
+
+  // 旧路由归属的一级页面（导航高亮、data-page 都以它为准）
+  function canonicalPage(page) {
+    if (Object.prototype.hasOwnProperty.call(legacyRoutes, page)) return "life";
+    if (Object.prototype.hasOwnProperty.call(aboutLegacyRoutes, page)) return "about";
+    return page;
+  }
 
   // Life 的分区状态全部保存在 URL 中（tab / type / status / entry），可分享、可刷新
   const LIFE_PARAMS = ["tab", "type", "status", "entry"];
@@ -124,10 +162,41 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window._lifeUrl = lifeUrl;
 
-  const navContextLabels = {
-    update: "主页：更新",
-    stats: "主页：统计",
-  };
+  // About 的分区状态同样保存在 URL 中：?page=about&tab=overview|stats|update[&update=…]
+  const ABOUT_TABS = ["overview", "stats", "update"];
+  const ABOUT_KEYS = ["page", "tab", "update"];
+
+  function normalizeAbout(raw = {}) {
+    const tab = ABOUT_TABS.includes(raw.tab) ? raw.tab : "overview";
+    const update = tab === "update" && /^[\w.-]{1,120}$/.test(raw.update || "") ? raw.update : "";
+    return update ? { tab, update } : { tab };
+  }
+
+  // 同时识别旧地址：?page=stats → 统计，?page=update[&update=…] → 更新
+  function aboutParamsFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const page = params.get("page");
+    const tab = aboutLegacyRoutes[page] || params.get("tab") || "";
+    return normalizeAbout({ tab, update: params.get("update") || "" });
+  }
+
+  // 规范地址：page、tab、update 在前；当前已是 About（含旧地址）时，其余未知参数原样保留在后
+  function aboutUrl(about = {}) {
+    const next = normalizeAbout(about);
+    const params = new URLSearchParams({ page: "about", tab: next.tab });
+    if (next.update) params.set("update", next.update);
+    const current = new URLSearchParams(window.location.search);
+    if (canonicalPage(current.get("page") || "home") === "about") {
+      current.forEach((value, key) => {
+        if (!ABOUT_KEYS.includes(key)) params.append(key, value);
+      });
+    }
+    return `index.html?${params.toString()}`;
+  }
+  window._aboutUrl = aboutUrl;
+  window._aboutParamsFromUrl = aboutParamsFromUrl;
+
+  const aboutNavLabels = { stats: "关于 · 统计", update: "关于 · 更新" };
 
   function getPageFromHref(href) {
     if (!href) return null;
@@ -142,13 +211,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return new URLSearchParams(window.location.search).get("page") || "home";
   }
 
-  function getNavDisplayPage(page) {
-    if (Object.prototype.hasOwnProperty.call(legacyRoutes, page)) return "life";
-    return Object.prototype.hasOwnProperty.call(navContextLabels, page)
-      ? "home"
-      : page;
-  }
-
   function resetNavLabel(link) {
     const label = link.querySelector(".nav-label");
     if (!label) return;
@@ -159,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function syncCurrentPage(page) {
-    const current = page || getCurrentPageFromUrl();
+    const current = canonicalPage(page || getCurrentPageFromUrl());
     document.documentElement.dataset.page = current;
     if (document.body) document.body.dataset.page = current;
     window.dispatchEvent(new CustomEvent("y181:pagechange", {
@@ -168,7 +230,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateHighlight(page) {
-    const displayPage = getNavDisplayPage(page);
+    const displayPage = canonicalPage(page);
+    const aboutLabel = displayPage === "about"
+      ? aboutNavLabels[document.documentElement.dataset.aboutSection] || ""
+      : "";
 
     navLinks.forEach((link) => {
       const linkPage = getPageFromHref(link.getAttribute("href"));
@@ -177,12 +242,19 @@ document.addEventListener("DOMContentLoaded", () => {
       if (linkPage === displayPage) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
 
-      if (linkPage === "home" && navContextLabels[page]) {
+      if (linkPage === "about" && aboutLabel) {
         const label = link.querySelector(".nav-label");
-        if (label) label.textContent = navContextLabels[page];
+        if (label) label.textContent = aboutLabel;
       }
     });
   }
+
+  // About 切换分区时调用：记录当前分区（CSS 宽度、导航文字都读它）并刷新导航
+  function syncAboutTab(tab) {
+    document.documentElement.dataset.aboutSection = normalizeAbout({ tab }).tab;
+    if (canonicalPage(getCurrentPageFromUrl()) === "about") updateHighlight("about");
+  }
+  window._syncAboutTab = syncAboutTab;
 
   function setUrl(page, push = true, options = {}) {
     if (page === "life") {
@@ -190,6 +262,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const state = { page, life };
       if (push) history.pushState(state, "", lifeUrl(life));
       else history.replaceState(state, "", lifeUrl(life));
+      return;
+    }
+
+    if (page === "about") {
+      const about = normalizeAbout(options.about || (options.preserveAbout ? aboutParamsFromUrl() : {}));
+      const state = { page, about };
+      if (push) history.pushState(state, "", aboutUrl(about));
+      else history.replaceState(state, "", aboutUrl(about));
       return;
     }
 
@@ -203,15 +283,6 @@ document.addEventListener("DOMContentLoaded", () => {
       url = `${url}${joiner}search=${encodeURIComponent(search)}`;
     }
 
-    const update = page === "update" && options.preserveUpdate
-      ? new URLSearchParams(window.location.search).get("update")
-      : "";
-
-    if (update) {
-      const joiner = url.includes("?") ? "&" : "?";
-      url = `${url}${joiner}update=${encodeURIComponent(update)}`;
-    }
-
     const note = page === 'notes' && options.preserveNote
       ? new URLSearchParams(window.location.search).get('note') : '';
     if (note) url += `&note=${encodeURIComponent(note)}`;
@@ -219,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const state = { page };
     if (note) state.note = note;
     if (search) state.search = search;
-    if (update) state.update = update;
 
     if (push) {
       history.pushState(state, "", url);
@@ -290,16 +360,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (page === "home"    && typeof window.initHomeCards === "function") window.initHomeCards();
     if (page === "life"    && typeof window.initLifePage  === "function") window.initLifePage();
     if (page === "notes"  && typeof window.initNotesPage === "function") window.initNotesPage();
-    if (page === "update"  && typeof window.initUpdatePage === "function") window.initUpdatePage();
-    if (page === "stats"   && typeof window.initStatsPage  === "function") window.initStatsPage();
-    if (page === "about") initAboutDeclarationModal();
+    if (page === "about") {
+      initAboutDeclarationModal();
+      if (typeof window.initAboutPage === "function") window.initAboutPage();
+    }
   }
 
-  function afterPageLoad(page, push, options = {}) {
+  function afterPageLoad(page, push, options = {}, request = routeRequest) {
     syncCurrentPage(page);
     updateHighlight(page);
     setUrl(page, push, options);
     requestAnimationFrame(() => {
+      // 下一帧前已有新的导航：不再初始化这个页面（否则它会按新地址改写 URL）
+      if (request !== routeRequest) return;
       runPageInit(page);
       if (page === "notes") setTimeout(renderMathSafe, 0);
     });
@@ -310,18 +383,50 @@ document.addEventListener("DOMContentLoaded", () => {
     main.style.pointerEvents = isLoading ? "none" : "";
   }
 
+  /* -----------------------------------------------------------
+   * 导航令牌：每个用户导航意图（主导航点击、浏览器前进后退、
+   * About / Life / Notes 内部写入新历史记录）都会领取新令牌。
+   * 尚未完成的跨页请求在落地前核对令牌，过期则直接丢弃：
+   * 不替换页面、不改 URL、不追加历史；同时清掉它留下的加载状态。
+   * 最后一次导航意图决定最终页面。
+   * ----------------------------------------------------------- */
   let routeRequest = 0;
-  async function loadPage(page, push = true, options = {}) {
-    const request = ++routeRequest;
+  function beginNavigation() {
+    routeRequest += 1;
     setLoading(false);
+    return routeRequest;
+  }
+  window._beginNavigation = beginNavigation;
+
+  async function loadPage(page, push = true, options = {}) {
+    const request = beginNavigation();
     if (Object.prototype.hasOwnProperty.call(legacyRoutes, page)) {
       options = { ...options, life: { ...legacyRoutes[page] } };
       page = "life";
+    }
+    if (Object.prototype.hasOwnProperty.call(aboutLegacyRoutes, page)) {
+      // 旧的统计 / 更新入口：沿用 URL 中的单条更新标识（若有）
+      const update = page === "update" && options.preserveUpdate
+        ? new URLSearchParams(window.location.search).get("update") || ""
+        : "";
+      options = { ...options, about: { tab: aboutLegacyRoutes[page], update } };
+      page = "about";
+    }
+    if (page === "about") {
+      const about = normalizeAbout(options.about || (options.preserveAbout ? aboutParamsFromUrl() : {}));
+      options = { ...options, about };
+      document.documentElement.dataset.aboutSection = about.tab;
     }
     // 已在 Life 中：只切换分区，不重新加载骨架（保留各分区已渲染的状态）
     if (page === "life" && options.life && window.LifePage?.isMounted()) {
       updateHighlight("life");
       window.LifePage.go(options.life, { push });
+      return;
+    }
+    // 已在 About 中：同理只切换分区
+    if (page === "about" && window.AboutPage?.isMounted()) {
+      updateHighlight("about");
+      window.AboutPage.go(options.about, { push });
       return;
     }
     // 未知或已退役的路由统一 replace 回主页，涵盖旧历史记录与站内调用。
@@ -336,33 +441,24 @@ document.addEventListener("DOMContentLoaded", () => {
       const html = await getHomeContent();
       if (request !== routeRequest) return;
       main.innerHTML = html;
-      afterPageLoad("home", push, options);
-      return;
-    }
-
-    if (pageCache.has(page)) {
-      main.innerHTML = pageCache.get(page);
-      afterPageLoad(page, push, options);
+      afterPageLoad("home", push, options, request);
       return;
     }
 
     const file = pageMap[page];
+    if (pageCache.has(file)) {
+      main.innerHTML = pageCache.get(file);
+      afterPageLoad(page, push, options, request);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await fetch(file);
-      if (!res.ok) throw new Error(`无法加载 ${file}`);
-      const html = await res.text();
+      const content = await fetchPageHtml(file);
       if (request !== routeRequest) return;
-      const cleanHtml = stripInjectedDevServerScripts(html);
-      const doc = new DOMParser().parseFromString(cleanHtml, "text/html");
-      const newMain = doc.querySelector("#main-content");
-      if (!newMain) throw new Error(`${file} 中没有找到 #main-content`);
-
-      const content = newMain.innerHTML;
-      pageCache.set(page, content);
       main.innerHTML = content;
-      afterPageLoad(page, push, options);
+      afterPageLoad(page, push, options, request);
     } catch (err) {
       if (request !== routeRequest) return;
       console.error("页面切换失败：", err);
@@ -374,7 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 暴露给 search.js / update.js 等使用
+  // 暴露给 search.js / stats.js 等使用
   window._loadPage = loadPage;
 
   document.querySelectorAll('.site-nav a, .rail .logo, .site-toolbar .logo').forEach((link) => {
@@ -393,6 +489,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("popstate", (e) => {
     const state = e.state || {};
+    // 前进 / 后退本身就是新的导航意图：先作废尚未完成的跨页请求，
+    // 下面原地切换已挂载的 Life / About 时它们才不会在稍后覆盖回来
+    beginNavigation();
 
     // 搜索结果页回退
     if (state.search) {
@@ -404,14 +503,23 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const page = state.page || getCurrentPageFromUrl();
-    syncCurrentPage(getNavDisplayPage(page) === "life" ? "life" : page);
+    const page = canonicalPage(state.page || getCurrentPageFromUrl());
+    syncCurrentPage(page);
 
     // Life 分区回退：骨架还在就原地切换，否则重新加载并沿用 URL 中的分区
     if (page === "life") {
       updateHighlight("life");
       if (window.LifePage?.isMounted()) window.LifePage.syncFromUrl();
       else loadPage("life", false, { preserveLife: true });
+      return;
+    }
+
+    // About 分区 / 更新详情回退：同 Life，URL（含旧地址）就是唯一状态来源
+    if (page === "about") {
+      document.documentElement.dataset.aboutSection = aboutParamsFromUrl().tab;
+      updateHighlight("about");
+      if (window.AboutPage?.isMounted()) window.AboutPage.syncFromUrl();
+      else loadPage("about", false, { preserveAbout: true });
       return;
     }
 
@@ -423,8 +531,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // 笔记详情回退：notes.js 通过 pushState 管理自身历史
     if (page === "notes" && !state.note) {
       if (!document.getElementById("notes-content")) {
-        if (pageCache.has("notes")) {
-          main.innerHTML = pageCache.get("notes");
+        if (pageCache.has(pageMap.notes)) {
+          main.innerHTML = pageCache.get(pageMap.notes);
           updateHighlight("notes");
           requestAnimationFrame(() => {
             if (typeof window.initNotesPage === "function") window.initNotesPage();
@@ -437,59 +545,21 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 更新详情回退：update.js 自己会响应 popstate，但如果 DOM 里已经
-    // 没有 .update-page（从别的页面回来），还是需要重新加载更新页。
-    if (page === "update" && state.update) {
-      const openUpdateDetail = () => {
-        if (typeof window.openUpdateDetail === "function") {
-          window.openUpdateDetail(state.update, { pushHistory: false });
-        } else if (typeof window.initUpdatePage === "function") {
-          window.initUpdatePage({ force: false });
-        }
-      };
-
-      if (!document.querySelector(".update-page")) {
-        loadPage("update", false, { preserveUpdate: true });
-      } else {
-        updateHighlight("update");
-        requestAnimationFrame(openUpdateDetail);
-      }
-      return;
-    }
-
-    if (page === "update" && !state.update) {
-      // 如果当前 DOM 里没有更新页骨架 / 有详情视图，需要重新加载列表骨架
-      const hasUpdateSkeleton = document.getElementById("update-list");
-      const isDetailView = document.querySelector(".update-detail-page");
-      if (!hasUpdateSkeleton || isDetailView) {
-        if (pageCache.has("update")) {
-          main.innerHTML = pageCache.get("update");
-          updateHighlight("update");
-          requestAnimationFrame(() => {
-            if (typeof window.initUpdatePage === "function") window.initUpdatePage();
-          });
-        } else {
-          loadPage("update", false);
-        }
-      }
-      updateHighlight("update");
-      return;
-    }
-
     loadPage(page, false);
   });
 
   const initialParams = new URLSearchParams(window.location.search);
   const initialPage = getCurrentPageFromUrl();
   const initialSearch = initialParams.get("search");
-  const initialUpdate = initialParams.get("update");
+  if (canonicalPage(initialPage) === "about") {
+    document.documentElement.dataset.aboutSection = aboutParamsFromUrl().tab;
+  }
   syncCurrentPage(initialPage);
   updateHighlight(initialPage);
 
   if (initialPage !== "home") {
     // 关键：在替换 DOM 之前先把原始主页 HTML 抓下来缓存
     // 如果此刻 DOM 里的 #main-content 还没被其他脚本污染，直接用它
-    // （DOMContentLoaded 里几乎必然是原始 HTML，除非 update.js 那种无 defer 脚本抢跑）
     if (homeContent === null) {
       // 再保险一点：检测一下当前是不是像主页（有 .home-hero 或 .home-page）
       if (main.querySelector(".home-page") || main.querySelector(".home-hero")) {
@@ -499,9 +569,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     loadPage(initialPage, false, {
       preserveSearch: !!initialSearch,
-      preserveUpdate: !!initialUpdate,
+      preserveUpdate: initialParams.has("update"),
       preserveNote: initialParams.has('note'),
       preserveLife: initialPage === "life",
+      preserveAbout: canonicalPage(initialPage) === "about",
     });
   } else {
     // 当前在主页，抓一份骨架缓存起来
@@ -602,12 +673,8 @@ function initFloatingBtns() {
   if (document.body.dataset.standalone === "true") return;
 
   prevBtn?.addEventListener("click", () => {
-    if (document.querySelector(".update-detail-page")) {
-      if (typeof window._loadPage === "function") {
-        window._loadPage("update", false);
-        return;
-      }
-    }
+    // 更新详情：回到日志列表（与详情页里的「返回更新列表」一致）
+    if (window.AboutPage?.isMounted() && window.AboutPage.closeUpdateDetail()) return;
 
     history.back();
   });

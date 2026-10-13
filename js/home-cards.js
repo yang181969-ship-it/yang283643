@@ -399,7 +399,7 @@
         return `
           <li class="bento-list-item">
             <a class="bento-list-link"
-              href="index.html?page=update&update=${encodeURIComponent(slug)}">
+              href="index.html?page=about&amp;tab=update&amp;update=${encodeURIComponent(slug)}">
               <span class="bento-list-title">${escapeHTML(title)}</span>
               <span class="bento-list-meta">${fmtDate(u.date)}</span>
             </a>

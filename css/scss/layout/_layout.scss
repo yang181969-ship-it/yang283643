@@ -70,7 +70,8 @@ main {
 }
 
 // 卡片/网格页铺满可用宽度;长文页(含笔记详情)限制阅读宽度,居中
-:root:is([data-page="notes"], [data-page="about"], [data-page="update"]) main {
+// About 的 main 保持全宽:统计分区需要宽屏图表,概览/更新分区在 pages/_about.scss 内收窄到阅读宽度
+:root[data-page="notes"] main {
   max-width: var(--page-reading-max-width);
 }
 

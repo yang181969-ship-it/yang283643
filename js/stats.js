@@ -1,6 +1,12 @@
 // ============================================================
 // js/stats.js
-// 站点统计页:轻量 SVG/HTML 渲染
+// 站点统计(About · 统计分区):轻量 SVG/HTML 渲染
+//
+// 数据来源(均由 npm run aggregate:stats / aggregate:updates 生成):
+//   data/site-meta.json      总条目、建站日、最近内容日期
+//   data/stats.json          月度快照(增长图)、数据中心、最近变化
+//   data/updates-index.json  更新日志(最近更新日期与日志保持一致)
+// 下面 statsData 里的数字只是加载前 / 加载失败时的占位,真实数据到达后整体覆盖。
 // ============================================================
 
 (function () {
@@ -10,24 +16,14 @@
   const RECENT_CHANGES_LIMIT = 8;
 
   const statsData = {
+    // 真实数据由 loadOverviewData / loadStatsPayload 填入;加载前显示占位,不展示虚构数字
     summary: {
-      total: 45,
-      days: 24,
-      lastUpdated: "5月6日",
+      total: "--",
+      days: "--",
+      lastUpdated: "--",
     },
-    growth: [
-      { month: "2026-02", notes: 4, anime: 3, gallery: 3, updates: 2, total: 12 },
-      { month: "2026-03", notes: 6, anime: 6, gallery: 6, updates: 3, total: 21 },
-      { month: "2026-04", notes: 8, anime: 7, gallery: 8, updates: 5, total: 28 },
-      { month: "2026-05", notes: 9, anime: 9, gallery: 10, updates: 9, total: 37 },
-      { month: "2026-06", notes: 11, anime: 11, gallery: 11, updates: 12, total: 45 },
-    ],
-    recentChanges: [
-      { date: "05-06", title: "更新页大改,右上角三个按钮合并成两个", type: "更新", page: "update" },
-      { date: "05-04", title: "移动端加灵动岛,调色盘补上光晕开关", type: "更新", page: "update" },
-      { date: "05-01", title: "主页大改:从静态欢迎页到 Bento 仪表盘", type: "更新", page: "update" },
-      { date: "04-22", title: "性能优化五步收官,让站点加载更轻快", type: "更新", page: "update" },
-    ],
+    growth: [],
+    recentChanges: [],
     activity: [
       { date: "2026-04-07", count: 0 },
       { date: "2026-04-08", count: 1 },
@@ -68,7 +64,7 @@
     ],
     archive: {
       siteBirthday: "2026年4月13日",
-      lastUpdated: "2026年5月6日 13:44",
+      lastUpdated: "--",
       version: "v1.1.0",
       stack: [
         "HTML · CSS/SCSS · JavaScript",
@@ -102,6 +98,8 @@
   };
 
   let heroFrame = 0;
+  let growthUnavailable = false;
+  let heroTick = null;   // 当前 Hero 动画的逐帧函数;切走分区时暂停,切回时继续
   let pageChangeBound = false;
 
   function escapeHTML(value) {
@@ -141,11 +139,14 @@
     return item.page || pageByType[item.type] || "update";
   }
 
+  // 统计、更新已并入 About;其余旧页面名由 main.js 规范化
+  const ABOUT_TABS = { stats: "stats", update: "update", about: "overview" };
+
   function pageHref(page) {
     const prefix = document.body.dataset.standalone === "true" ? "../" : "";
-    return page === "home"
-      ? `${prefix}index.html`
-      : `${prefix}index.html?page=${encodeURIComponent(page)}`;
+    if (page === "home") return `${prefix}index.html`;
+    if (ABOUT_TABS[page]) return `${prefix}index.html?page=about&tab=${ABOUT_TABS[page]}`;
+    return `${prefix}index.html?page=${encodeURIComponent(page)}`;
   }
 
   function assetHref(path) {
@@ -160,12 +161,80 @@
     return text || "--";
   }
 
+  function loadJson(path) {
+    if (typeof window.y181Json === "function") return window.y181Json(assetHref(path));
+    return fetch(assetHref(path), { cache: "no-cache" })
+      .then(res => (res.ok ? res.json() : Promise.reject(new Error(`${path} ${res.status}`))));
+  }
+
+  function parseISODate(value) {
+    const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return match ? { y: +match[1], m: +match[2], d: +match[3], iso: match[0] } : null;
+  }
+
+  // 与主页「建站」统计同一算法:建站日到今天的整天数,至少 1 天
+  function daysSinceBirthday(value) {
+    const time = new Date(value).getTime();
+    if (Number.isNaN(time)) return null;
+    return Math.max(1, Math.floor((Date.now() - time) / 86400000));
+  }
+
+  // 摘要 / 增长图 / 档案:site-meta + 月度快照;「最近更新」取内容与更新日志中较新的日期
+  async function loadOverviewData() {
+    const [meta, stats, updates] = await Promise.all([
+      loadJson("data/site-meta.json").catch(err => {
+        console.warn("[stats] site-meta 加载失败:", err);
+        return null;
+      }),
+      loadJson("data/stats.json").catch(() => null),
+      (typeof window.loadUpdatesIndex === "function" ? window.loadUpdatesIndex() : loadJson("data/updates-index.json"))
+        .catch(() => []),
+    ]);
+    if (!document.querySelector(".stats-page")) return;
+
+    const latestLog = (Array.isArray(updates) ? updates : [])
+      .map(item => parseISODate(item.date)?.iso || "")
+      .sort()
+      .pop() || "";
+    const latest = parseISODate([meta?.latestUpdate || "", latestLog].sort().pop());
+    const birthday = parseISODate(meta?.siteBirthday);
+
+    if (meta) {
+      statsData.summary = {
+        total: Number(meta.totalContent) || 0,
+        days: daysSinceBirthday(meta.siteBirthday) ?? "--",
+        lastUpdated: latest ? `${latest.m}月${latest.d}日` : "--",
+      };
+      statsData.archive = {
+        ...statsData.archive,
+        siteBirthday: birthday ? `${birthday.y}年${birthday.m}月${birthday.d}日` : "--",
+        lastUpdated: latest ? `${latest.y}年${latest.m}月${latest.d}日` : "--",
+      };
+      renderSummary();
+      renderArchive();
+    }
+
+    const snapshots = Array.isArray(stats?.snapshots) ? stats.snapshots : [];
+    if (snapshots.length) {
+      statsData.growth = snapshots
+        .filter(item => item && item.month)
+        .map(item => ({
+          month: item.month,
+          notes: Number(item.notes) || 0,
+          anime: Number(item.anime) || 0,
+          gallery: Number(item.gallery) || 0,
+          updates: Number(item.updates) || 0,
+          total: Number(item.total) || 0,
+        }));
+    } else {
+      growthUnavailable = true;
+    }
+    renderGrowthChart();
+  }
+
   async function loadStatsPayload() {
     try {
-      const res = await fetch(assetHref("data/stats.json"), { cache: "no-cache" });
-      if (!res.ok) throw new Error(`stats.json ${res.status}`);
-
-      const data = await res.json();
+      const data = await loadJson("data/stats.json");
       const changes = Array.isArray(data.recentChanges)
         ? data.recentChanges
         : [];
@@ -193,6 +262,12 @@
       console.warn("[stats] stats payload fallback:", err);
       renderDataCenterEmpty("统计数据暂不可用");
     }
+  }
+
+  // Hero 动画只在真正可见时运行：节点仍在文档中，且所在分区没有被隐藏
+  // (About 切离统计分区时面板带 hidden;统计页在隐藏状态下完成异步挂载也一样)
+  function heroVisible(svg) {
+    return Boolean(svg && svg.isConnected && !svg.closest("[hidden]"));
   }
 
   function stopHeroAnimation() {
@@ -237,6 +312,10 @@
     renderGrowthLegend();
 
     const data = statsData.growth;
+    if (!data.length) {
+      host.innerHTML = `<p class="stats-empty">${growthUnavailable ? "增长数据暂不可用" : "数据加载中..."}</p>`;
+      return;
+    }
     const width = 780;
     const height = 320;
     const margin = { top: 28, right: 44, bottom: 42, left: 38 };
@@ -917,7 +996,7 @@
     host.appendChild(svg);
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const update = time => {
+    const update = heroTick = time => {
       const seconds = time / 1000;
 
       columns.forEach(column => {
@@ -928,7 +1007,8 @@
         column.top.setAttribute("points", points.top);
       });
 
-      if (reducedMotion || !svg.isConnected) {
+      // 先画出当前帧(隐藏时初始化也有静态柱体,再显示时不会空白),再决定是否继续循环
+      if (reducedMotion || !heroVisible(svg)) {
         heroFrame = 0;
         return;
       }
@@ -939,11 +1019,19 @@
     update(performance.now());
   }
 
+  function resumeHeroAnimation() {
+    if (heroFrame || !heroTick) return; // 已在运行:不叠加第二个循环
+    if (!heroVisible(document.querySelector("[data-stats-hero-visual] svg"))) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    heroFrame = window.requestAnimationFrame(heroTick);
+  }
+
+  // 离开 About 时停止动画;About 内切换分区由 js/about.js 调用 pause / resume
   function bindPageChangeStopper() {
     if (pageChangeBound) return;
     pageChangeBound = true;
     window.addEventListener("y181:pagechange", event => {
-      if (event.detail?.page !== "stats") stopHeroAnimation();
+      if (event.detail?.page !== "about") stopHeroAnimation();
     });
   }
 
@@ -960,10 +1048,12 @@
     renderRecentChanges();
     loadStatsPayload();
     renderArchive();
+    loadOverviewData();
     bindPageChangeStopper();
   }
 
   window.initStatsPage = init;
+  window.StatsPage = { pause: stopHeroAnimation, resume: resumeHeroAnimation };
 
   document.addEventListener("DOMContentLoaded", init);
 })();

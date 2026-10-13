@@ -176,6 +176,8 @@
     apply(next);
     if (current === url) return;
     const historyState = { page: "life", life: toParams(next) };
+    // 新的历史记录 = 新的导航意图：作废 main.js 中尚未完成的跨页请求
+    if (push) window._beginNavigation?.();
     if (push) history.pushState(historyState, "", url);
     else history.replaceState(historyState, "", url);
   }

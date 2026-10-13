@@ -1,143 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于 · Yang181969</title>
+  <!-- 直接打开本文件时回到站点外壳；SPA 读取片段时不会执行这里的脚本 -->
+  <script>
+    if (/\/html\/about\.html$/.test(window.location.pathname.replace(/\\/g, "/"))) {
+      window.location.replace("../index.html?page=about&tab=overview");
+    }
+  </script>
+</head>
+<body>
+<!--
+  About 页面骨架：由 js/main.js 读取其中的 #main-content 并放入 index.html，js/about.js 负责分区切换。
+  统计、更新分区不在这里复制标记：首次进入时分别取 html/stats.html 与 html/update.html 的原骨架挂载。
+  必须保持完整文档结构，并且全文只出现一次 body 结束标签（原因见 html/life.html 顶部说明）。
+-->
 <main id="main-content">
-  <section class="about-page no-card" aria-labelledby="about-title">
-    <section class="about-hero" aria-labelledby="about-title">
-      <div class="about-hero__content">
-        <p class="about-hero__eyebrow">About this site</p>
-        <h1 id="about-title">关于这个小站 ✨</h1>
-        <p>
-          记录生活、兴趣、笔记与成长，也把喜欢的东西慢慢整理成自己的角落。
-        </p>
+  <section class="about-page no-card" data-about-root aria-label="关于">
+
+    <!-- ============ 分区标签（三个分区共用，位置固定） ============ -->
+    <nav class="about-tabs" aria-label="关于分区">
+      <div class="about-tabs__track" role="tablist" aria-label="关于分区" data-about-tablist>
+        <button type="button" role="tab" class="about-tab" id="about-tab-overview" aria-controls="about-panel-overview" aria-selected="true" data-about-tab="overview">概览</button>
+        <button type="button" role="tab" class="about-tab" id="about-tab-stats" aria-controls="about-panel-stats" aria-selected="false" tabindex="-1" data-about-tab="stats">统计</button>
+        <button type="button" role="tab" class="about-tab" id="about-tab-update" aria-controls="about-panel-update" aria-selected="false" tabindex="-1" data-about-tab="update">更新</button>
       </div>
-    </section>
+    </nav>
 
-    <section class="about-layout no-card" aria-label="关于页面内容">
-      <div class="about-main">
-        <div class="about-grid">
-          <article class="card about-card">
-            <h3 class="about-card-title">
-              <span class="about-card-title-icon about-card-title-icon--user" aria-hidden="true"></span>
-              我是谁
-            </h3>
-            <p class="about-text">
-              一个喜欢数学、物理，也喜欢把零散想法整理成结构的人。
-            </p>
-            <p class="about-text">
-              我希望把感兴趣的东西一点点留下来，而不是让它们只停在脑子里。
-            </p>
-          </article>
+    <!-- ============ 概览 Overview ============ -->
+    <section class="about-panel no-card" id="about-panel-overview" role="tabpanel" aria-labelledby="about-tab-overview" tabindex="-1" data-about-panel="overview">
+      <section class="about-hero" aria-labelledby="about-title">
+        <div class="about-hero__content">
+          <p class="about-hero__eyebrow">About this site</p>
+          <h1 id="about-title">关于这个小站 ✨</h1>
+          <p>
+            记录生活、兴趣、笔记与成长，也把喜欢的东西慢慢整理成自己的角落。
+          </p>
+        </div>
+      </section>
 
-          <article class="card about-card">
-            <h3 class="about-card-title">
-              <span class="about-card-title-icon about-card-title-icon--book" aria-hidden="true"></span>
-              这个网站在记录什么
-            </h3>
-            <p class="about-text">这里主要放这些内容：</p>
-            <ul class="about-list">
-              <li><strong>Notes</strong>：数学、物理与工具笔记</li>
-              <li><strong>Life</strong>：作品、收藏、足迹与日记，见 <a href="index.html?page=life">生活</a></li>
-            </ul>
-          </article>
-
-          <article class="card about-card">
-            <h3 class="about-card-title">
+      <section class="about-layout no-card" aria-label="关于页面内容">
+        <div class="about-main">
+          <article class="card about-card about-card--intro">
+            <h2 class="about-card-title">
               <span class="about-card-title-icon about-card-title-icon--globe" aria-hidden="true"></span>
               关于这个网站
-            </h3>
+            </h2>
             <p class="about-text">
-              这个网站对我来说，不只是一个展示页面，更像一个长期维护的个人空间。
+              yang181969.com 是我长期维护的个人空间，不只是一个展示页面：学过的东西、喜欢的作品和生活里的片段，都会一点点整理进来，让它慢慢变完整。
             </p>
-            <p class="about-text">
-              我会在这里记录生活、整理笔记，也会把自己学到的东西慢慢放进来，让它一点点变完整。
-            </p>
-            <p class="about-text">
-              技术上它主要使用 HTML、CSS、JavaScript 构建，通过 GitHub Pages 和自定义域名部署；笔记部分支持 Markdown 与 KaTeX。
-            </p>
-          </article>
 
-          <article class="card about-card">
-            <h3 class="about-card-title">
-              <span class="about-card-title-icon about-card-title-icon--star" aria-hidden="true"></span>
-              我希望它变成什么
-            </h3>
+            <h3 class="about-subtitle">网站定位</h3>
+            <ul class="about-list about-list--sections">
+              <li><a href="index.html?page=notes"><strong>Notes 笔记</strong></a>：数学、物理与工具笔记，持续修订</li>
+              <li><a href="index.html?page=life"><strong>Life 生活</strong></a>：个人介绍、作品、收藏、足迹与日记</li>
+              <li><strong>About 关于</strong>：网站简介、站点统计与更新日志</li>
+            </ul>
+
+            <h3 class="about-subtitle">长期愿景</h3>
             <p class="about-text">
               希望几年以后再回来看，它已经不只是几个页面，而是一个真正积累起内容、想法和成长过程的地方。
             </p>
+
+            <blockquote class="about-quote">
+              <p>把喜欢的内容、学过的东西和正在走的路，慢慢放进同一个地方。</p>
+            </blockquote>
+          </article>
+
+          <div class="about-grid">
+            <article class="card about-card about-entry" aria-labelledby="about-entry-stats-title">
+              <h2 class="about-card-title" id="about-entry-stats-title">
+                <span class="about-card-title-icon about-card-title-icon--chart" aria-hidden="true"></span>
+                站点统计
+              </h2>
+              <div class="about-entry__body" data-about-slot="stats">
+                <p class="about-entry__empty">数据加载中…</p>
+              </div>
+              <a class="about-entry__link" href="index.html?page=about&amp;tab=stats">查看完整统计<span aria-hidden="true"> →</span></a>
+            </article>
+
+            <article class="card about-card about-entry" aria-labelledby="about-entry-update-title">
+              <h2 class="about-card-title" id="about-entry-update-title">
+                <span class="about-card-title-icon about-card-title-icon--clock" aria-hidden="true"></span>
+                更新日志
+              </h2>
+              <div class="about-entry__body" data-about-slot="update">
+                <p class="about-entry__empty">数据加载中…</p>
+              </div>
+              <a class="about-entry__link" href="index.html?page=about&amp;tab=update">查看全部更新<span aria-hidden="true"> →</span></a>
+            </article>
+          </div>
+
+          <article class="card about-card about-card--tech">
+            <h2 class="about-card-title">
+              <span class="about-card-title-icon about-card-title-icon--code" aria-hidden="true"></span>
+              技术与建站
+            </h2>
+            <dl class="about-facts">
+              <div>
+                <dt>前端</dt>
+                <dd>HTML、SCSS（Sass 编译）与原生 JavaScript，不依赖前端框架；页面切换基于 History API 的单页路由。</dd>
+              </div>
+              <div>
+                <dt>内容</dt>
+                <dd>笔记、日记与更新日志以 Markdown 编写，数学公式由 KaTeX 渲染；统计图表为原生 SVG。</dd>
+              </div>
+              <div>
+                <dt>数据</dt>
+                <dd>构建脚本把内容汇总为 JSON 索引；站点统计每月 1 日由 GitHub Actions 自动快照。</dd>
+              </div>
+              <div>
+                <dt>部署</dt>
+                <dd>源码与版本历史保存在 GitHub 仓库；推送到 <code>main</code> 分支后，Cloudflare Pages 自动拉取并发布到 yang181969.com。域名解析、HTTPS 与 CDN 由 Cloudflare 提供。</dd>
+              </div>
+            </dl>
           </article>
         </div>
 
-        <article class="card about-card about-card--quote">
-          <h3 class="about-card-title">
-            <span class="about-card-title-icon about-card-title-icon--quote" aria-hidden="true"></span>
-            一句话
-          </h3>
-          <p class="about-quote">
-            把喜欢的内容、学过的东西和正在走的路，慢慢放进同一个地方。
-          </p>
-        </article>
+        <aside class="about-aside" aria-label="声明与反馈">
+          <article class="card about-card about-card--declaration">
+            <div class="about-card__title">
+              <span class="about-card-title-icon about-card-title-icon--shield" aria-hidden="true"></span>
+              <h2>声明与来源</h2>
+            </div>
+
+            <ul class="about-declaration-summary">
+              <li>本站为个人非商业网站</li>
+              <li>图片、图标、字体、代码库尽量标注来源</li>
+              <li>AI 生成或辅助内容会在适当位置说明</li>
+              <li>如有侵权或来源问题，请联系删除或更正</li>
+            </ul>
+
+            <div class="about-declaration-tags" aria-hidden="true">
+              <span>非商业</span>
+              <span>尊重原创</span>
+              <span>来源标注</span>
+              <span>及时更正</span>
+            </div>
+
+            <button
+              class="about-card__more"
+              type="button"
+              data-open-declaration
+              aria-haspopup="dialog"
+              aria-controls="aboutDeclarationModal"
+            >
+              查看完整声明
+            </button>
+          </article>
+
+          <article class="card about-card about-card--boundary">
+            <h3 class="about-card-title">
+              <span class="about-card-title-icon about-card-title-icon--info" aria-hidden="true"></span>
+              内容边界
+            </h3>
+            <ul class="about-list">
+              <li>笔记与内容主要为个人理解与整理</li>
+              <li>可能存在疏漏与不足</li>
+              <li>会随着学习持续修订</li>
+              <li>不作为权威教程或正式资料</li>
+            </ul>
+          </article>
+
+          <article class="card about-card about-card--feedback">
+            <h3 class="about-card-title">
+              <span class="about-card-title-icon about-card-title-icon--send" aria-hidden="true"></span>
+              反馈通道
+            </h3>
+            <ul class="about-channel-list">
+              <li>内容错误反馈</li>
+              <li>资源来源问题</li>
+              <li>页面显示问题</li>
+              <li>邮箱 / GitHub</li>
+            </ul>
+            <div class="about-feedback-links" aria-label="反馈方式">
+              <span>邮箱</span>
+              <span>GitHub</span>
+            </div>
+          </article>
+        </aside>
+      </section>
+    </section>
+
+    <!-- ============ 统计 Stats：挂载 html/stats.html 的 .stats-page ============ -->
+    <section class="about-panel about-panel--wide no-card" id="about-panel-stats" role="tabpanel" aria-labelledby="about-tab-stats" tabindex="-1" data-about-panel="stats" hidden>
+      <div class="about-mount" data-about-mount="stats" aria-busy="true">
+        <p class="about-mount-state">站点统计加载中…</p>
       </div>
+    </section>
 
-      <aside class="about-aside" aria-label="声明与反馈">
-        <article class="card about-card about-card--declaration">
-          <div class="about-card__title">
-            <span class="about-card-title-icon about-card-title-icon--shield" aria-hidden="true"></span>
-            <h2>声明与来源</h2>
-          </div>
-
-          <ul class="about-declaration-summary">
-            <li>本站为个人非商业网站</li>
-            <li>图片、图标、字体、代码库尽量标注来源</li>
-            <li>AI 生成或辅助内容会在适当位置说明</li>
-            <li>如有侵权或来源问题，请联系删除或更正</li>
-          </ul>
-
-          <div class="about-declaration-tags" aria-hidden="true">
-            <span>非商业</span>
-            <span>尊重原创</span>
-            <span>来源标注</span>
-            <span>及时更正</span>
-          </div>
-
-          <button
-            class="about-card__more"
-            type="button"
-            data-open-declaration
-            aria-haspopup="dialog"
-            aria-controls="aboutDeclarationModal"
-          >
-            查看完整声明
-          </button>
-        </article>
-
-        <article class="card about-card about-card--boundary">
-          <h3 class="about-card-title">
-            <span class="about-card-title-icon about-card-title-icon--info" aria-hidden="true"></span>
-            内容边界
-          </h3>
-          <ul class="about-list">
-            <li>笔记与内容主要为个人理解与整理</li>
-            <li>可能存在疏漏与不足</li>
-            <li>会随着学习持续修订</li>
-            <li>不作为权威教程或正式资料</li>
-          </ul>
-        </article>
-
-        <article class="card about-card about-card--feedback">
-          <h3 class="about-card-title">
-            <span class="about-card-title-icon about-card-title-icon--send" aria-hidden="true"></span>
-            反馈通道
-          </h3>
-          <ul class="about-channel-list">
-            <li>内容错误反馈</li>
-            <li>资源来源问题</li>
-            <li>页面显示问题</li>
-            <li>邮箱 / GitHub</li>
-          </ul>
-          <div class="about-feedback-links" aria-label="反馈方式">
-            <span>邮箱</span>
-            <span>GitHub</span>
-          </div>
-        </article>
-      </aside>
+    <!-- ============ 更新 Update：挂载 html/update.html 的 .update-page，详情在此与列表切换 ============ -->
+    <section class="about-panel no-card" id="about-panel-update" role="tabpanel" aria-labelledby="about-tab-update" tabindex="-1" data-about-panel="update" hidden>
+      <div class="about-mount" data-about-mount="update" data-update-host aria-busy="true">
+        <p class="about-mount-state">更新日志加载中…</p>
+      </div>
     </section>
   </section>
 
@@ -211,7 +269,7 @@
         <article class="declaration-section">
           <h3>开源依赖</h3>
           <ul>
-            <li>KaTeX、Vite、Chart.js 等</li>
+            <li>KaTeX（公式渲染）；构建工具 Sass、sharp、PurgeCSS</li>
             <li>其他依赖见仓库 <code>package.json</code>，均遵守各自开源许可证</li>
           </ul>
         </article>
@@ -236,8 +294,10 @@
       </div>
 
       <footer class="about-declaration-modal__footer">
-        本声明最后更新于 2026 年 5 月
+        本声明最后更新于 2026 年 10 月
       </footer>
     </div>
   </div>
 </main>
+</body>
+</html>

@@ -1,14 +1,71 @@
 // ============================================================
-// 关于页
+// 关于页：分区标签（样式见 components/_section-tabs.scss）+ 概览 / 统计 / 更新
+// main 在 About 下保持全宽：统计分区沿用原统计页的宽屏图表，
+// 标签栏、概览与更新分区收窄到原阅读宽度并居中，三个分区切换时标签栏位置不变。
 // ============================================================
 
 @use '../abstracts/mixins' as *;
 
 .about-page {
+  --about-reading-width: calc(var(--page-reading-max-width) - 2 * var(--page-pad-x));
+  --about-tabs-space: 80px; // 吸顶标签栏占用的高度（含上方留白），供下方吸顶 / 滚动定位避让
+
   width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.about-tabs,
+.about-panel:not(.about-panel--wide) {
+  width: 100%;
+  max-width: var(--about-reading-width);
+  margin-inline: auto;
+}
+
+// 视口不够宽时，统计分区比阅读宽度只多出几十像素：与标签栏对齐比"略宽一点"更整齐
+@media (max-width: 1599px) {
+  .about-panel--wide {
+    width: 100%;
+    max-width: var(--about-reading-width);
+    margin-inline: auto;
+  }
+}
+
+.about-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: about-panel-in 220ms ease-out;
+
+  &:focus { outline: none; }
+  &[hidden] { display: none; }
+}
+
+@keyframes about-panel-in { from { opacity: 0; } }
+
+.about-mount {
+  min-width: 0;
+}
+
+.about-mount-state {
+  margin: 0;
+  padding: 56px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  text-align: center;
+
+  p { margin: 0; color: inherit; }
+}
+
+// 日历跳转定位到卡片时，避开吸顶的分区标签栏
+.about-panel .update-card {
+  scroll-margin-top: var(--about-tabs-space);
 }
 
 .about-hero {
@@ -89,7 +146,7 @@
 
 .about-aside {
   position: sticky;
-  top: 16px;
+  top: var(--about-tabs-space);
 }
 
 .about-grid {
@@ -150,24 +207,20 @@
   }
 }
 
-.about-card-title-icon--user {
-  --about-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21a8 8 0 0 0-16 0'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
-}
-
-.about-card-title-icon--book {
-  --about-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'/%3E%3Cpath d='M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z'/%3E%3Cpath d='M8 7h8'/%3E%3Cpath d='M8 11h6'/%3E%3C/svg%3E");
-}
-
 .about-card-title-icon--globe {
   --about-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 0 20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 0 0 20'/%3E%3C/svg%3E");
 }
 
-.about-card-title-icon--star {
-  --about-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z'/%3E%3C/svg%3E");
+.about-card-title-icon--chart {
+  --about-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19V5'/%3E%3Cpath d='M4 19h16'/%3E%3Cpath d='M8 16v-5'/%3E%3Cpath d='M12 16V8'/%3E%3Cpath d='M16 16v-7'/%3E%3C/svg%3E");
 }
 
-.about-card-title-icon--quote {
-  --about-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21c3 0 7-1 7-8V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v5c0 1.1.9 2 2 2h3c0 4-2 6-5 6z'/%3E%3Cpath d='M14 21c3 0 7-1 7-8V5c0-1.1-.9-2-2-2h-3c-1.1 0-2 .9-2 2v5c0 1.1.9 2 2 2h3c0 4-2 6-5 6z'/%3E%3C/svg%3E");
+.about-card-title-icon--clock {
+  --about-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 8v4l3 2'/%3E%3Cpath d='M21 12a9 9 0 1 1-3-6.7'/%3E%3Cpath d='M21 3v6h-6'/%3E%3C/svg%3E");
+}
+
+.about-card-title-icon--code {
+  --about-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 18l6-6-6-6'/%3E%3Cpath d='M8 6l-6 6 6 6'/%3E%3C/svg%3E");
 }
 
 .about-card-title-icon--shield {
@@ -203,17 +256,199 @@
   margin-top: 8px;
 }
 
-.about-quote {
-  margin: 0;
-  color: var(--primary-dark);
-  font-size: 1.05rem;
-  font-weight: 700;
-  line-height: 1.9;
+.about-subtitle {
+  margin: 20px 0 0;
+  color: var(--text-main);
+  font-size: 0.98rem;
+  line-height: 1.5;
 }
 
-.about-card--quote {
+.about-list--sections a {
+  color: var(--primary-dark);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; text-underline-offset: 3px; }
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+}
+
+// 原「一句话」卡片：作为简介结尾的签名引用
+.about-quote {
+  margin: 20px 0 0;
+  padding: 12px 16px;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 12px 12px 0;
+  background: hsla(var(--primary-hue), 80%, 68%, 0.08);
+
+  p {
+    margin: 0;
+    color: var(--primary-dark);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.8;
+  }
+}
+
+.about-card--intro,
+.about-card--tech {
   min-height: auto;
 }
+
+// 技术与建站
+.about-facts {
+  margin: 4px 0 0;
+  display: grid;
+  gap: 12px;
+
+  div {
+    display: grid;
+    grid-template-columns: 3.2em minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  dt {
+    color: var(--primary-dark);
+    font-weight: 800;
+    line-height: 1.85;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.85;
+  }
+
+  code {
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: hsla(var(--primary-hue), 80%, 68%, 0.12);
+    color: var(--primary-dark);
+    font-size: 0.9em;
+  }
+}
+
+// 统计 / 更新入口卡：整卡可点（链接伸展到整张卡），卡内链接浮在其上
+.about-entry {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.about-entry__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.about-entry__empty {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.about-entry__metrics {
+  margin: 4px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  div {
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: hsla(var(--primary-hue), 80%, 68%, 0.08);
+  }
+
+  dt {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    color: var(--primary-dark);
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.about-entry__lead {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+
+  time {
+    color: var(--primary-dark);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.about-entry__list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+
+  a {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    color: var(--text-main);
+    text-decoration: none;
+    transition: background var(--dur-glass-quick) ease, color var(--dur-glass-quick) ease;
+
+    &:hover { background: var(--primary-soft); color: var(--primary-dark); }
+    &:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+  }
+
+  time {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.6;
+  }
+
+  span {
+    overflow: hidden;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.6;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.about-entry__link {
+  align-self: flex-start;
+  margin-top: 14px;
+  color: var(--primary-dark);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+
+  // 伸展到整张卡片
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-card);
+  }
+
+  &:focus-visible { outline: none; }
+  &:focus-visible::after { outline: 2px solid var(--primary); outline-offset: -2px; }
+}
+
+.about-entry:hover .about-entry__link { text-decoration: underline; text-underline-offset: 3px; }
 
 .about-card--declaration {
   width: 100%;
@@ -684,8 +919,13 @@ html.is-modal-open .content-scroll {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .about-panel { animation: none; }
+}
+
 @include small {
   .about-page,
+  .about-panel,
   .about-layout,
   .about-main,
   .about-aside,

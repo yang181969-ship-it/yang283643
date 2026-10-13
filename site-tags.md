@@ -86,14 +86,16 @@
 
 | 标签值 | 显示文案 | 使用次数 |
 | --- | --- | ---: |
-| `feature` | 功能更新 | 12 |
+| `feature` | 功能更新 | 13 |
 | `mobile` | 移动端适配 | 4 |
 | `visual` | 视觉优化 | 4 |
+| `fix` | 修复问题 | 2 |
+| `about` | about | 1 |
 | `cloudflare` | cloudflare | 1 |
 | `deployment` | deployment | 1 |
-| `fix` | 修复问题 | 1 |
 | `infrastructure` | infrastructure | 1 |
 | `interaction` | interaction | 1 |
+| `life` | life | 1 |
 | `navigation` | navigation | 1 |
 | `perf` | 性能优化 | 1 |
 | `responsive` | responsive | 1 |

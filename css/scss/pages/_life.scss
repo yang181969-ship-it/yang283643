@@ -200,83 +200,7 @@
   }
 }
 
-// ============================================================
-// 分区标签栏：sticky，停在移动端工具栏下方并随它显隐移动
-// ============================================================
-.life-tabs {
-  position: sticky;
-  // 粘性定位以滚动容器的内容区为基准：移动端 .layout 始终保留 --shell-top-space 的上内边距，
-  // 先减掉它，再加上当前被工具栏遮住的高度（工具栏隐藏时为 0），最终停在可见区顶部下方 8px
-  top: calc(var(--shell-sticky-top, 0px) - var(--shell-top-space, 0px) + 8px);
-  z-index: $z-nav;
-  padding: 5px;
-  border-radius: var(--radius-chip);
-  background: var(--glass-bg-strong);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
-  transition: top 220ms ease;
-}
-
-.life-tabs__track {
-  position: relative;
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
-}
-
-// 还能横向滑动时，在对应边缘做轻微渐隐提示
-.life-tabs.has-more-right .life-tabs__track {
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
-  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
-}
-.life-tabs.has-more-left .life-tabs__track {
-  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
-  mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
-}
-.life-tabs.has-more-left.has-more-right .life-tabs__track {
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
-  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
-}
-
-// 桌面端五个标签等宽平分；窄屏放不下时保持单行、标签栏横向滑动
-.life-tab {
-  flex: 1 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 72px;
-  min-height: 44px;
-  padding: 10px 20px;
-  border: 0;
-  border-radius: var(--radius-chip);
-  background: transparent;
-  color: var(--text-muted);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background var(--dur-glass-quick) var(--ease-glass-quick),
-    color var(--dur-glass-quick) var(--ease-glass-quick),
-    box-shadow var(--dur-glass-quick) var(--ease-glass-quick);
-
-  &:hover { color: var(--text-main); background: var(--glass-bg-weak); }
-
-  &[aria-selected="true"] {
-    background: var(--primary-soft);
-    color: var(--primary-dark);
-    box-shadow: inset 0 0 0 1px hsla(var(--primary-hue), 70%, 60%, 0.28);
-  }
-
-  &:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
-}
+// 分区标签栏（.life-tabs / .life-tab）与 About 共用，见 components/_section-tabs.scss
 
 // ============================================================
 // 分区面板与分区工具栏
@@ -1059,13 +983,6 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
 }
 
 @media (max-width: 600px) {
-  .life-tab {
-    min-width: 60px;
-    padding: 10px 14px;
-    font-size: 15px;
-    letter-spacing: 0.04em;
-  }
-
   .life-hero__lead { font-size: 16px; }
   .life-hero__desc { font-size: 14px; }
 
@@ -1107,8 +1024,6 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
 
 @media (prefers-reduced-motion: reduce) {
   .life-panel { animation: none; }
-  .life-tabs,
-  .life-tab,
   .life-chip,
   .life-work,
   .life-work img,

@@ -362,7 +362,10 @@ function renderDetailView(note, onBack, pushHistory = true) {
   const url = new URL(window.location.href);
   url.searchParams.set("note", encodeURIComponent(note.file));
   url.searchParams.delete("noteIndex"); // 清掉旧参数(如果是老链接带进来的)
-  if (pushHistory) history.pushState({ page: "notes", note: note.file }, "", url.toString());
+  if (pushHistory) {
+    window._beginNavigation?.(); // 新的导航意图：作废尚未完成的跨页请求
+    history.pushState({ page: "notes", note: note.file }, "", url.toString());
+  }
 }
 
 /* ===== 从 JSON 索引渲染所有笔记卡片 ===== */

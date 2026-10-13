@@ -1,5 +1,5 @@
 /* =============================================================
- * 更新日志页 (Phase update 改造版)
+ * 更新日志 (About · 更新分区)
  *
  * 列表渲染:
  *   1. 拉取 data/updates-index.json (富索引,聚合脚本预生成)
@@ -12,7 +12,8 @@
  *   点击有更新日 → 关闭日历 + 滚动定位 + 卡片闪光
  *
  * 详情视图:
- *   沿用旧版 renderUpdateDetailView,SPA 内替换 #main-content
+ *   挂载在 About · 更新分区内,与列表互相切换(不再替换 #main-content)
+ *   地址 ?page=about&tab=update&update=<标识> 由 js/about.js 维护
  *   只在用户点详情按钮或卡片时才 fetch 单个 md
  * ============================================================= */
 
@@ -261,10 +262,19 @@ function parseUpdateMarkdown(md, fallback = {}) {
   };
 }
 
-async function loadUpdateMarkdown(file) {
-  const res = await fetch(file);
-  if (!res.ok) throw new Error(`加载失败: ${file}`);
-  return res.text();
+const updateMarkdownCache = new Map();
+
+function loadUpdateMarkdown(file) {
+  if (!updateMarkdownCache.has(file)) {
+    updateMarkdownCache.set(file, fetch(file).then((res) => {
+      if (!res.ok) throw new Error(`加载失败: ${file}`);
+      return res.text();
+    }).catch((err) => {
+      updateMarkdownCache.delete(file);
+      throw err;
+    }));
+  }
+  return updateMarkdownCache.get(file);
 }
 
 function getUpdateRouteToken(itemOrFile) {
@@ -274,7 +284,8 @@ function getUpdateRouteToken(itemOrFile) {
 }
 
 function findUpdateByRouteToken(token) {
-  const raw = decodeURIComponent(String(token || ''));
+  let raw = String(token || '');
+  try { raw = decodeURIComponent(raw); } catch (_) {}
   if (!raw) return null;
 
   return updateState.items.find((item) => {
@@ -283,71 +294,144 @@ function findUpdateByRouteToken(token) {
   }) || null;
 }
 
-function pushUpdateDetailHistory(item) {
-  const token = getUpdateRouteToken(item);
-  if (!token) return;
+/* =============================================================
+ * 详情视图
+ * 在 About · 更新分区内（[data-update-host]）与列表互相切换：
+ * 打开详情时隐藏列表、不销毁，返回时列表的筛选、排序与滚动位置都还在。
+ * 地址与浏览器历史由 js/about.js 负责，这里只管 DOM。
+ * ============================================================= */
+let updateDetailRequest = 0;   // 每次打开 / 关闭都递增，晚到的异步结果据此丢弃
+let updateListScroll = null;   // 打开详情前列表的滚动位置
 
-  const url = new URL(window.location.href);
-  url.searchParams.set('page', 'update');
-  url.searchParams.set('update', token);
-
-  const stateUpdate = item.file || token;
-  const currentState = history.state || {};
-  if (
-    currentState.page === 'update' &&
-    currentState.update === stateUpdate &&
-    new URLSearchParams(window.location.search).get('update') === token
-  ) {
-    return;
-  }
-
-  history.pushState({ page: 'update', update: stateUpdate }, '', url.toString());
+function getUpdateHost() {
+  return document.querySelector('[data-update-host]');
 }
 
-/* =============================================================
- * 详情视图 (沿用旧版,SPA 内替换 #main-content)
- * ============================================================= */
+function getUpdateScroller() {
+  return window.matchMedia('(max-width: 900px)').matches
+    ? document.querySelector('.layout')
+    : document.querySelector('.page-card, .content-scroll');
+}
+
+function updateScrollBehavior() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
+// 异步详情落地前的最后核对：请求没被作废、分区仍可见、About 当前仍停在这条更新上。
+// 任何一项不满足就放弃，绝不改动隐藏分区之外的滚动或焦点。
+function canCommitUpdateDetail(host, token, request) {
+  if (request !== updateDetailRequest || !host.isConnected) return false;
+  if (host.closest('[hidden]')) return false;
+  if (window.AboutPage?.isMounted()) {
+    if (document.documentElement.dataset.page !== 'about') return false;
+    const about = window.AboutPage.getState?.();
+    if (!about || about.tab !== 'update' || about.update !== token) return false;
+  }
+  return true;
+}
+
+// 作废尚未落地的详情（切离更新分区时由 js/about.js 调用），不改动 DOM
+function cancelUpdateDetail() {
+  updateDetailRequest += 1;
+}
+
+function requestCloseUpdateDetail() {
+  if (window.AboutPage?.isMounted() && window.AboutPage.closeUpdateDetail()) return;
+  closeUpdateDetail();
+}
+
+function showUpdateDetailView(host, token, bodyHtml) {
+  const list = host.querySelector('.update-page:not(.update-detail-page)');
+  const scroller = getUpdateScroller();
+  if (list && !list.hidden) updateListScroll = scroller ? scroller.scrollTop : null;
+
+  host.querySelector('.update-detail-page')?.remove();
+
+  const wrapper = document.createElement('section');
+  wrapper.className = 'update-page update-detail-page no-card';
+  wrapper.dataset.updateToken = token;
+  wrapper.innerHTML = `
+    <button type="button" class="update-detail-back" data-update-back>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 6 9 12 15 18"></polyline></svg>
+      返回更新列表
+    </button>
+    ${bodyHtml}
+  `;
+  wrapper.querySelector('[data-update-back]').addEventListener('click', requestCloseUpdateDetail);
+
+  host.appendChild(wrapper);
+  if (list) list.hidden = true;
+  if (updateState.calOpen) closeCalendar();
+  setUpdateFilterMenuOpen(false);
+
+  if (scroller) scroller.scrollTo({ top: 0, behavior: updateScrollBehavior() });
+  wrapper.querySelector('.update-detail-title')?.focus({ preventScroll: true });
+}
+
 async function renderUpdateDetailView(item, options = {}) {
-  const main = document.getElementById("main-content");
-  if (!main) return;
+  const host = getUpdateHost();
+  if (!host || !item) return false;
+  const request = options.request || ++updateDetailRequest;
 
-  const shouldPushHistory = options.pushHistory !== false;
-
-  // item 是来自富索引的元数据,正文要现 fetch
+  // item 是来自富索引的元数据，正文按需 fetch（同一篇只请求一次）
   let detail = item;
+  let failed = false;
   if (!item.content) {
     try {
-      const md = await loadUpdateMarkdown(item.file);
-      detail = parseUpdateMarkdown(md, item);
+      detail = parseUpdateMarkdown(await loadUpdateMarkdown(item.file), item);
     } catch (err) {
       console.error('详情加载失败', err);
-      return;
+      failed = true;
     }
   }
+  const token = options.token || getUpdateRouteToken(item);
+  if (!canCommitUpdateDetail(host, token, request)) return false;
 
-  const wrapper = document.createElement("section");
-  wrapper.className = "update-page update-detail-page no-card";
-  wrapper.dataset.updateToken = getUpdateRouteToken(item);
-  wrapper.innerHTML = `
+  if (failed) {
+    showUpdateDetailView(host, token, `
+      <div class="update-empty"><p>这条更新暂时加载失败，请稍后刷新重试。</p></div>
+    `);
+    return false;
+  }
+
+  showUpdateDetailView(host, token, `
     <article class="update-detail-card">
       <div class="update-detail-top">
         <span class="update-tag">${updateEscapeHtml(detail.category)}</span>
         <span class="update-detail-date">${updateEscapeHtml(formatUpdateDate(detail.date))}</span>
       </div>
-      <h2 class="update-detail-title">${updateEscapeHtml(detail.title)}</h2>
+      <h2 class="update-detail-title" tabindex="-1">${updateEscapeHtml(detail.title)}</h2>
       <div class="update-detail-body update-markdown-full">
         ${updateRenderMarkdown(detail.content)}
       </div>
     </article>
-  `;
+  `);
+  return true;
+}
 
-  main.innerHTML = "";
-  main.appendChild(wrapper);
+function closeUpdateDetail() {
+  updateDetailRequest += 1;
+  const host = getUpdateHost();
+  if (!host) return;
+  const detail = host.querySelector('.update-detail-page');
+  const list = host.querySelector('.update-page:not(.update-detail-page)');
+  if (!detail && !list?.hidden) return;
 
-  const scrollEl = document.querySelector(".content-scroll");
-  if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
+  detail?.remove();
+  if (list) list.hidden = false;
 
-  if (shouldPushHistory) pushUpdateDetailHistory(item);
+  const top = updateListScroll;
+  updateListScroll = null;
+  const scroller = getUpdateScroller();
+  if (scroller && top !== null) {
+    requestAnimationFrame(() => {
+      if (host.isConnected && !host.closest('[hidden]')) scroller.scrollTo({ top });
+    });
+  }
+}
+
+function isUpdateDetailOpen() {
+  return Boolean(getUpdateHost()?.querySelector('.update-detail-page'));
 }
 
 /* =============================================================
@@ -362,8 +446,18 @@ const updateState = {
   calMonth: null,
 };
 
-async function loadUpdatesIndex() {
-  if (updateState.items.length) return updateState.items;
+let updatesIndexPromise = null;
+
+// 同一会话只请求一次；并发调用（About 概览 / 列表初始化 / 详情）共用同一个请求
+function loadUpdatesIndex() {
+  if (updateState.items.length) return Promise.resolve(updateState.items);
+  if (!updatesIndexPromise) {
+    updatesIndexPromise = fetchUpdatesIndex().finally(() => { updatesIndexPromise = null; });
+  }
+  return updatesIndexPromise;
+}
+
+async function fetchUpdatesIndex() {
 
   // 兼容 GitHub Pages、自定义域名、本地 Live Server，以及被 SPA 注入后的相对路径。
   const candidates = [
@@ -422,22 +516,34 @@ function getVisibleItems() {
 }
 
 async function openUpdateDetail(tokenOrFile, options = {}) {
-  await loadUpdatesIndex();
-  const item = findUpdateByRouteToken(tokenOrFile);
-  if (!item) return false;
+  const host = getUpdateHost();
+  if (!host) return false;
+  const token = String(tokenOrFile || '');
+  const request = ++updateDetailRequest; // 同时作废尚未完成的上一次打开
+  if (host.querySelector('.update-detail-page')?.dataset.updateToken === token) return true;
 
-  await renderUpdateDetailView(item, options);
-  return true;
+  try {
+    await loadUpdatesIndex();
+  } catch (err) {
+    console.error('[update] 详情索引加载失败：', err);
+  }
+  if (!canCommitUpdateDetail(host, token, request)) return false;
+
+  const item = findUpdateByRouteToken(token);
+  if (!item) {
+    showUpdateDetailView(host, token, `
+      <div class="update-empty"><p>没有找到这条更新（${updateEscapeHtml(token)}），它可能已被移动或删除。</p></div>
+    `);
+    return false;
+  }
+  return renderUpdateDetailView(item, { ...options, request, token });
 }
 
-async function openRoutedUpdateDetail(options = {}) {
-  const token = new URLSearchParams(window.location.search).get('update');
-  if (!token) return false;
-
-  const currentDetail = document.querySelector('.update-detail-page');
-  if (currentDetail?.dataset.updateToken === token) return true;
-
-  return openUpdateDetail(token, options);
+// 列表卡片 → 详情：在 About 内由 AboutPage 写地址（可分享、可后退），否则直接切换视图
+function requestUpdateDetail(item) {
+  const token = getUpdateRouteToken(item);
+  if (window.AboutPage?.isMounted()) window.AboutPage.go({ tab: 'update', update: token });
+  else renderUpdateDetailView(item);
 }
 
 // ============================================================
@@ -521,7 +627,7 @@ function renderTimeline() {
         </div>
         <div class="update-card-side">
           <div class="update-card-tags">${tagsHtml}</div>
-          <button class="update-card-detail-btn" type="button" tabindex="-1">
+          <button class="update-card-detail-btn" type="button" aria-label="查看详情：${updateEscapeAttr(item.title)}">
             查看详情
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M6 4l4 4-4 4"/>
@@ -533,7 +639,7 @@ function renderTimeline() {
 
     // 整卡可点 → 跳详情
     wrap.querySelector('.update-card').addEventListener('click', () => {
-      renderUpdateDetailView(item);
+      requestUpdateDetail(item);
     });
 
     listEl.appendChild(wrap);
@@ -638,31 +744,35 @@ function initChipsAndSort() {
   }
 
   const sortBtn = document.getElementById('update-sort-toggle');
-  const sortText = sortBtn?.querySelector('.update-sort-text');
+  syncUpdateSortControl();
 
   if (sortBtn && sortBtn.dataset.bound !== '1') {
     sortBtn.dataset.bound = '1';
 
     sortBtn.addEventListener('click', () => {
-      const nextOrder = updateState.sortOrder === 'newest' ? 'oldest' : 'newest';
-
-      updateState.sortOrder = nextOrder;
-      sortBtn.dataset.sort = nextOrder;
-      sortBtn.classList.toggle('is-oldest', nextOrder === 'oldest');
-      if (sortText) {
-        sortText.textContent = nextOrder === 'newest' ? '最新优先' : '最早优先';
-      }
-
-      sortBtn.setAttribute(
-        'aria-label',
-        nextOrder === 'newest'
-          ? '当前为最新优先，点击切换为最早优先'
-          : '当前为最早优先，点击切换为最新优先'
-      );
-
+      updateState.sortOrder = updateState.sortOrder === 'newest' ? 'oldest' : 'newest';
+      syncUpdateSortControl();
       renderTimeline();
     });
   }
+}
+
+// 排序按钮与 updateState 同步（重新挂载更新分区时沿用上次的排序）
+function syncUpdateSortControl() {
+  const sortBtn = document.getElementById('update-sort-toggle');
+  if (!sortBtn) return;
+  const order = updateState.sortOrder;
+  const sortText = sortBtn.querySelector('.update-sort-text');
+
+  sortBtn.dataset.sort = order;
+  sortBtn.classList.toggle('is-oldest', order === 'oldest');
+  if (sortText) sortText.textContent = order === 'newest' ? '最新优先' : '最早优先';
+  sortBtn.setAttribute(
+    'aria-label',
+    order === 'newest'
+      ? '当前为最新优先，点击切换为最早优先'
+      : '当前为最早优先，点击切换为最新优先'
+  );
 }
 
 // ============================================================
@@ -849,6 +959,8 @@ function renderCalendar() {
   }).join('');
 }
 
+let updateCalendarGlobalBound = false;
+
 function initCalendar() {
   const trigger = document.getElementById('update-calendar-trigger');
   const cal     = document.getElementById('update-calendar');
@@ -895,7 +1007,10 @@ function initCalendar() {
   // 遮罩点击关闭(移动端)
   backdrop?.addEventListener('click', closeCalendar);
 
-  // 点外部关闭
+  // 点外部 / Esc 关闭：document 级监听只绑定一次，每次都查当前挂载的日历
+  if (updateCalendarGlobalBound) return;
+  updateCalendarGlobalBound = true;
+
   document.addEventListener('click', (e) => {
     if (!updateState.calOpen) return;
     if (e.target.closest('.update-calendar')) return;
@@ -903,11 +1018,10 @@ function initCalendar() {
     closeCalendar();
   });
 
-  // Esc 关闭
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && updateState.calOpen) {
       closeCalendar();
-      trigger.focus();
+      document.getElementById('update-calendar-trigger')?.focus();
     }
   });
 }
@@ -933,15 +1047,8 @@ function scrollToUpdateAndFlash(dateStr) {
     return;
   }
 
-  const scrollEl = document.querySelector('.content-scroll') || window;
-  const rect = target.getBoundingClientRect();
-  const offset = 80; // 让卡片不要贴顶,留点视觉余量
-
-  if (scrollEl === window) {
-    window.scrollTo({ top: window.scrollY + rect.top - offset, behavior: 'smooth' });
-  } else {
-    scrollEl.scrollTo({ top: scrollEl.scrollTop + rect.top - offset, behavior: 'smooth' });
-  }
+  // 卡片的 scroll-margin-top 预留了吸顶标签栏的高度（见 pages/_about.scss）
+  target.scrollIntoView({ block: 'start', behavior: updateScrollBehavior() });
 
   target.classList.remove('is-flash');
   // 强制 reflow,确保动画重启
@@ -952,126 +1059,70 @@ function scrollToUpdateAndFlash(dateStr) {
 
 /* =============================================================
  * 页面初始化
- * v4: 彻底避免 SPA / MutationObserver / 初始化锁之间互相抢跑。
- * - 不再依赖 updateInitialized 预标记
- * - main.js 调用、DOMContentLoaded、y181:pagechange、手动调用都可以重复安全执行
- * - 如果数据已加载，会直接重渲染统计与时间线
+ * 由 js/about.js 在更新分区挂载后调用，返回 Promise<是否成功>。
+ * - 数据与 DOM 分开：更新索引是全站共享的一次请求（loadUpdatesIndex），
+ *   初始化任务则按「这一份 .update-page 骨架」记录，不同挂载实例互不复用。
+ * - 同一实例的并发调用共用同一次初始化；成功后才标记 updateInitialized="1"。
+ * - 失败时不留标记，调用方可以安全重试（索引请求失败也不会被缓存）。
+ * 筛选、排序状态跨挂载保留，日历状态每次挂载重置。
  * ============================================================= */
-let updateInitRunning = false;
-let updateObserverStarted = false;
-let updateBoundOnce = false;
+const updateInitTasks = new WeakMap(); // .update-page 元素 → 进行中的初始化
 
-function isUpdatePageInDom() {
-  const urlParams = new URL(window.location.href).searchParams;
-  return document.querySelector('.update-page') !== null || urlParams.get('page') === 'update';
-}
-
-function getUpdateDomRefs() {
-  const main = document.getElementById('main-content');
-  const page = main?.querySelector('.update-page') || document.querySelector('.update-page');
-  const listEl = main?.querySelector('#update-list') || document.getElementById('update-list');
-  return { main, page, listEl };
-}
-
-async function initUpdatePage(options = {}) {
+function initUpdatePage(options = {}) {
   const force = !!options.force;
-  const { main, page, listEl } = getUpdateDomRefs();
+  const listEl = document.getElementById('update-list');
+  const page = listEl?.closest('.update-page');
+  if (!listEl || !page) return Promise.resolve(false);
+  if (!force && page.dataset.updateInitialized === '1') return Promise.resolve(true);
+  if (updateInitTasks.has(page)) return updateInitTasks.get(page);
 
-  if (!main || !isUpdatePageInDom()) return;
-  if (!page) return;
+  const task = (async () => {
+    try {
+      updateState.calOpen = false;
+      await loadUpdatesIndex();
+      // 等待期间这份骨架已被移除（离开 About 或重新挂载）：交给新实例自己初始化
+      if (!listEl.isConnected) return false;
 
-  // 如果 HTML 版本没有放 update-list，直接在控制台报清楚，避免静默失败。
-  if (!listEl) {
-    if (page.classList.contains('update-detail-page')) return;
-    console.warn('[update] 初始化中止：当前 update.html 里没有 #update-list。请确认 html/update.html 是完整版本。');
-    return;
-  }
+      renderHeroStats();
+      // 这些绑定函数内部会通过元素存在性兜底；即使重复执行也不影响渲染结果。
+      initChipsAndSort();
+      initCalendar();
+      renderTimeline();
 
-  // 已经有卡片且非强制刷新时，避免重复绑定导致多次点击。
-  if (!force && listEl.querySelector('.update-card-wrap')) return;
-  if (updateInitRunning) return;
-
-  updateInitRunning = true;
-  try {
-    await loadUpdatesIndex();
-
-    // 重新渲染前，清空可能的旧内容，防止重复卡片。
-    if (force) listEl.innerHTML = '';
-
-    renderHeroStats();
-
-    // 这些绑定函数内部会通过元素存在性兜底；即使重复执行也不影响渲染结果。
-    initChipsAndSort();
-    initCalendar();
-    renderTimeline();
-
-    await openRoutedUpdateDetail({ pushHistory: false });
-
-    page.dataset.updateInitialized = '1';
-    console.info(`[update] 初始化完成：${updateState.items.length} 条更新`);
-  } catch (err) {
-    console.error('[update] 初始化失败：', err);
-    page.dataset.updateInitialized = '0';
-    listEl.innerHTML = `
-      <div class="update-empty">
-        <p>更新日志加载失败</p>
-        <p style="font-size: 12px;">${updateEscapeHtml(err.message)}</p>
-      </div>
-    `;
-  } finally {
-    updateInitRunning = false;
-  }
-}
-
-/* =============================================================
- * SPA 切页自动响应
- * ============================================================= */
-function watchForUpdatePage() {
-  const main = document.getElementById('main-content');
-  if (!main || updateObserverStarted) return;
-  updateObserverStarted = true;
-
-  const check = () => {
-    if (!main.querySelector('.update-page')) return;
-    requestAnimationFrame(() => initUpdatePage({ force: false }));
-  };
-
-  check();
-
-  const mo = new MutationObserver(check);
-  mo.observe(main, { childList: true, subtree: true });
-}
-
-function bootUpdateModule() {
-  if (updateBoundOnce) return;
-  updateBoundOnce = true;
-
-  watchForUpdatePage();
-
-  // main.js 里 syncCurrentPage 会派发这个事件；切到 update 时主动初始化。
-  window.addEventListener('y181:pagechange', (e) => {
-    if (e.detail?.page === 'update') {
-      requestAnimationFrame(() => initUpdatePage({ force: false }));
+      page.dataset.updateInitialized = '1';
+      return true;
+    } catch (err) {
+      console.error('[update] 初始化失败：', err);
+      delete page.dataset.updateInitialized;
+      if (listEl.isConnected) {
+        listEl.innerHTML = `
+          <div class="update-empty">
+            <p>更新日志加载失败</p>
+            <p style="font-size: 12px;">${updateEscapeHtml(err.message)}</p>
+          </div>
+        `;
+      }
+      return false;
+    } finally {
+      updateInitTasks.delete(page);
     }
-  });
-
-  // 非 SPA / 脚本晚于 DOMContentLoaded 加载时，也要主动跑一次。
-  requestAnimationFrame(() => initUpdatePage({ force: false }));
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bootUpdateModule, { once: true });
-} else {
-  bootUpdateModule();
+  })();
+  updateInitTasks.set(page, task);
+  return task;
 }
 
 window.initUpdatePage = initUpdatePage;
 window.forceInitUpdatePage = () => initUpdatePage({ force: true });
 window.openUpdateDetail = openUpdateDetail;
+window.closeUpdateDetail = closeUpdateDetail;
+window.cancelUpdateDetail = cancelUpdateDetail;
+window.isUpdateDetailOpen = isUpdateDetailOpen;
+window.loadUpdatesIndex = loadUpdatesIndex;
 window.__updateDebug = () => ({
   hasMain: !!document.getElementById('main-content'),
   hasPage: !!document.querySelector('.update-page'),
   hasList: !!document.getElementById('update-list'),
+  detailOpen: isUpdateDetailOpen(),
   latestText: document.querySelector('[data-stat="latest"]')?.textContent,
   totalText: document.querySelector('[data-stat="total"]')?.textContent,
   itemCount: updateState.items.length,

@@ -6,8 +6,9 @@ const STATIC_PAGES = [
   { title: "画廊",   desc: "生活 · 收藏中的图片画廊",   page: "gallery", type: "页面" },
   { title: "动漫",   desc: "生活 · 看过和想看的动漫作品", page: "anime",   type: "页面" },
   { title: "笔记",   desc: "数学与物理学习笔记",       page: "notes",   type: "页面" },
-  { title: "更新",   desc: "网站更新日志",             page: "update",  type: "页面" },
-  { title: "关于",   desc: "关于这个网站和站主",       page: "about",   type: "页面" },
+  { title: "关于",   desc: "网站简介、建站信息与声明", page: "about",   type: "页面" },
+  { title: "统计",   desc: "关于 · 站点数据与内容增长", page: "stats",   type: "页面" },
+  { title: "更新",   desc: "关于 · 网站更新日志",      page: "update",  type: "页面" },
 ];
 
 const SEARCH_SITE_ROOT_URL = getSearchSiteRootUrl();

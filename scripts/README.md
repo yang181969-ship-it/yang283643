@@ -496,6 +496,12 @@ npm run music:covers
 - 日记:复制 `content/life/journal/_template.md` 为 `content/life/journal/YYYY-MM-DD-slug.md`,修改后运行 `npm run life:data`。
 - 浏览器回归检查:先运行 `python scripts/phase1-preview.py`,再运行 `python scripts/phase2-life-check.py`,截图与报告在 `artifacts/phase2/`。
 
+### About(概览 / 统计 / 更新)
+
+- About 的统计、更新分区直接挂载 `html/stats.html`、`html/update.html` 的原骨架,改这两个页面的结构即可,不要在 `html/about.html` 里复制。
+- 统计分区读取 `data/site-meta.json`、`data/stats.json`(由 `npm run aggregate:stats` 生成)和 `data/updates-index.json`(`npm run aggregate:updates`);新增更新日志后两者都要重新生成,统计的「最近更新」才会同步。
+- 浏览器回归检查:先运行 `python scripts/phase1-preview.py`,再运行 `python scripts/phase3-about-check.py`,截图与报告在 `artifacts/phase3/`。
+
 ### 更新主页人像每日轮换
 
 1. 把图片放进 `assets/portrait/q/` 或 `assets/portrait/half/`。

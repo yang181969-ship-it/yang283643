@@ -559,7 +559,41 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 
 // ============================================================
 // 详情页 (沿用旧样式,完整保留)
+// 详情在 About · 更新分区内与列表切换,顶部多一个「返回更新列表」
 // ============================================================
+
+.update-detail-page {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+
+  > .update-detail-card,
+  > .update-empty { align-self: stretch; }
+}
+
+.update-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 38px;
+  padding: 6px 14px 6px 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-chip);
+  background: var(--glass-bg);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--dur-glass-quick) ease, color var(--dur-glass-quick) ease;
+
+  svg { width: 18px; height: 18px; }
+  &:hover { border-color: var(--primary); color: var(--primary-dark); }
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+}
+
+.update-detail-title:focus { outline: none; }
 
 .update-detail-card {
   border: 1px solid var(--border-soft);

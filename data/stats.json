@@ -537,12 +537,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 21611,
+            "total": 25385,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 16190
+                "value": 19964
               },
               {
                 "name": "笔记字数",
@@ -577,16 +577,16 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 16190,
+            "total": 19964,
             "unit": "字",
             "items": [
               {
-                "name": "feature",
-                "value": 7971
+                "name": "optimization",
+                "value": 11452
               },
               {
-                "name": "optimization",
-                "value": 7678
+                "name": "feature",
+                "value": 7971
               },
               {
                 "name": "fix",
@@ -617,7 +617,7 @@
   "recentChanges": [
     {
       "date": "2026-10-13",
-      "title": "全站导航与小组件系统重构，交互体验全面升级",
+      "title": "全站导航与小组件系统重构，新增「生活」页面，「关于」升级为网站信息中心",
       "type": "更新",
       "page": "update",
       "href": ""
@@ -1057,5 +1057,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-13T09:00:03.966Z"
+  "generatedAt": "2026-10-13T13:20:17.013Z"
 }

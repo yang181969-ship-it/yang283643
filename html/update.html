@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>站点更新日志</title>
+  <!-- 更新日志已并入 About：直接打开本文件时回到站点外壳；SPA 读取片段时不会执行这里的脚本 -->
+  <script>
+    if (/\/html\/update\.html$/.test(window.location.pathname.replace(/\\/g, "/"))) {
+      window.location.replace("../index.html?page=about&tab=update");
+    }
+  </script>
 </head>
 <body>
 <main id="main-content">

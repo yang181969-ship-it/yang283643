@@ -276,7 +276,7 @@
     root.dataset.page = page;
     document.querySelectorAll('.site-nav a').forEach(link => {
       const key = new URL(link.href).searchParams.get('page') || 'home';
-      const active = key === (page === 'stats' ? 'home' : page);
+      const active = key === (page === 'stats' || page === 'update' ? 'about' : page);
       link.classList.toggle('active', active);
       if (active) link.setAttribute('aria-current', 'page');
     });
