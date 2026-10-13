@@ -10,14 +10,13 @@ const OUTPUT_FILE = "site-tags.md";
 
 const SOURCES = {
   animeData: "js/anime-data.js",
-  animeHtml: "html/anime.html",
   notesIndex: "data/notes-index.json",
   notesHtml: "html/notes.html",
   updatesIndex: "data/updates-index.json",
   updateHtml: "html/update.html",
   updateJs: "js/update.js",
   galleryData: "js/gallery-data.js",
-  galleryHtml: "html/gallery.html",
+  galleryHtml: "html/life.html",
   galleryJs: "js/gallery.js",
 };
 
@@ -146,14 +145,15 @@ function parseButtons(html, dataAttr) {
   return rows;
 }
 
-function parseAnimeStatusBadges(html) {
-  const counts = new Map();
-  const pattern = /<span\b[^>]*class="[^"]*\banime-badge\b[^"]*"[^>]*>([\s\S]*?)<\/span>/g;
-  let match;
+// 封面角标：Life 作品列表直接读取 anime-data.js 的 badge 字段（显示文案与 js/life.js 一致）
+const ANIME_BADGE_LABELS = { upcoming: "待更新", ongoing: "连载中", finished: "已完结", movie: "电影" };
 
-  while ((match = pattern.exec(html))) {
-    addCount(counts, stripTags(match[1]));
-  }
+function parseAnimeStatusBadges(animeData) {
+  const counts = new Map();
+
+  Object.values(animeData || {}).forEach((item) => {
+    if (item?.badge) addCount(counts, ANIME_BADGE_LABELS[item.badge] || item.badge);
+  });
 
   return counts;
 }
@@ -276,7 +276,7 @@ function buildMarkdown(report) {
   lines.push("数据来源：");
   lines.push("");
   lines.push("- `js/anime-data.js` 的 `info` 字段，主要来自 `题材：...`");
-  lines.push("- `html/anime.html` 的卡片状态徽章");
+  lines.push("- `js/anime-data.js` 的 `badge` 字段（卡片状态徽章）");
   lines.push("");
   lines.push("### 已使用题材标签");
   lines.push(countTable(["标签", "使用次数"], report.anime.topicCounts, ([tag, count]) => [tag, count]));
@@ -330,7 +330,7 @@ function buildMarkdown(report) {
   lines.push("数据来源：");
   lines.push("");
   lines.push("- `js/gallery-data.js` 的 `category` 和 `tags`");
-  lines.push("- `html/gallery.html` 的分类筛选按钮");
+  lines.push("- `html/life.html` 中画廊的分类筛选按钮");
   lines.push("- `js/gallery.js` 的分类与标签显示文案");
   lines.push("");
   lines.push("### 当前已有内容分类");
@@ -358,7 +358,6 @@ function buildMarkdown(report) {
 async function collectReport() {
   const [
     animeData,
-    animeHtml,
     notesIndex,
     notesHtml,
     updatesIndex,
@@ -369,7 +368,6 @@ async function collectReport() {
     galleryJs,
   ] = await Promise.all([
     readDataVariable(SOURCES.animeData, "animeData"),
-    readText(SOURCES.animeHtml),
     readJson(SOURCES.notesIndex),
     readText(SOURCES.notesHtml),
     readJson(SOURCES.updatesIndex),
@@ -410,7 +408,7 @@ async function collectReport() {
   return {
     anime: {
       topicCounts: parseAnimeTopics(animeData),
-      statusCounts: parseAnimeStatusBadges(animeHtml),
+      statusCounts: parseAnimeStatusBadges(animeData),
     },
     notes: {
       categoryCounts: notesCategoryCounts,

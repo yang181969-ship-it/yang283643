@@ -2,8 +2,9 @@
 
 /* ---------- 固定页面条目 ---------- */
 const STATIC_PAGES = [
-  { title: "画廊",   desc: "我的图片收藏与展示",       page: "gallery", type: "页面" },
-  { title: "动漫",   desc: "我看过和想看的动漫作品",   page: "anime",   type: "页面" },
+  { title: "生活",   desc: "个人介绍、作品、收藏、足迹与日记", page: "life", type: "页面" },
+  { title: "画廊",   desc: "生活 · 收藏中的图片画廊",   page: "gallery", type: "页面" },
+  { title: "动漫",   desc: "生活 · 看过和想看的动漫作品", page: "anime",   type: "页面" },
   { title: "笔记",   desc: "数学与物理学习笔记",       page: "notes",   type: "页面" },
   { title: "更新",   desc: "网站更新日志",             page: "update",  type: "页面" },
   { title: "关于",   desc: "关于这个网站和站主",       page: "about",   type: "页面" },

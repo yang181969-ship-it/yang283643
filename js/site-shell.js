@@ -272,7 +272,7 @@
   // Only a back/forward-cache restore; the initial load's pageshow can land after the user scrolled.
   window.addEventListener('pageshow', event => { if (event.persisted) showToolbar(); });
   if (document.body.dataset.standalone === 'true') {
-    const page = document.body.dataset.page || (location.pathname.includes('anime-detail') ? 'anime' : 'notes');
+    const page = document.body.dataset.page || (location.pathname.includes('anime-detail') ? 'life' : 'notes');
     root.dataset.page = page;
     document.querySelectorAll('.site-nav a').forEach(link => {
       const key = new URL(link.href).searchParams.get('page') || 'home';

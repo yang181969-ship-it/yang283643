@@ -1,0 +1,1397 @@
+{
+  "version": 1,
+  "count": 55,
+  "sources": {
+    "gallery": 17,
+    "anime": 38
+  },
+  "images": [
+    {
+      "id": "real-001",
+      "title": "001",
+      "src": "assets/gallery/real/001.webp",
+      "thumb": "assets/gallery/real/001.webp",
+      "category": "real",
+      "album": "",
+      "tags": [
+        "自然",
+        "夜景",
+        "天空",
+        "蓝色"
+      ],
+      "note": "极光铺满星空，绿色和粉色的光带像慢慢流动的夜色。",
+      "width": 1920,
+      "height": 2560,
+      "order": 1,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-001",
+      "title": "001",
+      "src": "assets/gallery/anime/001.webp",
+      "thumb": "assets/gallery/anime/001.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "人物",
+        "插画"
+      ],
+      "note": "粉色头发和深色背景形成很强的反差，适合当作人物收藏，这也是本站的logo图片。",
+      "width": 1920,
+      "height": 1080,
+      "order": 2,
+      "updatedAt": "2026-04-22",
+      "date": "2026-04-22",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "real-002",
+      "title": "002",
+      "src": "assets/gallery/real/002.webp",
+      "thumb": "assets/gallery/real/002.webp",
+      "category": "real",
+      "album": "",
+      "tags": [
+        "城市",
+        "夜景"
+      ],
+      "note": "江面灯光和城市天际线叠在一起，绝美的上海外滩。",
+      "width": 1920,
+      "height": 1280,
+      "order": 3,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-002",
+      "title": "002",
+      "src": "assets/gallery/anime/002.webp",
+      "thumb": "assets/gallery/anime/002.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "人物",
+        "日常"
+      ],
+      "note": "超绝的写实画风约尔，诠释何为荆棘公主。",
+      "width": 1920,
+      "height": 1080,
+      "order": 4,
+      "updatedAt": "2026-04-22",
+      "date": "2026-04-22",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "real-003",
+      "title": "003",
+      "src": "assets/gallery/real/003.webp",
+      "thumb": "assets/gallery/real/003.webp",
+      "category": "real",
+      "album": "",
+      "tags": [
+        "城市",
+        "夜景",
+        "天空"
+      ],
+      "note": "夕阳下的东京，繁华也变得安静。",
+      "width": 1920,
+      "height": 1013,
+      "order": 5,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-003",
+      "title": "003",
+      "src": "assets/gallery/anime/003.webp",
+      "thumb": "assets/gallery/anime/003.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "风景",
+        "天空",
+        "治愈"
+      ],
+      "note": "云海和日出铺开得很安静，人物剪影让画面多了一点远方感，这也是我的ipad壁纸。",
+      "width": 1920,
+      "height": 817,
+      "order": 6,
+      "updatedAt": "2026-04-22",
+      "date": "2026-04-22",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "real-004",
+      "title": "004",
+      "src": "assets/gallery/real/004.webp",
+      "thumb": "assets/gallery/real/004.webp",
+      "category": "real",
+      "album": "",
+      "tags": [
+        "风景",
+        "自然",
+        "天空",
+        "蓝色"
+      ],
+      "note": "湖面和雪山被夕阳染成柔和的渐变，清澈又安静。",
+      "width": 1920,
+      "height": 1080,
+      "order": 7,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-004",
+      "title": "004",
+      "src": "assets/gallery/anime/004.webp",
+      "thumb": "assets/gallery/anime/004.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "人物",
+        "治愈"
+      ],
+      "note": "暖色夕光里的侧脸很柔和，整体氛围安静又温柔。",
+      "width": 1920,
+      "height": 1152,
+      "order": 8,
+      "updatedAt": "2026-04-22",
+      "date": "2026-04-22",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "real-005",
+      "title": "005",
+      "src": "assets/gallery/real/005.webp",
+      "thumb": "assets/gallery/real/005.webp",
+      "category": "real",
+      "album": "",
+      "tags": [
+        "夜景",
+        "城市"
+      ],
+      "note": "夜幕笼罩下的香港，霓虹灯点亮维港两岸",
+      "width": 1920,
+      "height": 1281,
+      "order": 9,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-005",
+      "title": "005",
+      "src": "assets/gallery/anime/005.webp",
+      "thumb": "assets/gallery/anime/005.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "抽象",
+        "色彩"
+      ],
+      "note": "很经典的苹果壁纸，彩色线条简约而不简单。",
+      "width": 1920,
+      "height": 1080,
+      "order": 10,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "real-006",
+      "title": "006",
+      "src": "assets/gallery/real/006.webp",
+      "thumb": "assets/gallery/real/006.webp",
+      "category": "real",
+      "album": "",
+      "tags": [
+        "城市",
+        "风景",
+        "建筑"
+      ],
+      "note": "静静矗立的埃菲尔铁塔，蓝天下的金色钢铁显得格外优雅。",
+      "width": 1920,
+      "height": 2558,
+      "order": 11,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-006",
+      "title": "006",
+      "src": "assets/gallery/anime/006.webp",
+      "thumb": "assets/gallery/anime/006.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "风景",
+        "自然",
+        "治愈"
+      ],
+      "note": "鸟居、富士山和粉紫色天空组合在一起，像一张温柔的旅行插画。",
+      "width": 1920,
+      "height": 1080,
+      "order": 12,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "real-007",
+      "title": "007",
+      "src": "assets/gallery/real/007.webp",
+      "thumb": "assets/gallery/real/007.webp",
+      "category": "real",
+      "album": "",
+      "tags": [
+        "草原",
+        "天空",
+        "自然"
+      ],
+      "note": "windows最经典的壁纸，加州帕纳谷的寂静草原",
+      "width": 1920,
+      "height": 1200,
+      "order": 13,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-007",
+      "title": "007",
+      "src": "assets/gallery/anime/007.webp",
+      "thumb": "assets/gallery/anime/007.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "风景",
+        "夜景",
+        "蓝色"
+      ],
+      "note": "夜空、极光和站在草地上的人物组合出很梦幻的远景。",
+      "width": 1920,
+      "height": 1080,
+      "order": 14,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-008",
+      "title": "008",
+      "src": "assets/gallery/anime/008.webp",
+      "thumb": "assets/gallery/anime/008.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "人物",
+        "蓝色"
+      ],
+      "note": "蓝色高领和灰调背景让人物显得很安静，眼神也很干净。",
+      "width": 1068,
+      "height": 1500,
+      "order": 15,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-009",
+      "title": "009",
+      "src": "assets/gallery/anime/009.webp",
+      "thumb": "assets/gallery/anime/009.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "人物",
+        "插画"
+      ],
+      "note": "夕阳的金色衬出狂三的美丽与俏皮可爱。",
+      "width": 1920,
+      "height": 1132,
+      "order": 16,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-010",
+      "title": "010",
+      "src": "assets/gallery/anime/010.webp",
+      "thumb": "assets/gallery/anime/010.webp",
+      "category": "anime",
+      "album": "",
+      "tags": [
+        "动漫",
+        "风景",
+        "治愈",
+        "自然"
+      ],
+      "note": "巨树下的芙莉莲，绝美。",
+      "width": 1920,
+      "height": 1300,
+      "order": 17,
+      "updatedAt": "2026-05-05",
+      "date": "2026-05-05",
+      "source": "gallery",
+      "refs": []
+    },
+    {
+      "id": "anime-art-majo-cover",
+      "title": "魔女之旅 · 封面",
+      "src": "assets/animes/majo-cover.webp",
+      "thumb": "assets/animes/majo-cover.webp",
+      "category": "anime",
+      "album": "魔女之旅",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1772,
+      "height": 1003,
+      "order": 18,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "majo",
+          "title": "魔女之旅",
+          "href": "html/anime-detail.html?id=majo"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-majo-1",
+      "title": "魔女之旅 · 插图 1",
+      "src": "assets/animes/majo-1.webp",
+      "thumb": "assets/animes/majo-1.webp",
+      "category": "anime",
+      "album": "魔女之旅",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 680,
+      "height": 548,
+      "order": 19,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "majo",
+          "title": "魔女之旅",
+          "href": "html/anime-detail.html?id=majo"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-majo-2",
+      "title": "魔女之旅 · 插图 2",
+      "src": "assets/animes/majo-2.webp",
+      "thumb": "assets/animes/majo-2.webp",
+      "category": "anime",
+      "album": "魔女之旅",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 680,
+      "height": 482,
+      "order": 20,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "majo",
+          "title": "魔女之旅",
+          "href": "html/anime-detail.html?id=majo"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-majo-4",
+      "title": "魔女之旅 · 插图 3",
+      "src": "assets/animes/majo-4.webp",
+      "thumb": "assets/animes/majo-4.webp",
+      "category": "anime",
+      "album": "魔女之旅",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 921,
+      "height": 921,
+      "order": 21,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "majo",
+          "title": "魔女之旅",
+          "href": "html/anime-detail.html?id=majo"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-frieren-cover",
+      "title": "葬送的芙莉莲 · 封面",
+      "src": "assets/animes/frieren-cover.webp",
+      "thumb": "assets/animes/frieren-cover.webp",
+      "category": "anime",
+      "album": "葬送的芙莉莲",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1279,
+      "height": 1706,
+      "order": 22,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "frieren",
+          "title": "葬送的芙莉莲",
+          "href": "html/anime-detail.html?id=frieren"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-frieren-2",
+      "title": "葬送的芙莉莲 · 插图 1",
+      "src": "assets/animes/frieren-2.jpg",
+      "thumb": "assets/animes/frieren-2.jpg",
+      "category": "anime",
+      "album": "葬送的芙莉莲",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 647,
+      "order": 23,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "frieren",
+          "title": "葬送的芙莉莲",
+          "href": "html/anime-detail.html?id=frieren"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-frieren-3",
+      "title": "葬送的芙莉莲 · 插图 2",
+      "src": "assets/animes/frieren-3.jpg",
+      "thumb": "assets/animes/frieren-3.jpg",
+      "category": "anime",
+      "album": "葬送的芙莉莲",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1280,
+      "height": 1499,
+      "order": 24,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "frieren",
+          "title": "葬送的芙莉莲",
+          "href": "html/anime-detail.html?id=frieren"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-frieren-4",
+      "title": "葬送的芙莉莲 · 插图 3",
+      "src": "assets/animes/frieren-4.webp",
+      "thumb": "assets/animes/frieren-4.webp",
+      "category": "anime",
+      "album": "葬送的芙莉莲",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1080,
+      "height": 607,
+      "order": 25,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "frieren",
+          "title": "葬送的芙莉莲",
+          "href": "html/anime-detail.html?id=frieren"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-slayer-cover",
+      "title": "鬼灭之刃 · 封面",
+      "src": "assets/animes/slayer-cover.webp",
+      "thumb": "assets/animes/slayer-cover.webp",
+      "category": "anime",
+      "album": "鬼灭之刃",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 700,
+      "height": 990,
+      "order": 26,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "slayer",
+          "title": "鬼灭之刃",
+          "href": "html/anime-detail.html?id=slayer"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-slayer-2",
+      "title": "鬼灭之刃 · 插图 1",
+      "src": "assets/animes/slayer-2.webp",
+      "thumb": "assets/animes/slayer-2.webp",
+      "category": "anime",
+      "album": "鬼灭之刃",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1080,
+      "height": 1080,
+      "order": 27,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "slayer",
+          "title": "鬼灭之刃",
+          "href": "html/anime-detail.html?id=slayer"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-slayer-3",
+      "title": "鬼灭之刃 · 插图 2",
+      "src": "assets/animes/slayer-3.webp",
+      "thumb": "assets/animes/slayer-3.webp",
+      "category": "anime",
+      "album": "鬼灭之刃",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 658,
+      "height": 832,
+      "order": 28,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "slayer",
+          "title": "鬼灭之刃",
+          "href": "html/anime-detail.html?id=slayer"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-spy-cover",
+      "title": "间谍过家家 · 封面",
+      "src": "assets/animes/spy-cover.webp",
+      "thumb": "assets/animes/spy-cover.webp",
+      "category": "anime",
+      "album": "间谍过家家",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1125,
+      "height": 2436,
+      "order": 29,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "spy",
+          "title": "间谍过家家",
+          "href": "html/anime-detail.html?id=spy"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-spy-2",
+      "title": "间谍过家家 · 插图 1",
+      "src": "assets/animes/spy-2.webp",
+      "thumb": "assets/animes/spy-2.webp",
+      "category": "anime",
+      "album": "间谍过家家",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1358,
+      "height": 960,
+      "order": 30,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "spy",
+          "title": "间谍过家家",
+          "href": "html/anime-detail.html?id=spy"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-spy-3",
+      "title": "间谍过家家 · 插图 2",
+      "src": "assets/animes/spy-3.webp",
+      "thumb": "assets/animes/spy-3.webp",
+      "category": "anime",
+      "album": "间谍过家家",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 880,
+      "height": 1280,
+      "order": 31,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "spy",
+          "title": "间谍过家家",
+          "href": "html/anime-detail.html?id=spy"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-spy-4",
+      "title": "间谍过家家 · 插图 3",
+      "src": "assets/animes/spy-4.webp",
+      "thumb": "assets/animes/spy-4.webp",
+      "category": "anime",
+      "album": "间谍过家家",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 356,
+      "height": 360,
+      "order": 32,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "spy",
+          "title": "间谍过家家",
+          "href": "html/anime-detail.html?id=spy"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-titan-cover",
+      "title": "进击的巨人 · 封面",
+      "src": "assets/animes/titan-cover.jpg",
+      "thumb": "assets/animes/titan-cover.jpg",
+      "category": "anime",
+      "album": "进击的巨人",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1200,
+      "height": 630,
+      "order": 33,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "titan",
+          "title": "进击的巨人",
+          "href": "html/anime-detail.html?id=titan"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-titan-2",
+      "title": "进击的巨人 · 插图 1",
+      "src": "assets/animes/titan-2.webp",
+      "thumb": "assets/animes/titan-2.webp",
+      "category": "anime",
+      "album": "进击的巨人",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1280,
+      "height": 720,
+      "order": 34,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "titan",
+          "title": "进击的巨人",
+          "href": "html/anime-detail.html?id=titan"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-titan-3",
+      "title": "进击的巨人 · 插图 2",
+      "src": "assets/animes/titan-3.jpg",
+      "thumb": "assets/animes/titan-3.jpg",
+      "category": "anime",
+      "album": "进击的巨人",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 2048,
+      "height": 1186,
+      "order": 35,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "titan",
+          "title": "进击的巨人",
+          "href": "html/anime-detail.html?id=titan"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-titan-4",
+      "title": "进击的巨人 · 插图 3",
+      "src": "assets/animes/titan-4.webp",
+      "thumb": "assets/animes/titan-4.webp",
+      "category": "anime",
+      "album": "进击的巨人",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 640,
+      "height": 639,
+      "order": 36,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "titan",
+          "title": "进击的巨人",
+          "href": "html/anime-detail.html?id=titan"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-datebattle-cover",
+      "title": "约会大作战 · 封面",
+      "src": "assets/animes/datebattle-cover.jpg",
+      "thumb": "assets/animes/datebattle-cover.jpg",
+      "category": "anime",
+      "album": "约会大作战",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 637,
+      "order": 37,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "datebattle",
+          "title": "约会大作战",
+          "href": "html/anime-detail.html?id=datebattle"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-datebattle-2",
+      "title": "约会大作战 · 插图 1",
+      "src": "assets/animes/datebattle-2.jpg",
+      "thumb": "assets/animes/datebattle-2.jpg",
+      "category": "anime",
+      "album": "约会大作战",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 316,
+      "order": 38,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "datebattle",
+          "title": "约会大作战",
+          "href": "html/anime-detail.html?id=datebattle"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-datebattle-3",
+      "title": "约会大作战 · 插图 2",
+      "src": "assets/animes/datebattle-3.webp",
+      "thumb": "assets/animes/datebattle-3.webp",
+      "category": "anime",
+      "album": "约会大作战",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 640,
+      "height": 1141,
+      "order": 39,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "datebattle",
+          "title": "约会大作战",
+          "href": "html/anime-detail.html?id=datebattle"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-datebattle-4",
+      "title": "约会大作战 · 插图 3",
+      "src": "assets/animes/datebattle-4.jpg",
+      "thumb": "assets/animes/datebattle-4.jpg",
+      "category": "anime",
+      "album": "约会大作战",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 473,
+      "height": 842,
+      "order": 40,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "datebattle",
+          "title": "约会大作战",
+          "href": "html/anime-detail.html?id=datebattle"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-suzuya-cover",
+      "title": "铃芽之旅 · 封面",
+      "src": "assets/animes/suzuya-cover.jpg",
+      "thumb": "assets/animes/suzuya-cover.jpg",
+      "category": "anime",
+      "album": "铃芽之旅",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 472,
+      "height": 613,
+      "order": 41,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "suzuya",
+          "title": "铃芽之旅",
+          "href": "html/anime-detail.html?id=suzuya"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-suzuya-2",
+      "title": "铃芽之旅 · 插图 1",
+      "src": "assets/animes/suzuya-2.jpg",
+      "thumb": "assets/animes/suzuya-2.jpg",
+      "category": "anime",
+      "album": "铃芽之旅",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 319,
+      "height": 694,
+      "order": 42,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "suzuya",
+          "title": "铃芽之旅",
+          "href": "html/anime-detail.html?id=suzuya"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-suzuya-3",
+      "title": "铃芽之旅 · 插图 2",
+      "src": "assets/animes/suzuya-3.webp",
+      "thumb": "assets/animes/suzuya-3.webp",
+      "category": "anime",
+      "album": "铃芽之旅",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 800,
+      "height": 1600,
+      "order": 43,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "suzuya",
+          "title": "铃芽之旅",
+          "href": "html/anime-detail.html?id=suzuya"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-suzuya-4",
+      "title": "铃芽之旅 · 插图 3",
+      "src": "assets/animes/suzuya-4.webp",
+      "thumb": "assets/animes/suzuya-4.webp",
+      "category": "anime",
+      "album": "铃芽之旅",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 861,
+      "order": 44,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "suzuya",
+          "title": "铃芽之旅",
+          "href": "html/anime-detail.html?id=suzuya"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-name-cover",
+      "title": "你的名字 · 封面",
+      "src": "assets/animes/name-cover.jpg",
+      "thumb": "assets/animes/name-cover.jpg",
+      "category": "anime",
+      "album": "你的名字",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 650,
+      "order": 45,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "name",
+          "title": "你的名字",
+          "href": "html/anime-detail.html?id=name"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-name-2",
+      "title": "你的名字 · 插图 1",
+      "src": "assets/animes/name-2.jpg",
+      "thumb": "assets/animes/name-2.jpg",
+      "category": "anime",
+      "album": "你的名字",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 473,
+      "height": 842,
+      "order": 46,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "name",
+          "title": "你的名字",
+          "href": "html/anime-detail.html?id=name"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-name-3",
+      "title": "你的名字 · 插图 2",
+      "src": "assets/animes/name-3.webp",
+      "thumb": "assets/animes/name-3.webp",
+      "category": "anime",
+      "album": "你的名字",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 837,
+      "order": 47,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "name",
+          "title": "你的名字",
+          "href": "html/anime-detail.html?id=name"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-name-4",
+      "title": "你的名字 · 插图 3",
+      "src": "assets/animes/name-4.webp",
+      "thumb": "assets/animes/name-4.webp",
+      "category": "anime",
+      "album": "你的名字",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 842,
+      "order": 48,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "name",
+          "title": "你的名字",
+          "href": "html/anime-detail.html?id=name"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-garden-cover",
+      "title": "紫罗兰永恒花园 · 封面",
+      "src": "assets/animes/garden-cover.webp",
+      "thumb": "assets/animes/garden-cover.webp",
+      "category": "anime",
+      "album": "紫罗兰永恒花园",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1080,
+      "height": 2280,
+      "order": 49,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "garden",
+          "title": "紫罗兰永恒花园",
+          "href": "html/anime-detail.html?id=garden"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-garden-2",
+      "title": "紫罗兰永恒花园 · 插图 1",
+      "src": "assets/animes/garden-2.webp",
+      "thumb": "assets/animes/garden-2.webp",
+      "category": "anime",
+      "album": "紫罗兰永恒花园",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 658,
+      "height": 974,
+      "order": 50,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "garden",
+          "title": "紫罗兰永恒花园",
+          "href": "html/anime-detail.html?id=garden"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-garden-3",
+      "title": "紫罗兰永恒花园 · 插图 2",
+      "src": "assets/animes/garden-3.webp",
+      "thumb": "assets/animes/garden-3.webp",
+      "category": "anime",
+      "album": "紫罗兰永恒花园",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 1280,
+      "height": 2275,
+      "order": 51,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "garden",
+          "title": "紫罗兰永恒花园",
+          "href": "html/anime-detail.html?id=garden"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-xiaoyuan-cover",
+      "title": "魔法少女小圆 · 封面",
+      "src": "assets/animes/xiaoyuan-cover.jpg",
+      "thumb": "assets/animes/xiaoyuan-cover.jpg",
+      "category": "anime",
+      "album": "魔法少女小圆",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 663,
+      "order": 52,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "xiaoyuan",
+          "title": "魔法少女小圆",
+          "href": "html/anime-detail.html?id=xiaoyuan"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-xiaoyuan-1",
+      "title": "魔法少女小圆 · 插图 1",
+      "src": "assets/animes/xiaoyuan-1.jpg",
+      "thumb": "assets/animes/xiaoyuan-1.jpg",
+      "category": "anime",
+      "album": "魔法少女小圆",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 695,
+      "order": 53,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "xiaoyuan",
+          "title": "魔法少女小圆",
+          "href": "html/anime-detail.html?id=xiaoyuan"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-xiaoyuan-3",
+      "title": "魔法少女小圆 · 插图 2",
+      "src": "assets/animes/xiaoyuan-3.jpg",
+      "thumb": "assets/animes/xiaoyuan-3.jpg",
+      "category": "anime",
+      "album": "魔法少女小圆",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 474,
+      "height": 670,
+      "order": 54,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "xiaoyuan",
+          "title": "魔法少女小圆",
+          "href": "html/anime-detail.html?id=xiaoyuan"
+        }
+      ]
+    },
+    {
+      "id": "anime-art-xiaoyuan-4",
+      "title": "魔法少女小圆 · 插图 3",
+      "src": "assets/animes/xiaoyuan-4.webp",
+      "thumb": "assets/animes/xiaoyuan-4.webp",
+      "category": "anime",
+      "album": "魔法少女小圆",
+      "tags": [
+        "动漫",
+        "作品插图"
+      ],
+      "note": "",
+      "width": 473,
+      "height": 631,
+      "order": 55,
+      "updatedAt": "",
+      "date": "",
+      "source": "anime",
+      "refs": [
+        {
+          "type": "anime",
+          "id": "xiaoyuan",
+          "title": "魔法少女小圆",
+          "href": "html/anime-detail.html?id=xiaoyuan"
+        }
+      ]
+    }
+  ]
+}

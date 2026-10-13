@@ -89,13 +89,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const pageMap = {
     home: null,
-    gallery: "html/gallery.html",
-    anime: "html/anime.html",
+    life: "html/life.html",
     notes: "html/notes.html",
     update: "html/update.html",
     stats: "html/stats.html",
     about: "html/about.html",
   };
+
+  // 已并入 Life 的旧路由：?page=anime / ?page=gallery 仍可访问，进入时规范化到 Life 对应分区
+  const legacyRoutes = {
+    anime: { tab: "works", type: "anime" },
+    gallery: { tab: "collections", type: "gallery" },
+  };
+
+  // Life 的分区状态全部保存在 URL 中（tab / type / status / entry），可分享、可刷新
+  const LIFE_PARAMS = ["tab", "type", "status", "entry"];
+
+  function lifeParamsFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const result = {};
+    LIFE_PARAMS.forEach((key) => {
+      const value = params.get(key);
+      if (value) result[key] = value;
+    });
+    return result;
+  }
+
+  function lifeUrl(life = {}) {
+    const params = new URLSearchParams({ page: "life" });
+    LIFE_PARAMS.forEach((key) => {
+      if (life[key]) params.set(key, life[key]);
+    });
+    return `index.html?${params.toString()}`;
+  }
+  window._lifeUrl = lifeUrl;
 
   const navContextLabels = {
     update: "主页：更新",
@@ -116,6 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getNavDisplayPage(page) {
+    if (Object.prototype.hasOwnProperty.call(legacyRoutes, page)) return "life";
     return Object.prototype.hasOwnProperty.call(navContextLabels, page)
       ? "home"
       : page;
@@ -157,6 +185,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setUrl(page, push = true, options = {}) {
+    if (page === "life") {
+      const life = options.life || (options.preserveLife ? lifeParamsFromUrl() : {});
+      const state = { page, life };
+      if (push) history.pushState(state, "", lifeUrl(life));
+      else history.replaceState(state, "", lifeUrl(life));
+      return;
+    }
+
     let url = page === "home" ? "index.html" : `index.html?page=${page}`;
     const search = options.preserveSearch
       ? new URLSearchParams(window.location.search).get("search")
@@ -252,9 +288,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function runPageInit(page) {
     if (page === "home"    && typeof window.initHomeCards === "function") window.initHomeCards();
-    if (page === "anime"   && typeof initAnimePage   === "function") initAnimePage();
-    if (page === "gallery" && typeof initGalleryPage === "function") initGalleryPage();
-    if (page === "notes"   && typeof window.initNotesPage === "function") window.initNotesPage();
+    if (page === "life"    && typeof window.initLifePage  === "function") window.initLifePage();
+    if (page === "notes"  && typeof window.initNotesPage === "function") window.initNotesPage();
     if (page === "update"  && typeof window.initUpdatePage === "function") window.initUpdatePage();
     if (page === "stats"   && typeof window.initStatsPage  === "function") window.initStatsPage();
     if (page === "about") initAboutDeclarationModal();
@@ -279,6 +314,16 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadPage(page, push = true, options = {}) {
     const request = ++routeRequest;
     setLoading(false);
+    if (Object.prototype.hasOwnProperty.call(legacyRoutes, page)) {
+      options = { ...options, life: { ...legacyRoutes[page] } };
+      page = "life";
+    }
+    // 已在 Life 中：只切换分区，不重新加载骨架（保留各分区已渲染的状态）
+    if (page === "life" && options.life && window.LifePage?.isMounted()) {
+      updateHighlight("life");
+      window.LifePage.go(options.life, { push });
+      return;
+    }
     // 未知或已退役的路由统一 replace 回主页，涵盖旧历史记录与站内调用。
     if (!Object.prototype.hasOwnProperty.call(pageMap, page)) {
       page = "home";
@@ -360,9 +405,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const page = state.page || getCurrentPageFromUrl();
-    syncCurrentPage(page);
+    syncCurrentPage(getNavDisplayPage(page) === "life" ? "life" : page);
 
-    if (page === 'notes' && (state.note || new URLSearchParams(location.search).has('note'))) {
+    // Life 分区回退：骨架还在就原地切换，否则重新加载并沿用 URL 中的分区
+    if (page === "life") {
+      updateHighlight("life");
+      if (window.LifePage?.isMounted()) window.LifePage.syncFromUrl();
+      else loadPage("life", false, { preserveLife: true });
+      return;
+    }
+
+    if (page === 'notes'&& (state.note || new URLSearchParams(location.search).has('note'))) {
       loadPage('notes', false, { preserveNote: true });
       return;
     }
@@ -448,6 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
       preserveSearch: !!initialSearch,
       preserveUpdate: !!initialUpdate,
       preserveNote: initialParams.has('note'),
+      preserveLife: initialPage === "life",
     });
   } else {
     // 当前在主页，抓一份骨架缓存起来

@@ -11,6 +11,7 @@
 | `npm run build:critical` | 编译首屏关键样式到 `css/critical.css` |
 | `npm run inline:critical` | 把 `css/critical.css` 内联到指定 HTML |
 | `npm run build:all` | 依次执行画廊数据、更新索引、标签参考、站点统计、完整 CSS、critical CSS、critical 内联 |
+| `npm run life:data` | 生成 Life 的统一图片索引 `data/image-index.json` 与日记索引 `data/journal-index.json` |
 | `npm run aggregate:updates` | 扫描更新日志 Markdown,生成更新页索引数据 |
 | `npm run aggregate:stats` | 聚合站点统计页数据和 Hero 区单点指标 |
 | `npm run optimize:animes` | 处理动漫页图片 |
@@ -287,6 +288,22 @@ npm run inline:critical
 
 ## 内容维护脚本
 
+### 16-build-life-data.mjs
+
+命令:
+
+```bash
+npm run life:data
+```
+
+作用:
+
+- 合并 `js/gallery-data.js`(原画廊)、`js/anime-data.js`(详情页封面与插图)、`data/life.json`(足迹/收藏/作品图片)和日记 `@cover`,生成 `data/image-index.json`,Life 的图片画廊读取它。
+- 同一路径只收录一次,其他位置对它的使用记为 `refs`(例如某张画廊照片同时出现在旅行记录里),不复制文件。
+- 没有可靠日期的图片 `date` 留空,不用文件时间补。
+- 扫描 `content/life/journal/*.md`(`_` 开头的文件除外)生成 `data/journal-index.json`,按日期倒序。
+- 输出与运行时间无关,重复运行结果一致。`build:all` 已包含这一步(在 `gallery:data` 之后)。
+
 ### 6-aggregate-updates.mjs
 
 命令:
@@ -459,8 +476,8 @@ npm run music:covers
 
 1. 图片放进 `assets/animes/`。
 2. 编辑 `scripts/1-rename-anime-images.js` 的 `ANIME_RENAME_MAP`。
-3. 编辑 `js/anime-detail.js` 的动漫数据。
-4. 编辑 `html/anime.html` 的动漫卡片。
+3. 在 `js/anime-data.js` 末尾追加条目(含 `watchStatus` / `badge` / `order`)。Life 作品列表直接读取它,不再需要编辑 `html/anime.html`。
+4. 运行 `npm run life:data`,让新图片进入画廊统一索引。
 5. 运行 `npm run optimize:animes`。
 6. 运行 `npm run update:refs`。
 7. 运行 `npm run build`。
@@ -470,8 +487,14 @@ npm run music:covers
 
 1. 图片放进 `assets/gallery/real/` 或 `assets/gallery/anime/`。
 2. 运行 `npm run optimize:gallery`。
-3. 运行 `python generate_gallery_data.py`。
-4. 检查画廊页布局和图片加载。
+3. 运行 `python generate_gallery_data.py`,再运行 `npm run life:data`(或直接 `npm run build:all`)。
+4. 检查 Life → 收藏 → 图片画廊的布局和图片加载。
+
+### Life 数据
+
+- 影视、书籍、银行卡、数码设备、足迹事件、通用愿望:编辑 `data/life.json`(文件顶部 `_readme` 有字段说明),然后运行 `npm run life:data`。
+- 日记:复制 `content/life/journal/_template.md` 为 `content/life/journal/YYYY-MM-DD-slug.md`,修改后运行 `npm run life:data`。
+- 浏览器回归检查:先运行 `python scripts/phase1-preview.py`,再运行 `python scripts/phase2-life-check.py`,截图与报告在 `artifacts/phase2/`。
 
 ### 更新主页人像每日轮换
 

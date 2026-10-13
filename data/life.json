@@ -1,0 +1,17 @@
+{
+  "_readme": [
+    "Life 页面的可扩展数据。动漫仍在 js/anime-data.js 中维护；Gallery 原图仍由 generate_gallery_data.py 管理。",
+    "works:       影视 / 书籍。type: film | book；status: done | doing | want；可选 cover、rating(0-10)、tags、summary、link、date。",
+    "cards:       银行卡卡面。只记录公开卡面信息，禁止填写卡号、安全码、有效期等敏感信息。",
+    "devices:     数码设备。status: using | retired | collected；date(入手日期)与 review 均可省略。",
+    "journey:     足迹事件。type: timeline | travel | milestone；同一事件只写一次，时间轴展示全部类型。",
+    "wishlist:    通用愿望。type: work | travel | device | goal；想看的动漫会自动并入，不必在这里重复。",
+    "图片字段写站内路径(assets/...)。默认会被收进 Gallery 统一索引；不想出现在 Gallery 时加 \"inGallery\": false。",
+    "修改后运行 npm run life:data（或 npm run build:all）重建 data/image-index.json。"
+  ],
+  "works": [],
+  "cards": [],
+  "devices": [],
+  "journey": [],
+  "wishlist": []
+}

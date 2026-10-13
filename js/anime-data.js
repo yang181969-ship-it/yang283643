@@ -4,11 +4,20 @@
 //
 // 顺序约定：新增条目追加到末尾
 // 主页 home-cards.js 取 Object.keys(animeData) 末尾 N 个 reverse 显示
+//
+// Life「作品」列表直接读取这里（不再在 HTML 中重复维护）：
+//   watchStatus  "watched" 已看 | "watching" 在看 | "wishlist" 想看
+//   badge        封面角标 "upcoming" 待更新 | "ongoing" 连载中 | "finished" 已完结 | "movie" 电影
+//   order        列表排序（小在前）；可选 rating: 0–10
+// 注意：不要使用 status 字段名，统计脚本把 status 当作中文分组标签。
 // ============================================================
 
 const animeData = {
   majo: {
     title: "魔女之旅",
+    watchStatus: "watched",
+    badge: "upcoming",
+    order: 1,
     image: "../assets/animes/majo-cover.webp",
     description: "讲述了魔女伊蕾娜在世界各地旅行时，与形形色色的人物相遇、经历相逢与离别的故事",
     info: [
@@ -26,6 +35,9 @@ const animeData = {
 
   frieren: {
     title: "葬送的芙莉莲",
+    watchStatus: "watched",
+    badge: "upcoming",
+    order: 2,
     image: "../assets/animes/frieren-cover.webp",
     description: "讲述精灵魔法使芙莉莲在勇者辛美尔去世后重新踏上旅程，通过与人类同伴的互动，逐渐理解生命的意义与记忆的价值",
     info: [
@@ -43,6 +55,9 @@ const animeData = {
 
   garden: {
     title: "紫罗兰永恒花园",
+    watchStatus: "wishlist",
+    badge: "finished",
+    order: 9,
     image: "../assets/animes/garden-cover.webp",
     description: "暂无",
     info: [
@@ -59,6 +74,9 @@ const animeData = {
 
   slayer: {
     title: "鬼灭之刃",
+    watchStatus: "watched",
+    badge: "upcoming",
+    order: 3,
     image: "../assets/animes/slayer-cover.webp",
     description: "时值日本大正时代，灶门炭治郎原本是个善良的卖炭少年，但家人被鬼杀害后，他的日常生活发生了翻天覆地的变化。炭治郎家人中唯一的幸存者是他的妹妹灶门祢豆子，但祢豆子已变成了凶暴的鬼。为了让祢豆子恢复原状，并杀掉害死家人的鬼，炭治郎和祢豆子踏上了旅程",
     info: [
@@ -75,6 +93,9 @@ const animeData = {
 
   spy: {
     title: "间谍过家家",
+    watchStatus: "watched",
+    badge: "upcoming",
+    order: 4,
     image: "../assets/animes/spy-cover.webp",
     description: "为了潜入名校，西国能力最强的间谍\u201c黄昏\u201d被下令组建家庭。但是，他的\u201c女儿\u201d居然是能够读取他人内心的超能力者，\u201c妻子\u201d是暗杀者？互相隐藏了真实身份的新家庭，面临考验与世界危机的痛快家庭喜剧就此展开",
     info: [
@@ -92,6 +113,9 @@ const animeData = {
 
   titan: {
     title: "进击的巨人",
+    watchStatus: "watched",
+    badge: "finished",
+    order: 5,
     image: "../assets/animes/titan-cover.jpg",
     description: "那一天，人类想起了被他们支配的恐惧",
     info: [
@@ -109,6 +133,9 @@ const animeData = {
 
   datebattle: {
     title: "约会大作战",
+    watchStatus: "watched",
+    badge: "finished",
+    order: 6,
     image: "../assets/animes/datebattle-cover.jpg",
     description: "故事以男主为了证拯救未知物种——精灵而与其约会，让其爱上自己为主线展开，中间经历各种挫折后知晓精灵来历之谜的故事",
     info: [
@@ -126,6 +153,9 @@ const animeData = {
 
   suzuya: {
     title: "铃芽之旅",
+    watchStatus: "watched",
+    badge: "movie",
+    order: 7,
     image: "../assets/animes/suzuya-cover.jpg",
     description: "17岁的少女岩户铃芽与\u201c闭门师\u201d宗像草太相遇，两人一起去关闭灾难源头之\u201c门\u201d的冒险故事",
     info: [
@@ -143,6 +173,9 @@ const animeData = {
 
   xiaoyuan: {
     title: "魔法少女小圆",
+    watchStatus: "wishlist",
+    badge: "finished",
+    order: 10,
     image: "../assets/animes/xiaoyuan-cover.jpg",
     description: "平凡的中学生鹿目圆有一个美满的家庭，在生活中她是个性格温顺又有爱心的好孩子。转学生晓美焰的出现打破了小圆平静的生活，这个性格酷酷又体弱多病的黑长直少女似乎对小圆有着什么难言之隐。命运中的相遇出现了，小圆在路边救下了一只浑身是伤的奇怪动物，没想到这只动物居然会说人类的语言。它告诉小圆它的名字叫丘比，并且提出了一个特殊的要求，它希望小圆能够和它签订契约成为魔法少女。魔法少女是这个世界中一种特殊的存在，她们肩负着和魔女战斗的使命，作为报酬，丘比可以实现她们任意的一个愿望。在战斗的过程中，小圆发现魔法少女这个职业并非故事里所描绘的那么美好，随时有着牺牲的可能。并且，随着战斗的升级，一个关乎于她自己的残酷真相正在逐步的浮出水面。",
     info: [
@@ -160,6 +193,9 @@ const animeData = {
 
   name: {
     title: "你的名字",
+    watchStatus: "watched",
+    badge: "movie",
+    order: 8,
     image: "../assets/animes/name-cover.jpg",
     description: "生活在日本乡下小镇的女高中生宫水三叶，与生活在东京的男高中生立花泷，在梦中互换身体，并逐渐追寻彼此与命运相连的故事。",
     info: [

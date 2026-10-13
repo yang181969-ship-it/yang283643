@@ -75,7 +75,7 @@ with sync_playwright() as pw:
     check('keyboard focus does not expand', page.locator('.rail').bounding_box()['width'] == 68)
     check('collapsed: labels hidden, nav tooltips present',
           page.evaluate("getComputedStyle(document.querySelector('.nav-label')).opacity") == '0'
-          and page.locator('.site-nav a[title]').count() == 5)
+          and page.locator('.site-nav a[title]').count() == 4)
     pin = page.locator('.rail-pin')
     check('collapsed pin aria state', pin.get_attribute('aria-expanded') == 'false' and pin.get_attribute('aria-label') == '展开侧栏')
     pin.click(); page.wait_for_timeout(450)
@@ -240,7 +240,7 @@ with sync_playwright() as pw:
         page.goto(BASE + '/?page=anime', wait_until='load'); page.wait_for_timeout(1200)
         page.evaluate("document.querySelector('.layout').scrollTop = 600"); page.wait_for_timeout(300)
         page.evaluate("document.querySelector('.layout').scrollTop = 560"); page.wait_for_timeout(450)
-        tabs = page.evaluate("document.querySelector('.anime-tabs').getBoundingClientRect().top")
+        tabs = page.evaluate("document.querySelector('.life-tabs').getBoundingClientRect().top")
         check(f'{w}px sticky anime tabs not under toolbar', tabs >= tb() - 0.5, [tabs, tb()])
 
         # Timer running, off the home page (the mobile activity capsule was removed).

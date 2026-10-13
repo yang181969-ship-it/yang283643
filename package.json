@@ -16,6 +16,7 @@
     "aggregate:updates": "node scripts/6-aggregate-updates.mjs",
     "aggregate:stats":   "node scripts/7-aggregate-stats.mjs",
     "gallery:data": "python generate_gallery_data.py",
+    "life:data": "node scripts/16-build-life-data.mjs",
 
     "optimize:animes": "node scripts/1-rename-anime-images.js",
     "optimize:gallery": "node scripts/2-optimize-gallery.js",
@@ -29,7 +30,7 @@
     "portrait:rotation": "node scripts/11-generate-portrait-rotation.mjs",
     "tags:sync": "node scripts/13-sync-site-tags.mjs",
 
-    "build:all": "npm run gallery:data && npm run aggregate:updates && npm run tags:sync && npm run aggregate:stats && npm run build && npm run build:critical && npm run inline:critical"
+    "build:all": "npm run gallery:data && npm run life:data && npm run aggregate:updates && npm run tags:sync && npm run aggregate:stats && npm run build && npm run build:critical && npm run inline:critical"
   },
 
   "devDependencies": {

@@ -135,8 +135,12 @@ function animeGenres(anime) {
   return raw.split(/[\/、,，]/).map(item => item.trim()).filter(Boolean);
 }
 
+// anime-data.js 的 watchStatus 是英文键（Life 作品列表使用），统计中显示中文
+const WATCH_STATUS_LABELS = { watched: '已看', watching: '在看', wishlist: '想看' };
+
 function animeWatchStatus(anime) {
-  return anime.watchStatus || anime.status || anime.state || '';
+  const raw = anime.watchStatus || anime.status || anime.state || '';
+  return WATCH_STATUS_LABELS[raw] || raw;
 }
 
 function animeWorkStatus(anime) {

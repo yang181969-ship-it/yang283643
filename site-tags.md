@@ -11,7 +11,7 @@
 数据来源：
 
 - `js/anime-data.js` 的 `info` 字段，主要来自 `题材：...`
-- `html/anime.html` 的卡片状态徽章
+- `js/anime-data.js` 的 `badge` 字段（卡片状态徽章）
 
 ### 已使用题材标签
 
@@ -116,7 +116,7 @@
 数据来源：
 
 - `js/gallery-data.js` 的 `category` 和 `tags`
-- `html/gallery.html` 的分类筛选按钮
+- `html/life.html` 中画廊的分类筛选按钮
 - `js/gallery.js` 的分类与标签显示文案
 
 ### 当前已有内容分类
@@ -151,8 +151,12 @@
 | 分类值 | 显示文案 |
 | --- | --- |
 | `character` | 人物 |
+| `collection` | 收藏 |
 | `illustration` | 插画 |
 | `landscape` | 风景 |
+| `life` | 生活 |
+| `other` | 其他 |
+| `works` | 作品 |
 
 ### 备注
 

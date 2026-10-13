@@ -18,7 +18,7 @@ try:
     page.on('console',lambda msg:errors.append(msg.text) if msg.type=='error' else None)
     for path in ['?page=notes','?page=anime','?page=gallery','?page=about','?page=stats','?page=update','html/anime-detail.html?id=majo','html/notes-detail.html?file=../content/math/calculus/傅里叶级数的基本形式.md','html/stats.html']:
       page.goto(BASE+'/'+path,wait_until='domcontentloaded');page.wait_for_timeout(750)
-      check(path+' mobile shell',page.locator('.mobile-tools > button').count()==5 and page.locator('.site-nav a').count()==5)
+      check(path+' mobile shell',page.locator('.mobile-tools > button').count()==5 and page.locator('.site-nav a').count()==4)
       check(path+' mobile no horizontal overflow',page.evaluate('document.documentElement.scrollWidth<=innerWidth && document.querySelector(".layout").scrollWidth<=innerWidth'))
     page.goto(BASE+'/?page=notes',wait_until='domcontentloaded')
     page.locator('.note-card').first.wait_for();page.locator('.note-card').first.click()
@@ -52,7 +52,7 @@ try:
       window._loadPage('about'); window._loadPage('gallery');
     }''')
     page.wait_for_timeout(800)
-    check('stale route cannot overwrite latest navigation',page.locator('html').get_attribute('data-page')=='gallery' and page.locator('.gallery-page').count()==1)
+    check('stale route cannot overwrite latest navigation',page.locator('html').get_attribute('data-page')=='life' and page.locator('.life-page').count()==1)
     page.locator('.rail .logo').click();page.wait_for_timeout(300)
     check('logo routes home through SPA',page.locator('html').get_attribute('data-page')=='home')
     page.locator('.rail-pin').click();page.mouse.move(900,500);page.locator('#main-content').click(position={'x':10,'y':10})

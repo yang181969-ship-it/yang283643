@@ -1,0 +1,1120 @@
+// ============================================================
+// Life 生活页：Hero + 分区标签 + 五个分区
+// 颜色全部来自主题变量（明暗主题与自定义色相自动跟随）。
+// 注意：.life-page / .life-panel / .life-sub 不能有 transform、filter、
+// backdrop-filter 或常驻 opacity —— 画廊灯箱 (position: fixed) 在它们内部。
+// ============================================================
+
+@use '../abstracts/variables' as *;
+
+.life-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--page-gap);
+  width: 100%;
+  min-width: 0;
+}
+
+// ---------- 通用小部件 ----------
+.life-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--radius-chip);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.life-tag--quiet {
+  background: var(--glass-bg);
+  color: var(--text-muted);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+}
+
+.life-link {
+  color: var(--primary-dark);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.life-empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 44px 20px;
+  border-radius: var(--radius-card);
+  border: 1px dashed var(--border-soft);
+  background: var(--glass-bg-weak);
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: center;
+
+  strong {
+    color: var(--text-main);
+    font-size: 15px;
+    font-weight: 700;
+  }
+}
+
+.life-empty__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 4px;
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+
+  svg { width: 20px; height: 20px; }
+}
+
+// 卡片内的紧凑空状态：不再套一层虚线框
+.life-empty--compact {
+  height: 100%;
+  align-content: center;
+  padding: 12px 8px;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+
+  .life-empty__icon { width: 36px; height: 36px; border-radius: 12px; }
+  strong { font-size: 14px; }
+}
+
+// ============================================================
+// Hero
+// ============================================================
+.life-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 36px;
+  overflow: hidden;
+  border-radius: var(--radius-card-lg);
+  background:
+    linear-gradient(115deg, var(--primary-soft) 0%, transparent 62%),
+    var(--glass-bg-weak);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+
+  // 右侧一团柔和的主题色光晕，跟随辉光开关
+  &::before {
+    content: "";
+    position: absolute;
+    right: -60px;
+    bottom: -120px;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsla(var(--primary-hue), 80%, 68%, calc(0.28 * var(--glow-intensity))), transparent 68%);
+    pointer-events: none;
+  }
+}
+
+.life-hero__text {
+  position: relative;
+  min-width: 0;
+  max-width: 720px;
+}
+
+.life-hero__eyebrow {
+  margin: 0 0 6px;
+  color: var(--primary-dark);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.life-hero__name {
+  margin: 0;
+  color: var(--text-main);
+  font-size: clamp(28px, 3.2vw, 40px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+.life-hero__lead {
+  margin: 10px 0 0;
+  color: var(--text-main);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.life-hero__desc {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.life-hero__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: 4px 12px;
+    border-radius: var(--radius-chip);
+    background: var(--glass-bg);
+    box-shadow: inset 0 0 0 1px var(--border-soft);
+    color: var(--text-main);
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.life-hero__art {
+  position: relative;
+  width: 188px;
+  height: 188px;
+  margin: -8px 0 -28px;
+  align-self: end;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent);
+    mask-image: linear-gradient(to bottom, #000 72%, transparent);
+  }
+}
+
+// ============================================================
+// 分区标签栏：sticky，停在移动端工具栏下方并随它显隐移动
+// ============================================================
+.life-tabs {
+  position: sticky;
+  // 粘性定位以滚动容器的内容区为基准：移动端 .layout 始终保留 --shell-top-space 的上内边距，
+  // 先减掉它，再加上当前被工具栏遮住的高度（工具栏隐藏时为 0），最终停在可见区顶部下方 8px
+  top: calc(var(--shell-sticky-top, 0px) - var(--shell-top-space, 0px) + 8px);
+  z-index: $z-nav;
+  padding: 5px;
+  border-radius: var(--radius-chip);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  transition: top 220ms ease;
+}
+
+.life-tabs__track {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+// 还能横向滑动时，在对应边缘做轻微渐隐提示
+.life-tabs.has-more-right .life-tabs__track {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+.life-tabs.has-more-left .life-tabs__track {
+  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
+}
+.life-tabs.has-more-left.has-more-right .life-tabs__track {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+
+// 桌面端五个标签等宽平分；窄屏放不下时保持单行、标签栏横向滑动
+.life-tab {
+  flex: 1 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--dur-glass-quick) var(--ease-glass-quick),
+    color var(--dur-glass-quick) var(--ease-glass-quick),
+    box-shadow var(--dur-glass-quick) var(--ease-glass-quick);
+
+  &:hover { color: var(--text-main); background: var(--glass-bg-weak); }
+
+  &[aria-selected="true"] {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    box-shadow: inset 0 0 0 1px hsla(var(--primary-hue), 70%, 60%, 0.28);
+  }
+
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+}
+
+// ============================================================
+// 分区面板与分区工具栏
+// ============================================================
+.life-panel {
+  min-width: 0;
+  animation: life-panel-in 220ms ease-out;
+
+  &:focus { outline: none; }
+  &[hidden] { display: none; }
+}
+
+@keyframes life-panel-in { from { opacity: 0; } }
+
+.life-section__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 16px;
+
+  &:empty { display: none; }
+}
+
+.life-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  &[hidden] { display: none; }
+}
+
+.life-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 7px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-chip);
+  background: var(--glass-bg-weak);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--dur-glass-quick) var(--ease-glass-quick),
+    border-color var(--dur-glass-quick) var(--ease-glass-quick),
+    color var(--dur-glass-quick) var(--ease-glass-quick);
+
+  &:hover { border-color: var(--primary); color: var(--primary-dark); }
+
+  &[aria-pressed="true"] {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary-dark);
+  }
+
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+}
+
+.life-chips--quiet .life-chip {
+  min-height: 34px;
+  padding: 5px 13px;
+  font-size: 13px;
+}
+
+.life-chip__count {
+  font-size: 12px;
+  opacity: 0.72;
+
+  &:empty { display: none; }
+}
+
+.life-sub[hidden] { display: none; }
+
+// ============================================================
+// 总览 Bento
+// ============================================================
+.life-bento {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.life-bento > [data-life-span="4"] { grid-column: span 4; }
+.life-bento > [data-life-span="5"] { grid-column: span 5; }
+.life-bento > [data-life-span="6"] { grid-column: span 6; }
+.life-bento > [data-life-span="7"] { grid-column: span 7; }
+.life-bento > [data-life-span="8"] { grid-column: span 8; }
+
+.life-card { min-width: 0; }
+
+.life-card__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.life-about__intro {
+  margin: 0 0 14px;
+  color: var(--text-main);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.life-about__facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+
+  div {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: var(--glass-bg-weak);
+  }
+
+  dt {
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.7;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+}
+
+// 看过的作品：小封面
+.life-mini-covers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.life-mini-cover {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover img { transform: scale(1.05); }
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 12px; }
+}
+
+.life-mini-cover__img {
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--glass-bg);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-glass) var(--ease-glass);
+  }
+}
+
+.life-mini-cover__title {
+  overflow: hidden;
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.life-mini-cover__meta {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+// 精选收藏：少量方形缩略图
+.life-mini-gallery {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.life-mini-gallery__item {
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--glass-bg);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-glass) var(--ease-glass);
+  }
+
+  &:hover img { transform: scale(1.05); }
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+}
+
+// 里程碑 / 日记：日期 + 标题列表
+.life-mini-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li > a,
+  li:not(:has(> a)) {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 12px;
+    color: var(--text-main);
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  li > a:hover { background: var(--glass-bg-weak); color: var(--primary-dark); }
+
+  time {
+    flex: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// 愿望清单
+.life-wish-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.life-wish {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+  transition: background var(--dur-glass-quick) var(--ease-glass-quick);
+}
+
+a.life-wish:hover { background: var(--glass-bg-weak); }
+a.life-wish:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+
+.life-wish__thumb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  border-radius: 11px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.life-wish__text {
+  display: grid;
+  min-width: 0;
+}
+
+.life-wish__title,
+.life-wish__kind {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.life-wish__title { color: var(--text-main); font-size: 14px; font-weight: 600; }
+.life-wish__kind { color: var(--text-muted); font-size: 12px; }
+
+// ============================================================
+// 作品 Works：封面网格
+// ============================================================
+.life-works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 16px;
+
+  > .life-empty { grid-column: 1 / -1; }
+}
+
+.life-work {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 8px 12px;
+  border-radius: 18px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--glass-bg-weak);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  transition:
+    transform var(--dur-glass) var(--ease-glass),
+    box-shadow var(--dur-glass) var(--ease-glass);
+}
+
+a.life-work:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glass-shadow-hover), var(--glow-card), var(--glass-highlight);
+
+  img { transform: scale(1.04); }
+}
+
+a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+.life-work__cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--glass-bg);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-glass) var(--ease-glass);
+  }
+}
+
+.life-work__placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 40px;
+  font-weight: 800;
+}
+
+// 封面角标：中性玻璃底 + 语义色圆点（状态色不随主题色变化）
+.life-work__badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-chip);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+
+  &[data-badge="finished"]::before { background: #22c55e; }
+  &[data-badge="upcoming"]::before { background: #3b82f6; }
+  &[data-badge="ongoing"]::before { background: #f59e0b; }
+  &[data-badge="movie"]::before { background: #a855f7; }
+}
+
+.life-work__meta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 4px;
+}
+
+.life-work__title {
+  overflow: hidden;
+  color: var(--text-main);
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.life-work__sub {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+// ============================================================
+// 收藏 Collections
+// ============================================================
+.life-sub .gallery-panel__title-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.life-count-pill {
+  padding: 3px 12px;
+  border-radius: var(--radius-chip);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+// 来源分组在只有单一来源时隐藏（gallery.js 设置 hidden）
+.gallery-filter-panel__group[hidden] { display: none; }
+
+.gallery-info-source a {
+  color: var(--primary-dark);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+// 银行卡：横向卡面比例 (ISO/IEC 7810 ID-1 ≈ 1.586)
+.life-card-grid,
+.life-device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+
+  > .life-empty { grid-column: 1 / -1; }
+}
+
+.life-bank-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 12px 16px;
+  border-radius: var(--radius-card);
+  background: var(--glass-bg-weak);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+}
+
+.life-bank-card__face {
+  aspect-ratio: 1.586;
+  overflow: hidden;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+
+  img { display: block; width: 100%; height: 100%; object-fit: cover; }
+}
+
+.life-bank-card__plain {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, hsl(var(--primary-hue), 55%, 52%), hsl(calc(var(--primary-hue) + 40), 55%, 40%));
+  color: #fff;
+
+  strong { font-size: 17px; }
+  em { align-self: flex-end; font-style: normal; font-weight: 700; opacity: 0.9; }
+}
+
+.life-bank-card__meta,
+.life-device__meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 4px;
+
+  h3 { margin: 0; color: var(--text-main); font-size: 16px; }
+  p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.6; }
+  .life-tag { justify-self: start; }
+}
+
+.life-bank-card__note,
+.life-device__review { color: var(--text-main) !important; }
+
+.life-device {
+  display: flex;
+  gap: 16px;
+  padding: 14px;
+  border-radius: var(--radius-card);
+  background: var(--glass-bg-weak);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+}
+
+.life-device__img {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 32px;
+  font-weight: 800;
+
+  img { width: 100%; height: 100%; object-fit: contain; }
+}
+
+.life-device__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+// ============================================================
+// 足迹 Journey：纵向时间轴
+// ============================================================
+.life-timeline {
+  position: relative;
+  max-width: 880px;
+  margin: 0;
+  padding: 0 0 0 30px;
+  list-style: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 9px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--border-soft);
+  }
+}
+
+.life-timeline__item {
+  position: relative;
+  padding-bottom: 18px;
+}
+
+.life-timeline__dot {
+  position: absolute;
+  top: 22px;
+  left: -26px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px var(--primary);
+
+  [data-kind="milestone"] > & {
+    background: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-soft);
+  }
+}
+
+.life-timeline__card {
+  display: grid;
+  gap: 8px;
+  padding: 16px 20px;
+  border-radius: var(--radius-card);
+  background: var(--glass-bg-weak);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+
+  h3 { margin: 0; color: var(--text-main); font-size: 17px; }
+  p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.75; }
+  .life-link { justify-self: start; }
+}
+
+.life-timeline__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  time { color: var(--primary-dark); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+}
+
+.life-timeline__place { color: var(--text-muted); font-size: 13px; }
+
+.life-timeline__images {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+
+  img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
+}
+
+.life-timeline__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+// ============================================================
+// 日记 Journal
+// ============================================================
+.life-journal-group + .life-journal-group { margin-top: 24px; }
+
+.life-journal-group__title {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.life-journal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.life-journal-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  color: inherit;
+  text-decoration: none;
+  background: var(--glass-bg-weak);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  transition:
+    transform var(--dur-glass) var(--ease-glass),
+    box-shadow var(--dur-glass) var(--ease-glass);
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--glass-shadow-hover), var(--glow-card), var(--glass-highlight);
+  }
+
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+}
+
+.life-journal-card__cover {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--glass-bg);
+
+  img { display: block; width: 100%; height: 100%; object-fit: cover; }
+}
+
+.life-journal-card__body {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px 18px;
+
+  time { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+}
+
+.life-journal-card__title { color: var(--text-main); font-size: 16px; font-weight: 700; line-height: 1.5; }
+
+.life-journal-card__summary {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.life-journal-card__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.life-reader {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 24px 32px 32px;
+  border-radius: var(--radius-card-lg);
+  background: var(--glass-bg-weak);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+
+  &[hidden] { display: none; }
+}
+
+.life-reader__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 38px;
+  padding: 6px 14px 6px 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-chip);
+  background: var(--glass-bg);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  svg { width: 18px; height: 18px; }
+  &:hover { border-color: var(--primary); color: var(--primary-dark); }
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+}
+
+.life-reader__loading { padding: 32px 0; color: var(--text-muted); text-align: center; }
+
+.life-reader__head {
+  margin: 20px 0 16px;
+
+  time { color: var(--primary-dark); font-size: 13px; font-weight: 700; }
+  h2 { margin: 6px 0 0; color: var(--text-main); font-size: clamp(22px, 2.4vw, 28px); line-height: 1.35; }
+}
+
+.life-reader__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.life-reader__cover {
+  margin: 0 0 18px;
+
+  img { display: block; width: 100%; max-height: 420px; object-fit: cover; border-radius: 16px; }
+}
+
+.life-reader .life-empty { margin-top: 16px; }
+
+// ============================================================
+// 响应式
+// ============================================================
+@media (max-width: 1200px) {
+  .life-bento > [data-life-span] { grid-column: span 6; }
+  .life-mini-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .life-hero {
+    gap: 16px;
+    padding: 22px 22px 20px;
+  }
+
+  .life-hero__art {
+    width: 132px;
+    height: 132px;
+    margin: -4px -6px -20px 0;
+  }
+
+  .life-bento {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .life-bento > [data-life-span] { grid-column: 1 / -1; }
+
+  .life-works-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .life-reader { padding: 18px 18px 24px; border-radius: var(--radius-card); }
+}
+
+@media (max-width: 600px) {
+  .life-tab {
+    min-width: 60px;
+    padding: 10px 14px;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+  }
+
+  .life-hero__lead { font-size: 16px; }
+  .life-hero__desc { font-size: 14px; }
+
+  .life-works-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .life-work__title { font-size: 14px; }
+
+  .life-card-grid,
+  .life-device-grid,
+  .life-journal-grid { grid-template-columns: minmax(0, 1fr); }
+
+  .life-timeline { padding-left: 24px; }
+  .life-timeline::before { left: 6px; }
+  .life-timeline__dot { left: -23px; }
+  .life-timeline__card { padding: 14px 16px; }
+  .life-timeline__images { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+// 小屏：插画缩到标题右侧，正文占满整行
+@media (max-width: 480px) {
+  .life-hero {
+    display: block;
+    padding: 20px 18px 18px;
+  }
+
+  .life-hero__name { padding-right: 92px; }
+  .life-hero__eyebrow { padding-right: 92px; }
+
+  .life-hero__art {
+    position: absolute;
+    top: 10px;
+    right: 8px;
+    width: 92px;
+    height: 92px;
+    margin: 0;
+  }
+
+  .life-mini-covers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-panel { animation: none; }
+  .life-tabs,
+  .life-tab,
+  .life-chip,
+  .life-work,
+  .life-work img,
+  .life-journal-card,
+  .life-mini-cover img,
+  .life-mini-gallery__item img { transition: none; }
+  a.life-work:hover,
+  .life-journal-card:hover { transform: none; }
+}

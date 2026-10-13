@@ -39,7 +39,7 @@ with sync_playwright() as pw:
         }''')
         report['viewports'].append(metrics)
         check(f'{w}px no horizontal overflow', not metrics['overflow'])
-        check(f'{w}px unique instances', metrics['audioCount']==1 and metrics['widgets']==3 and metrics['navCount']==5)
+        check(f'{w}px unique instances', metrics['audioCount']==1 and metrics['widgets']==3 and metrics['navCount']==4)
         check(f'{w}px shell layout', metrics['rail']==68 and metrics['toolbar']=='none' if w>900 else len(metrics['tools'])==5 and min(metrics['tools'])>=44)
         if w in [1440,390,320]: page.screenshot(path=str(OUT/f'home-{w}.png'))
     page.set_viewport_size({'width':1440,'height':900})
@@ -81,7 +81,7 @@ with sync_playwright() as pw:
     page.locator('#theme-toggle').click(); page.locator('[data-mode="light"]').click(); page.keyboard.press('Escape')
     for route in ['?page=notes','?page=anime','?page=gallery','?page=about','?page=stats','?page=update','html/anime-detail.html?id=majo','html/notes-detail.html?file=../content/math/calculus/傅里叶级数的基本形式.md','html/stats.html']:
         page.goto(BASE+'/'+route, wait_until='domcontentloaded'); page.wait_for_timeout(950)
-        check(route+' shared shell', page.locator('.site-nav a').count()==5 and page.locator('#music-audio').count()==1 and page.locator('.rail-widget').count()==3)
+        check(route+' shared shell', page.locator('.site-nav a').count()==4 and page.locator('#music-audio').count()==1 and page.locator('.rail-widget').count()==3)
         check(route+' pinned persists', page.locator('html').get_attribute('data-sidebar-pinned')=='true')
         check(route+' business content present', len(page.locator('#main-content').inner_text())>30)
     page.set_viewport_size({'width':390,'height':844})

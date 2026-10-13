@@ -301,6 +301,22 @@
         "name": "动漫",
         "children": [
           {
+            "id": "anime-watch-status",
+            "name": "观看状态",
+            "total": 10,
+            "unit": "部",
+            "items": [
+              {
+                "name": "已看",
+                "value": 8
+              },
+              {
+                "name": "想看",
+                "value": 2
+              }
+            ]
+          },
+          {
             "id": "anime-genres",
             "name": "题材分布",
             "total": 30,
@@ -585,8 +601,12 @@
             "unit": "字",
             "items": [
               {
-                "name": "其他",
-                "value": 989
+                "name": "已看",
+                "value": 634
+              },
+              {
+                "name": "想看",
+                "value": 355
               }
             ]
           }
@@ -1037,5 +1057,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-13T06:10:06.224Z"
+  "generatedAt": "2026-10-13T09:00:03.966Z"
 }

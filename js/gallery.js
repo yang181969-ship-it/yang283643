@@ -5,6 +5,21 @@ const GALLERY_CATEGORY_LABELS = {
   illustration: "插画",
   character: "人物",
   landscape: "风景",
+  life: "生活",
+  collection: "收藏",
+  works: "作品",
+  other: "其他",
+};
+
+// 统一图片索引（data/image-index.json）中的来源模块
+const GALLERY_SOURCE_LABELS = {
+  gallery: "画廊",
+  anime: "动漫作品",
+  journey: "足迹",
+  cards: "银行卡图鉴",
+  devices: "数码设备",
+  works: "作品",
+  journal: "日记",
 };
 
 const GALLERY_TAG_LABELS = {
@@ -38,6 +53,7 @@ const GALLERY_TOOLBAR_ARIA_LABELS = {
 
 const galleryState = {
   search: "",
+  source: "all",
   category: "all",
   tags: [],
   sort: "default",
@@ -51,9 +67,12 @@ const galleryRuntime = {
   refs: {},
 };
 
-function initGalleryPage() {
-  const sourceData = typeof galleryData !== "undefined" ? galleryData : [];
-  const images = Array.isArray(sourceData) ? sourceData : [];
+// images：可选的图片数组（Life 传入统一图片索引）；不传时沿用 gallery-data.js
+function initGalleryPage(images) {
+  if (!Array.isArray(images)) {
+    const sourceData = typeof galleryData !== "undefined" ? galleryData : [];
+    images = Array.isArray(sourceData) ? sourceData : [];
+  }
   const grid = document.querySelector("[data-gallery-list]");
   const lightbox = document.getElementById("gallery-lightbox");
 
@@ -69,16 +88,19 @@ function initGalleryPage() {
     lightboxCategory: document.querySelector("[data-lightbox-category]"),
     lightboxTags: document.querySelector("[data-lightbox-tags]"),
     lightboxNote: document.querySelector("[data-lightbox-note]"),
+    lightboxSource: document.querySelector("[data-lightbox-source]"),
     currentIndexEl: document.querySelector("[data-current-index]"),
     totalCountEl: document.querySelector("[data-total-count]"),
   };
 
   galleryState.search = "";
+  galleryState.source = "all";
   galleryState.category = "all";
   galleryState.tags = [];
   galleryState.sort = "default";
 
   renderGalleryHeroStats(images);
+  renderGallerySourceChips();
   renderGalleryTagChips();
   syncGalleryCategoryButtons();
   syncGallerySortButtons();
@@ -132,12 +154,6 @@ function initGalleryToolbar() {
   if (!toolbar) return;
 
   const actionButtons = toolbar.querySelectorAll("[data-gallery-action]");
-  const panels = document.querySelectorAll("[data-gallery-panel]");
-
-  function closeAllPanels() {
-    actionButtons.forEach((button) => button.classList.remove("is-active"));
-    panels.forEach((panel) => panel.classList.remove("is-open"));
-  }
 
   actionButtons.forEach((button) => {
     button.addEventListener("click", (event) => {
@@ -147,7 +163,7 @@ function initGalleryToolbar() {
       const panel = document.querySelector(`[data-gallery-panel="${action}"]`);
       const isOpen = panel?.classList.contains("is-open");
 
-      closeAllPanels();
+      closeGalleryPanels();
 
       if (!isOpen && panel) {
         button.classList.add("is-active");
@@ -161,21 +177,31 @@ function initGalleryToolbar() {
     });
   });
 
+  // 文档级监听只绑定一次；每次按当前 DOM 查询，页面反复进入也不会叠加监听
+  if (window.__galleryToolbarDocBound) return;
+  window.__galleryToolbarDocBound = true;
+
   document.addEventListener("click", (event) => {
     const target = event.target;
+    if (!(target instanceof Element)) return;
     const isInsideToolbar = target.closest("[data-gallery-toolbar]");
     const isInsidePanel = target.closest(".gallery-toolbar-popover");
 
     if (!isInsideToolbar && !isInsidePanel) {
-      closeAllPanels();
+      closeGalleryPanels();
     }
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
-      closeAllPanels();
+      closeGalleryPanels();
     }
   });
+}
+
+function closeGalleryPanels() {
+  document.querySelectorAll("[data-gallery-action].is-active").forEach((button) => button.classList.remove("is-active"));
+  document.querySelectorAll("[data-gallery-panel].is-open").forEach((panel) => panel.classList.remove("is-open"));
 }
 
 function initGallerySearch() {
@@ -202,7 +228,18 @@ function initGalleryFilters() {
   const categoryList = document.querySelector("[data-gallery-category-list]");
   const tagList = document.querySelector("[data-gallery-tag-list]");
   const clearButton = document.querySelector("[data-gallery-filter-clear]");
+  const sourceList = document.querySelector("[data-gallery-source-list]");
   if (!categoryList || !tagList) return;
+
+  sourceList?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-source]");
+    if (!button) return;
+
+    galleryState.source = button.dataset.source || "all";
+    syncGallerySourceButtons();
+    syncGalleryToolbarLabels();
+    renderGallery();
+  });
 
   categoryList.addEventListener("click", (event) => {
     const button = event.target.closest("[data-category]");
@@ -233,6 +270,8 @@ function initGalleryFilters() {
   });
 
   clearButton?.addEventListener("click", () => {
+    galleryState.source = "all";
+    syncGallerySourceButtons();
     galleryState.category = "all";
     galleryState.tags = [];
     syncGalleryCategoryButtons();
@@ -260,6 +299,13 @@ function initGallerySort() {
 function syncGalleryCategoryButtons() {
   document.querySelectorAll("[data-gallery-category-list] [data-category]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.category === galleryState.category);
+  });
+}
+
+// 只切换高亮，不重建按钮：被点击的按钮留在 DOM 中，弹出面板不会被误判为点在外部而关闭
+function syncGallerySourceButtons() {
+  document.querySelectorAll("[data-gallery-source-list] [data-source]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.source === galleryState.source);
   });
 }
 
@@ -311,6 +357,10 @@ function setGalleryToolbarButtonLabel(action, label, ariaDetail = "") {
 function getGalleryFilterToolbarLabel() {
   const labels = [];
 
+  if (galleryState.source !== "all") {
+    labels.push(GALLERY_SOURCE_LABELS[galleryState.source] || galleryState.source);
+  }
+
   if (galleryState.category !== "all") {
     labels.push(GALLERY_CATEGORY_LABELS[galleryState.category] || galleryState.category);
   }
@@ -344,6 +394,28 @@ function getGalleryAvailableTags() {
   });
 
   return Array.from(tagSet);
+}
+
+// 来源筛选：只有统一图片索引（含多个来源）时才显示
+function renderGallerySourceChips() {
+  const sourceList = document.querySelector("[data-gallery-source-list]");
+  if (!sourceList) return;
+
+  const sources = Array.from(new Set(galleryRuntime.images.map((item) => item.source).filter(Boolean)));
+  const group = sourceList.closest(".gallery-filter-panel__group");
+  if (group) group.hidden = sources.length < 2;
+  if (sources.length < 2) {
+    sourceList.innerHTML = "";
+    return;
+  }
+
+  sourceList.innerHTML = ["all", ...sources]
+    .map((source) => {
+      const activeClass = galleryState.source === source ? " is-active" : "";
+      const label = source === "all" ? "全部" : GALLERY_SOURCE_LABELS[source] || source;
+      return `<button class="gallery-chip${activeClass}" type="button" data-source="${escapeHTML(source)}">${escapeHTML(label)}</button>`;
+    })
+    .join("");
 }
 
 function renderGalleryTagChips() {
@@ -405,7 +477,7 @@ function renderGallery() {
         aria-label="打开 ${escapeHTML(title)}"
         ${ratioStyle}
       >
-        <img src="${escapeHTML(item.thumb || item.src)}" alt="${escapeHTML(title)}"${sizeAttrs} loading="eager" decoding="async">
+        <img src="${escapeHTML(item.thumb || item.src)}" alt="${escapeHTML(title)}"${sizeAttrs} loading="${index < 12 ? "eager" : "lazy"}" decoding="async">
         <div class="gallery-item__overlay">
           <p>${escapeHTML(date)} · ${escapeHTML(category)}</p>
         </div>
@@ -417,6 +489,10 @@ function renderGallery() {
 function getFilteredImages(images) {
   const keyword = galleryState.search.trim().toLowerCase();
   let data = [...images];
+
+  if (galleryState.source !== "all") {
+    data = data.filter((item) => item.source === galleryState.source);
+  }
 
   if (galleryState.category !== "all") {
     data = data.filter((item) => item.category === galleryState.category);
@@ -518,6 +594,17 @@ function updateLightbox() {
   if (refs.currentIndexEl) refs.currentIndexEl.textContent = String(galleryRuntime.currentLightboxIndex + 1);
   if (refs.totalCountEl) refs.totalCountEl.textContent = String(galleryRuntime.visibleImages.length);
 
+  if (refs.lightboxSource) {
+    const source = GALLERY_SOURCE_LABELS[item.source] || "";
+    const links = (Array.isArray(item.refs) ? item.refs : [])
+      .filter((ref) => ref && ref.title)
+      .map((ref) => ref.href
+        ? `<a href="${escapeHTML(ref.href)}">${escapeHTML(ref.title)}</a>`
+        : `<span>${escapeHTML(ref.title)}</span>`);
+    refs.lightboxSource.innerHTML = [source ? escapeHTML(source) : "", links.join("、")]
+      .filter(Boolean).join(" · ") || "画廊";
+  }
+
   if (refs.lightboxTags) {
     refs.lightboxTags.innerHTML = tags.length
       ? tags.map((tag) => `<span>${escapeHTML(GALLERY_TAG_LABELS[tag] || tag)}</span>`).join("")
@@ -581,9 +668,12 @@ function getSearchText(item) {
     .flatMap((tag) => [tag, GALLERY_TAG_LABELS[tag] || ""])
     .filter(Boolean);
 
+  const refTitles = (Array.isArray(item.refs) ? item.refs : []).map((ref) => ref && ref.title);
+
   return [
     item.title,
     item.album,
+    ...refTitles,
     getItemNote(item),
     item.src,
     category,
