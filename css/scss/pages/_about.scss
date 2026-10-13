@@ -1,14 +1,13 @@
 // ============================================================
 // 关于页：Hero（三个分区共用）+ 分区标签（样式见 components/_section-tabs.scss）+ 概览 / 统计 / 更新
 // 顶部结构与 Life 统一：大横幅在上、分区标签在下。
-// main 在 About 下保持全宽：统计分区沿用原统计页的宽屏图表，
-// Hero、标签栏、概览与更新分区收窄到原阅读宽度并居中，三个分区切换时标签栏位置不变。
+// Hero、标签栏和三个分区都铺满 main 的内容宽度（--page-max-width），与主页 / 笔记 / 生活左右边缘一致；
+// 更新详情的阅读行宽在文章卡片内部限制（pages/_update.scss）。
 // ============================================================
 
 @use '../abstracts/mixins' as *;
 
 .about-page {
-  --about-reading-width: calc(var(--page-reading-max-width) - 2 * var(--page-pad-x));
   --about-tabs-space: 80px; // 吸顶标签栏占用的高度（含上方留白），供下方吸顶 / 滚动定位避让
 
   width: 100%;
@@ -20,19 +19,8 @@
 
 .about-hero,
 .about-tabs,
-.about-panel:not(.about-panel--wide) {
+.about-panel {
   width: 100%;
-  max-width: var(--about-reading-width);
-  margin-inline: auto;
-}
-
-// 视口不够宽时，统计分区比阅读宽度只多出几十像素：与标签栏对齐比"略宽一点"更整齐
-@media (max-width: 1599px) {
-  .about-panel--wide {
-    width: 100%;
-    max-width: var(--about-reading-width);
-    margin-inline: auto;
-  }
 }
 
 .about-panel {

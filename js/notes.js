@@ -78,7 +78,130 @@ function formatDate(dateStr) {
   return d.toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
 }
 
-/* ===== 极简 Markdown 渲染（详情模式：给标题加 id 锚点） ===== */
+/* ===== Markdown 渲染：markdown-it + 公式保护 =====
+ * 公式由两条 markdown-it 规则整段接管，原样（仅做 HTML 转义）输出，
+ * 之后交给 KaTeX 的 renderMathInElement；公式内部的 * _ \ 等不会被 Markdown 处理。
+ * 代码块 / 行内代码里的 $ 不受影响（由 markdown-it 自己的规则先消费）。 */
+const MARKDOWN_IT_SOURCES = [
+  "https://cdn.bootcdn.net/ajax/libs/markdown-it/13.0.2/markdown-it.min.js",
+  "https://cdn.jsdelivr.net/npm/markdown-it@13.0.2/dist/markdown-it.min.js"
+];
+const MATH_INLINE_DELIMITERS = [["$$", "$$"], ["$", "$"], ["\\(", "\\)"], ["\\[", "\\]"]];
+const MATH_BLOCK_DELIMITERS  = [["$$", "$$"], ["\\[", "\\]"]];
+
+let _noteMarkdown = null;       // 加载完成后的 markdown-it 实例；加载失败时保持 null，走简易渲染
+let _markdownItPromise = null;
+
+function loadMarkdownIt() {
+  if (_markdownItPromise) return _markdownItPromise;
+  _markdownItPromise = MARKDOWN_IT_SOURCES
+    .reduce((chain, src) => chain.catch(() => loadScript(src).then(() => {
+      if (typeof window.markdownit !== "function") throw new Error(`markdown-it 未就绪：${src}`);
+    })), Promise.reject(new Error("start")))
+    .then(() => (_noteMarkdown = createNoteMarkdown(window.markdownit)))
+    .catch((err) => {
+      console.warn("markdown-it 加载失败，改用简易渲染：", err);
+      return null;
+    });
+  return _markdownItPromise;
+}
+
+// 直接打开 / 刷新笔记页（含文章深链接）时立刻开始加载，与笔记索引、Markdown 请求并行
+if (new URLSearchParams(location.search).get("page") === "notes") loadMarkdownIt();
+
+// 与 KaTeX auto-render 的 findEndOfMath 同一算法（花括号配平 + 反斜杠转义），保证两边认定的公式范围一致
+function findMathEnd(src, delimiter, start, max) {
+  let braceLevel = 0;
+  for (let i = start; i < max; i++) {
+    const ch = src[i];
+    if (braceLevel <= 0 && i + delimiter.length <= max && src.startsWith(delimiter, i)) return i;
+    if (ch === "\\") i++;
+    else if (ch === "{") braceLevel++;
+    else if (ch === "}") braceLevel--;
+  }
+  return -1;
+}
+
+function createNoteMarkdown(markdownit) {
+  const md = markdownit({ html: true, breaks: true, linkify: false, typographer: false });
+
+  // 行内公式：$...$、$$...$$、\(...\)、\[...\]（排在 escape 之前，\( \[ 不会被当成转义字符）
+  md.inline.ruler.before("escape", "math_inline", (state, silent) => {
+    const { src, pos } = state;
+    const ch = src.charCodeAt(pos);
+    if (ch !== 0x24 /* $ */ && ch !== 0x5c /* \ */) return false;
+    const delimiter = MATH_INLINE_DELIMITERS.find(([left]) => src.startsWith(left, pos));
+    if (!delimiter) return false;
+    const [left, right] = delimiter;
+    const end = findMathEnd(src, right, pos + left.length, state.posMax);
+    if (end === -1) return false;
+    if (!silent) {
+      state.push("math_inline", "", 0).content = src.slice(pos, end + right.length);
+    }
+    state.pos = end + right.length;
+    return true;
+  });
+
+  // 块级公式：以 $$ 或 \[ 开头的行，到对应结束符所在行为止（结束符后只能是空白）
+  md.block.ruler.before("fence", "math_block", (state, startLine, endLine, silent) => {
+    if (state.sCount[startLine] - state.blkIndent >= 4) return false;
+    const start = state.bMarks[startLine] + state.tShift[startLine];
+    const delimiter = MATH_BLOCK_DELIMITERS.find(([left]) => state.src.startsWith(left, start));
+    if (!delimiter) return false;
+    const [left, right] = delimiter;
+    const end = findMathEnd(state.src, right, start + left.length, state.eMarks[endLine - 1]);
+    if (end === -1) return false;
+    const close = end + right.length;
+
+    let line = startLine;
+    while (line < endLine && state.eMarks[line] < close) line++;
+    if (state.src.slice(close, state.eMarks[line]).trim()) return false;
+    if (silent) return true;
+
+    const token = state.push("math_block", "div", 0);
+    token.block = true;
+    token.content = state.src.slice(start, close);
+    token.map = [startLine, line + 1];
+    state.line = line + 1;
+    return true;
+  }, { alt: ["paragraph", "reference", "blockquote", "list"] });
+
+  // 表格包一层，窄屏时横向滚动而不是撑破卡片
+  md.renderer.rules.table_open  = () => '<div class="note-table-wrap"><table>\n';
+  md.renderer.rules.table_close = () => "</table></div>\n";
+
+  md.renderer.rules.math_inline = (tokens, idx) => escapeHtml(tokens[idx].content);
+  md.renderer.rules.math_block  = (tokens, idx) =>
+    `<div class="note-formula">${escapeHtml(tokens[idx].content)}</div>\n`;
+
+  // 详情模式给 h1–h3 加锚点 id；规则与旧解析器一致（按出现顺序编号 + 标题原文），旧锚点不失效
+  md.renderer.rules.heading_open = (tokens, idx, options, env, self) => {
+    const token = tokens[idx];
+    const level = Number(token.tag.slice(1));
+    if (env && env.withIds && level <= 3) {
+      env.headingCounter = (env.headingCounter || 0) + 1;
+      token.attrSet("id", headingSlug(env.headingCounter, tokens[idx + 1]?.content || ""));
+    }
+    return self.renderToken(tokens, idx, options);
+  };
+
+  return md;
+}
+
+function headingSlug(counter, text) {
+  return "h-" + counter + "-" +
+    text.trim().replace(/\s+/g, "-").replace(/[^\w一-龥-]/g, "").slice(0, 30);
+}
+
+/* 正文与列表摘要共用的渲染入口；调用前先 await loadMarkdownIt() */
+function renderNoteMarkdown(md, withIds = false) {
+  const text = normalizeLineEndings(md).trim();
+  if (!text) return "";
+  if (!_noteMarkdown) return simpleMarkdownToHtml(text, withIds);
+  return _noteMarkdown.render(text, { withIds, headingCounter: 0 });
+}
+
+/* ===== 极简 Markdown 渲染（仅在 markdown-it 加载失败时兜底；详情模式给标题加 id 锚点） ===== */
 function simpleMarkdownToHtml(md, withIds = false) {
   const text = normalizeLineEndings(md).trim();
   if (!text) return "";
@@ -120,9 +243,7 @@ function simpleMarkdownToHtml(md, withIds = false) {
   }
   function headingTag(level, text) {
     if (!withIds) return `<h${level}>${text}</h${level}>`;
-    const slug = "h-" + (++headingCounter) + "-" +
-      text.trim().replace(/\s+/g, "-").replace(/[^\w\u4e00-\u9fa5-]/g, "").slice(0, 30);
-    return `<h${level} id="${slug}">${text}</h${level}>`;
+    return `<h${level} id="${headingSlug(++headingCounter, text)}">${text}</h${level}>`;
   }
 
   for (const rawLine of lines) {
@@ -202,14 +323,28 @@ async function loadNoteMarkdown(file) {
   return res.text();
 }
 
-/* ===== 从已渲染的卡片 DOM 提取 TOC 条目 ===== */
+/* ===== 从已渲染的卡片 DOM 提取 TOC 条目 =====
+ * 直接沿用标题里渲染好的公式：去掉 KaTeX 给读屏用的隐藏 MathML（否则 textContent 会把公式重复取三遍），
+ * 读屏文字另取 LaTeX 源码，放在 aria-label 里 */
 function buildTocItems(cardEl) {
   const headings = cardEl.querySelectorAll("h1[id], h2[id], h3[id]");
-  return Array.from(headings).map(h => ({
-    id: h.id,
-    text: h.textContent.trim(),
-    level: parseInt(h.tagName[1], 10)
-  }));
+  return Array.from(headings).map(h => {
+    const visual = h.cloneNode(true);
+    visual.querySelectorAll(".katex-mathml").forEach(el => el.remove());
+    visual.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+
+    const spoken = h.cloneNode(true);
+    spoken.querySelectorAll(".katex").forEach(el => {
+      el.replaceWith(el.querySelector("annotation")?.textContent || "");
+    });
+
+    return {
+      id: h.id,
+      html: visual.innerHTML.trim(),
+      text: spoken.textContent.replace(/\s+/g, " ").trim(),
+      level: parseInt(h.tagName[1], 10)
+    };
+  });
 }
 
 /* ===== 生成并返回 TOC aside 节点 ===== */
@@ -229,7 +364,7 @@ function renderTocSidebar(tocItems, scrollContainer) {
 
   const listHtml = tocItems.map(item => `
     <li class="note-toc-item note-toc-level-${item.level}">
-      <a class="note-toc-link" href="#${item.id}" data-toc-id="${item.id}">${escapeHtml(item.text)}</a>
+      <a class="note-toc-link" href="#${item.id}" data-toc-id="${item.id}" aria-label="${escapeHtml(item.text).replace(/"/g, "&quot;")}">${item.html}</a>
     </li>`).join("");
 
   aside.innerHTML = `
@@ -332,7 +467,7 @@ function renderDetailView(note, onBack, pushHistory = true) {
     </div>
     <h2 class="note-detail-title">${escapeHtml(note.title)}</h2>
     <div class="note-detail-body note-markdown-full">
-      ${simpleMarkdownToHtml(note.content, true)}
+      ${renderNoteMarkdown(note.content, true)}
     </div>
   `;
 
@@ -360,7 +495,7 @@ function renderDetailView(note, onBack, pushHistory = true) {
 
   /* 更新 URL */
   const url = new URL(window.location.href);
-  url.searchParams.set("note", encodeURIComponent(note.file));
+  url.searchParams.set("note", note.file); // searchParams 自己会编码一次，不再手动 encodeURIComponent
   url.searchParams.delete("noteIndex"); // 清掉旧参数(如果是老链接带进来的)
   if (pushHistory) {
     window._beginNavigation?.(); // 新的导航意图：作废尚未完成的跨页请求
@@ -386,18 +521,22 @@ async function renderNotesFromJSON(allNotesCache) {
     if (!indexRes.ok) throw new Error("notes-index.json 加载失败");
     const notesIndex = await indexRes.json();
 
+    // 并发加载所有 md 和 markdown-it,提速
+    const [notes] = await Promise.all([
+      Promise.all(
+        notesIndex.map(async (item) => {
+          const mdText = await loadNoteMarkdown(item.file);
+          return parseMarkdownToNote(mdText, item);
+        })
+      ),
+      loadMarkdownIt()
+    ]);
+    if (!container.isConnected) return [];
+
     container.innerHTML = "";
     if (emptyState) container.appendChild(emptyState);
 
     const allCards = [];
-
-    // 并发加载所有 md,提速
-    const notes = await Promise.all(
-      notesIndex.map(async (item) => {
-        const mdText = await loadNoteMarkdown(item.file);
-        return parseMarkdownToNote(mdText, item);
-      })
-    );
 
     notes.forEach((note) => {
       const article = document.createElement("article");
@@ -416,7 +555,7 @@ async function renderNotesFromJSON(allNotesCache) {
         </div>
         <h2>${escapeHtml(note.title)}</h2>
         <div class="note-markdown">
-          ${simpleMarkdownToHtml(note.content)}
+          ${renderNoteMarkdown(note.content)}
         </div>
         <span class="note-read-more">阅读全文 →</span>
       `;
@@ -589,6 +728,7 @@ function bindNotesFilter(noteCards) {
 async function initNotesPage() {
   const notesPage = document.querySelector(".notes-page");
   if (!notesPage) return;
+  loadMarkdownIt(); // 站内切到笔记页时同样尽早开始，与下面的索引请求并行
 
   const encodedFile = new URLSearchParams(location.search).get('note');
   if (encodedFile) {
@@ -599,7 +739,7 @@ async function initNotesPage() {
       const index = await fetch('data/notes-index.json').then(res => res.json());
       const item = index.find(note => note.file === file);
       if (item) {
-        const markdown = await loadNoteMarkdown(file);
+        const [markdown] = await Promise.all([loadNoteMarkdown(file), loadMarkdownIt()]);
         if (notesPage.isConnected && new URLSearchParams(location.search).get('note') === encodedFile) {
           renderDetailView(parseMarkdownToNote(markdown, item), () => initNotesPage(), false);
         }
@@ -612,6 +752,7 @@ async function initNotesPage() {
   }
 
   const noteCards = await renderNotesFromJSON();
+  if (!notesPage.isConnected) return; // 加载期间已离开笔记页：不要把筛选绑到新页面上
   bindNotesFilter(noteCards);
 }
 

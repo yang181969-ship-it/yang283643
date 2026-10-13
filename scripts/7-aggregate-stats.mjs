@@ -14,8 +14,10 @@ import vm from 'vm';
 //
 // 写出:
 //   - data/stats.json   ── snapshots[] 累积式 + breakdowns(6 张卡数据源)
-//   - data/site-meta.json ── 总条目/累计天数/最新更新等单点指标
+//   - data/site-meta.json ── 内容总数/累计天数/最新更新等单点指标
 //
+// 统计口径:内容总数 = 笔记 + 作品(动漫)+ 收藏(画廊图片)。
+// 更新日志是网站自身的记录,不算内容,单独统计(totals.updates / snapshots[].updates)。
 // ============================================================
 
 const SITE_BIRTHDAY = '2026-04-13';
@@ -151,6 +153,11 @@ function animeYear(anime) {
   const value = anime.year || anime.releaseYear || anime.date || anime.updateDate || '';
   const match = String(value).match(/^(\d{4})/);
   return match ? match[1] : '';
+}
+
+// 内容总数口径:笔记 + 作品 + 收藏,不含更新日志(更新日志单独统计)
+function contentTotal({ notes = 0, anime = 0, gallery = 0 }) {
+  return (Number(notes) || 0) + (Number(anime) || 0) + (Number(gallery) || 0);
 }
 
 function updateTypeName(update) {
@@ -501,7 +508,6 @@ const dataCenterGroups = [];
 {
   const content = {};
   addCount(content, '笔记', notes.length);
-  addCount(content, '更新日志', updates.length);
   addCount(content, '动漫', animeIds.length);
   addCount(content, '画廊图片', gallery.length);
   addCount(content, '音乐', tracks.length);
@@ -646,6 +652,7 @@ const dataCenter = {
 // ============================================================
 // snapshots:月度累积快照(用于顶部堆叠柱+累计折线)
 // 同月重复跑会原地覆盖,不会重复累加
+// total 按内容总数口径(不含更新日志);历史快照每次运行都按同一口径重算,旧口径的 total 不会残留
 // ============================================================
 const currentMonth = thisMonthKey();
 const todaySnapshot = {
@@ -655,10 +662,17 @@ const todaySnapshot = {
   anime:   animeIds.length,
   gallery: gallery.length,
   updates: updates.length,
-  total:   notes.length + animeIds.length + gallery.length + updates.length,
+  total:   contentTotal({ notes: notes.length, anime: animeIds.length, gallery: gallery.length }),
 };
 
-const snapshots = (prevStats.snapshots || []).filter(s => s.month !== currentMonth);
+const snapshots = (prevStats.snapshots || [])
+  .filter(s => s.month !== currentMonth)
+  .map(s => {
+    const recomputable = ['notes', 'anime', 'gallery'].every(key => Number.isFinite(Number(s[key])) && s[key] !== null && s[key] !== '');
+    if (recomputable) return { ...s, total: contentTotal(s) };
+    console.warn(`⚠ 快照 ${s.month} 缺少笔记/作品/收藏分项计数,无法按新口径重算 total,保留原值 ${s.total}`);
+    return s;
+  });
 snapshots.push(todaySnapshot);
 snapshots.sort((a, b) => a.month.localeCompare(b.month));
 
@@ -679,7 +693,7 @@ const siteMeta = {
   generatedAt:    new Date().toISOString(),
   siteBirthday:   SITE_BIRTHDAY,
   totalDays:      Math.max(1, daysSince(SITE_BIRTHDAY)),
-  totalContent:   notes.length + animeIds.length + gallery.length + updates.length,
+  totalContent:   contentTotal({ notes: notes.length, anime: animeIds.length, gallery: gallery.length }),
   totals: {
     notes:   notes.length,
     anime:   animeIds.length,

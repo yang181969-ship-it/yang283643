@@ -25,12 +25,12 @@ function resolveSearchUrl(path) {
 
 /* ---------- 动漫数据:优先复用 anime-data.js,缺失时使用兜底 ---------- */
 const ANIME_DATA_FALLBACK = [
-  { id: "majo",      title: "魔女之旅",       desc: "魔女伊蕾娜在世界各地旅行,经历相逢与离别", tags: "奇幻 公路 旅行" },
-  { id: "frieren",   title: "葬送的芙莉莲",   desc: "精灵魔法使芙莉莲重新踏上旅程,理解生命意义", tags: "奇幻 冒险 治愈" },
+  { id: "majo",      title: "魔女之旅",       desc: "魔女伊蕾娜在世界各地旅行，经历相逢与离别", tags: "奇幻 公路 旅行" },
+  { id: "frieren",   title: "葬送的芙莉莲",   desc: "精灵魔法使芙莉莲重新踏上旅程，理解生命意义", tags: "奇幻 冒险 治愈" },
   { id: "garden",    title: "紫罗兰永恒花园", desc: "薇尔莉特·伊芙加登的故事",                   tags: "治愈 奇幻 日常" },
   { id: "slayer",    title: "鬼灭之刃",       desc: "炭治郎为让妹妹恢复原状踏上旅程",            tags: "热血 战斗 奇幻" },
   { id: "spy",       title: "间谍过家家",     desc: "间谍黄昏、超能力少女阿尼亚、暗杀者约尔的家庭喜剧", tags: "战斗 搞笑 日常" },
-  { id: "titan",     title: "进击的巨人",     desc: "那一天,人类想起了被他们支配的恐惧",        tags: "热血 奇幻 神作" },
+  { id: "titan",     title: "进击的巨人",     desc: "那一天，人类想起了被他们支配的恐惧",        tags: "热血 奇幻 神作" },
   { id: "datebattle",title: "约会大作战",     desc: "间谍为拯救精灵与其约会的故事",              tags: "奇幻 战斗 后宫" },
   { id: "suzuya",    title: "铃芽之旅",       desc: "铃芽与闭门师宗像草太一起关闭灾难源头之门",  tags: "青春 恋爱 治愈 电影" },
   { id: "xiaoyuan",  title: "魔法少女小圆",   desc: "鹿目圆与晓美焰面对魔法少女命运的故事",      tags: "奇幻 战斗 百合" },
@@ -173,7 +173,7 @@ async function runSearch(kw) {
   /* 3. 音乐 */
   const tracks = await loadMusicTracks();
   tracks.forEach(track => {
-    const artistDesc = track.artist ? `歌手:${track.artist}` : "音乐播放器里的歌曲";
+    const artistDesc = track.artist ? `歌手：${track.artist}` : "音乐播放器里的歌曲";
     if (match(track.title, q) || match(track.artist, q) || match(track.lyric, q)) {
       results.push({
         type: "音乐",
@@ -386,7 +386,7 @@ function setListboxExpanded(expanded) {
 function renderSearchIdle() {
   const panel = getSearchPanel();
   panel.dataset.state = "idle";
-  panel.querySelector("[data-search-panel-title]").textContent = "输入关键词,实时搜索笔记、动漫、音乐和页面";
+  panel.querySelector("[data-search-panel-title]").textContent = "输入关键词，实时搜索笔记、动漫、音乐和页面";
   panel.querySelector("[data-search-panel-filters]").innerHTML = "";
   panel.querySelector("[data-search-panel-body]").innerHTML = `
     <div class="search-empty search-empty--idle">

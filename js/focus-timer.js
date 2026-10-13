@@ -1,7 +1,7 @@
 /**
  * 专注计时器 —— Phase C Commit 2(v2)
  * 秒表 stopwatch:从 0 累加,无终点,reset 时若有累计则计入今日
- * 计时 countdown:从 N 倒数到 0,跑完弹 modal 并计入今日,不循环
+ * 倒计时 countdown:从 N 倒数到 0,跑完弹 modal 并计入今日,不循环
  * 共用:静音 + 长按 3s 直接重置 / 短按 confirm 重置 / visibilitychange 暂停
  */
 (function () {
@@ -20,7 +20,7 @@
     swStartedAt: 0,        // running 时的当前段起点(Date.now())
     swAccumulated: 0,      // 暂停前累计毫秒
 
-    // 计时字段
+    // 倒计时字段
     cdDuration: 0,         // 本轮总秒数
     cdRemaining: 0,
     cdEndsAt: 0,
@@ -205,7 +205,7 @@
   }
 
   // ============================================================
-  // 秒表 / 计时统一控制接口
+  // 秒表 / 倒计时统一控制接口
   // ============================================================
   function start() {
     if (state.mode === 'stopwatch') startStopwatch();
@@ -238,7 +238,7 @@
       state.swStartedAt = 0;
       state.swAccumulated = 0;
     } else {
-      // 计时:重置不计入,只有自然跑完才算
+      // 倒计时:重置不计入,只有自然跑完才算
       state.cdDuration = 0;
       state.cdRemaining = 0;
       state.cdEndsAt = 0;
@@ -266,7 +266,7 @@
     return state.swAccumulated;
   }
 
-  // ---- 计时 ----
+  // ---- 倒计时 ----
   function startCountdown() {
     if (state.status === 'idle' || state.status === 'completed') {
       state.cdDuration  = state.countdownMin * 60;
@@ -366,7 +366,7 @@
 
     pauseBtn.disabled = !isRunning;
 
-    // 秒表:有累计或暂停时可重置;计时:非 idle 时可重置
+    // 秒表:有累计或暂停时可重置;倒计时:非 idle 时可重置
     const canResetSw = state.mode === 'stopwatch' && (isRunning || isPaused || getStopwatchMs() > 0);
     const canResetCd = state.mode === 'countdown' && !isIdle;
     resetBtn.disabled = !(canResetSw || canResetCd);
@@ -462,7 +462,7 @@
   }
 
   // ============================================================
-  // Modal(仅计时跑完用)
+  // Modal(仅倒计时跑完用)
   // ============================================================
   function injectModal() {
     const existing = document.querySelector('[data-focus-modal]');
@@ -502,7 +502,7 @@
     const desc = modalRoot.querySelector('[data-focus-modal-desc]');
     if (desc) {
       const min = Math.round(seconds / 60);
-      desc.textContent = '本次专注 ' + min + ' 分钟,继续保持!';
+      desc.textContent = '本次专注 ' + min + ' 分钟，继续保持！';
     }
     window.sitePanels?.adopt('focus-complete', modalRoot, '专注完成', () => {
       modalRoot.hidden = true;

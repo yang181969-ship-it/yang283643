@@ -69,6 +69,16 @@
     font-weight: 700;
     border-left-color: var(--primary);
   }
+
+}
+
+// 标题里渲染好的行内公式：KaTeX 默认 1.21em 在 13px 目录里偏大，收到接近正文字号，不撑高行距；
+// 颜色跟随链接（含 hover / 当前章节），不用暗色主题给正文公式设的高亮色（多一层 .note-toc-list 提高优先级）
+.note-toc-list .note-toc-link .katex {
+  font-size: 1.08em;
+  line-height: 1;
+  white-space: nowrap;
+  color: inherit;
 }
 
 .note-toc-empty {
@@ -124,8 +134,17 @@
   overflow-x: hidden;
 }
 
+// 卡片随页面铺满内容宽度，正文在卡片内部收成居中的阅读栏
+.note-detail-card > .note-card-top,
+.note-detail-card > .note-detail-title,
+.note-detail-card > .note-detail-body {
+  max-width: var(--reading-measure);
+  margin-inline: auto;
+}
+
 .note-detail-title {
-  margin: 14px 0 24px;
+  margin-top: 14px;
+  margin-bottom: 24px;
   font-size: 32px;
   line-height: 1.25;
   color: var(--primary-dark);
@@ -163,7 +182,8 @@
   h2 { font-size: 22px; margin: 24px 0 12px; color: var(--primary-dark); }
   h3 { font-size: 18px; margin: 20px 0 10px; color: var(--primary-dark); }
 
-  ul {
+  ul,
+  ol {
     margin: 0 0 16px;
     padding-left: 1.5em;
   }
@@ -171,6 +191,70 @@
   li {
     margin-bottom: 6px;
     line-height: 1.8;
+  }
+
+  // 松散列表（条目之间空行）里的段落和嵌套列表不再叠加段落间距
+  li > p { margin: 0; }
+  li > ul,
+  li > ol { margin: 6px 0 0; }
+
+  blockquote {
+    margin: 0 0 16px;
+    padding: 10px 16px;
+    border-left: 3px solid var(--primary);
+    border-radius: 0 12px 12px 0;
+    background: var(--bg-panel);
+    color: var(--text-muted);
+
+    > :last-child { margin-bottom: 0; }
+  }
+
+  hr {
+    margin: 28px 0;
+    border: none;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .note-table-wrap {
+    margin: 0 0 16px;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  thead { background: var(--primary-soft); }
+
+  th,
+  td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  th {
+    color: var(--primary-dark);
+    font-weight: 700;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  p > code,
+  li > code,
+  td > code {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    font-size: 0.92em;
   }
 
   pre {

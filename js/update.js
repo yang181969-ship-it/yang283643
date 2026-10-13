@@ -605,10 +605,13 @@ function renderTimeline() {
     const { mmdd, year } = splitDateForCard(item.date);
     const isNew = isWithinDays(item.date, NEW_BADGE_DAYS);
 
-    const tags = (item.tags || []).slice(0, 3); // 最多 3 个徽章
+    // 只显示 TAG_LABELS 里有中文名和配色的标签(如 infrastructure 这类自定义标签不出徽章),最多 3 个
+    const tags = [...new Set(item.tags || [])]
+      .filter(t => Object.prototype.hasOwnProperty.call(TAG_LABELS, t))
+      .slice(0, 3);
     const tagsHtml = tags.map(t => `
       <span class="update-tag-badge" data-tag="${updateEscapeHtml(t)}">
-        ${updateEscapeHtml(TAG_LABELS[t] || t)}
+        ${updateEscapeHtml(TAG_LABELS[t])}
       </span>
     `).join('');
 

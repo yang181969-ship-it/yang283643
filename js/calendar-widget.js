@@ -177,7 +177,7 @@
       if (events.some((e) => occursOn(e, d))) btn.classList.add('cal-day--event');
       btn.dataset.date = keyOf(d);
       btn.textContent = d.getDate();
-      btn.setAttribute('aria-label', label(d) + (isToday ? ',今天' : ''));
+      btn.setAttribute('aria-label', label(d) + (isToday ? '，今天' : ''));
       btn.setAttribute('aria-pressed', String(isSelected));
       if (isToday) btn.setAttribute('aria-current', 'date');
       // 漫游 tabindex:网格只占一个 Tab 位

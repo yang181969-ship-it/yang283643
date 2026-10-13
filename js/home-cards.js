@@ -2,7 +2,7 @@
 // js/home-cards.js
 // 主页:轻量欢迎区 + 两层五张卡 —— Phase 4
 //
-//   今日一隅  东京天气(Open-Meteo)+ data/mood-map.json 的每日一句
+//   今日一隅  访客本地日期 + 东京天气(Open-Meteo)+ data/mood-map.json 的每日一句
 //   最近更新  data/updates-index.json(与 About 共用 loadUpdatesIndex,不下载日志正文)
 //   站点速览  data/site-meta.json(与 About 概览同一口径)+ 更新索引条数
 //   数学与笔记 data/notes-index.json + 最新几篇的首段预览
@@ -147,10 +147,10 @@
     if (token) params.set("update", token);
     return `index.html?${params}`;
   }
-  // 与 notes.js 详情页写入地址栏的格式一致:note = encodeURIComponent(文件路径)
+  // 与 notes.js 详情页写入地址栏的格式一致:note = 文件路径(只由 URLSearchParams 编码一次)
   function noteUrl(file) {
     const params = new URLSearchParams({ page: "notes" });
-    params.set("note", encodeURIComponent(file));
+    params.set("note", file);
     return `index.html?${params}`;
   }
   // 更新标识即 content/updates/<标识>.md(与 About 更新分区一致)
@@ -293,11 +293,12 @@
   }
 
   // ---------------- 今日一隅 ----------------
-  // 东京当天日期,如「10月13日 · 周一」(随每小时的天气刷新一起更新)
-  function tokyoDate() {
+  // 访客本地日期,如「10月13日 · 周一」,与日历组件同一个「今天」(零点由 schedulePortraitRefresh 刷新)
+  function localDate() {
     try {
-      const day = new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Tokyo", month: "long", day: "numeric" }).format(new Date());
-      const week = new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Tokyo", weekday: "short" }).format(new Date());
+      const now = new Date();
+      const day = new Intl.DateTimeFormat("zh-CN", { month: "long", day: "numeric" }).format(now);
+      const week = new Intl.DateTimeFormat("zh-CN", { weekday: "short" }).format(now);
       return `${day} · ${week}`;
     } catch {
       return "";
@@ -313,12 +314,13 @@
     const fallback = map?.default || { emoji: "🌸", text: "天气", image: "relaxed.webp", mood: "今天也慢慢来" };
     const entry = mood ? (map?.[String(mood.code)] || fallback) : fallback;
     const temp  = mood && Number.isFinite(mood.temp) ? `${Math.round(mood.temp)}°C` : "--°C";
-    const place = mood ? `今日东京 · ${entry.text || "天气"}` : "东京天气暂时没有回应";
+    // 日期是访客本地的,天气固定是东京的:文案写明「东京」,不再叫「今日东京」
+    const place = mood ? `东京 · ${entry.text || "天气"}` : "东京天气暂时没有回应";
     const image = moodImagePath(entry.image || fallback.image);
     const body = setBody(ctx, "today", `
       <div class="mood-display${mood ? "" : " is-offline"}">
         <div class="mood-info">
-          <p class="mood-date">${escapeHTML(tokyoDate())}</p>
+          <p class="mood-date">${escapeHTML(localDate())}</p>
           <div class="mood-weather">
             <span class="mood-emoji" aria-hidden="true">${escapeHTML(mood ? entry.emoji || "🌸" : "🌸")}</span>
             <div class="mood-meta">
@@ -623,6 +625,7 @@
       if (mount && mount.alive()) {
         renderPortrait(mount);
         renderStats(mount); // 建站天数跨天 +1
+        renderToday(mount); // 本地日期跨天(天气走内存缓存,不额外请求)
       }
       schedulePortraitRefresh();
     }, delay);

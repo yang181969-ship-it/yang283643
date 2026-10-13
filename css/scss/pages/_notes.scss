@@ -314,7 +314,9 @@
 }
 
 // ============================================================
-// Markdown 预览截断（卡片里只显示两行纯文本）
+// Markdown 预览截断（卡片里只显示两行文字）
+// 只靠 line-clamp 按整行截断，不再叠加 max-height（两者行高不一致时会露出半行）。
+// 摘要里的块级内容统一去掉外边距、行高与段落一致，多段落 / 列表时行与行等距，截断点总落在行边界。
 // ============================================================
 .note-markdown {
   display: -webkit-box;
@@ -323,13 +325,34 @@
   line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: 3.2em;
+  font-size: 15px;
+  line-height: 1.9;
   contain: layout;
 
-  // 预览卡片中隐藏公式块和标题
+  // 预览卡片中隐藏公式块、标题和不适合两行摘要的块
   .note-formula,
-  h1, h2, h3, h4 {
+  h1, h2, h3, h4, h5, h6,
+  pre, table, .note-table-wrap, hr, img {
     display: none;
+  }
+
+  p, ul, ol, li, blockquote {
+    margin: 0;
+    line-height: inherit;
+  }
+
+  ul, ol {
+    padding-left: 1.25em;
+  }
+
+  blockquote {
+    padding: 0;
+    border: none;
+  }
+
+  // 行内公式不额外撑高行盒
+  .katex {
+    line-height: 1;
   }
 }
 
@@ -417,10 +440,9 @@
     transform: none;
   }
 
+  // 排序按钮保持横排；与下方分类卡的间距交给 .notes-layout 的 gap
   .notes-sort-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    margin-bottom: 0;
   }
 }
 
@@ -432,6 +454,7 @@
   }
 
   .note-card p,
+  .note-markdown,
   .notes-empty {
     font-size: 14px;
   }

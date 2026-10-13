@@ -352,7 +352,7 @@
       shuffle:    '随机播放',
       one:        '单曲循环',
     };
-    loopBtn.setAttribute('aria-label', '循环模式:' + labels[state.loopMode]);
+    loopBtn.setAttribute('aria-label', '循环模式：' + labels[state.loopMode]);
   }
 
   function nextTrack(force) {

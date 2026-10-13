@@ -9,7 +9,7 @@ import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlparse, parse_qs, quote
+from urllib.parse import urlparse, parse_qs, quote, quote_plus
 from playwright.sync_api import sync_playwright
 
 OUT = Path(os.environ.get('PHASE4_OUT', 'artifacts/phase4'))
@@ -50,8 +50,8 @@ def active_nav(page):
 
 
 def note_href(file):
-    # 与 notes.js 详情页写入的格式一致：note = encodeURIComponent(file)，再整体作为查询参数编码
-    return 'index.html?page=notes&note=' + quote(quote(file, safe="~()*!.'"), safe='')
+    # 与 home-cards.js 的 noteUrl 一致：note = 文件路径，只经 URLSearchParams 编码一次（空格为 +）
+    return 'index.html?page=notes&note=' + quote_plus(file, safe="*")
 
 
 def wait_home(page):

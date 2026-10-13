@@ -43,15 +43,17 @@
 }
 
 // ============================================================
-// 今日一隅 —— 东京天气 + 每日一句 + Q 版心情头像
+// 今日一隅 —— 本地日期 + 东京天气 + 每日一句 + Q 版心情头像
 // 头像与文字并排(不再绝对定位),小屏也不会留下大块空白
+// 同排卡片更高时,内容铺满卡片正文:日期贴近标题、天气居中、每日一句贴底,头像垂直居中;
+// 卡片高度只由内容决定时(单列)三行按 gap 自然排列
 // ============================================================
 .mood-display {
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 0;
-  margin-block: auto;   // 同排卡片更高时,内容在卡内垂直居中
 }
 
 .mood-date {
@@ -63,9 +65,11 @@
 
 .mood-info {
   flex: 1 1 auto;
+  align-self: stretch;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
 }
 

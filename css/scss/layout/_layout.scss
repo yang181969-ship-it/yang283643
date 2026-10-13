@@ -69,11 +69,8 @@ main {
   min-width: 0;
 }
 
-// 卡片/网格页铺满可用宽度;长文页(含笔记详情)限制阅读宽度,居中
-// About 的 main 保持全宽:统计分区需要宽屏图表,概览/更新分区在 pages/_about.scss 内收窄到阅读宽度
-:root[data-page="notes"] main {
-  max-width: var(--page-reading-max-width);
-}
+// 所有页面共用 --page-max-width,切换页面时内容区左右边缘不跳;
+// 长文的阅读行宽(--reading-measure)只在文章卡片内部限制,见 pages/_note-detail.scss、pages/_update.scss
 
 .page-container,
 .no-card {

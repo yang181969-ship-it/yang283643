@@ -83,7 +83,10 @@ try:
     page.goto(BASE+'/?page=notes',wait_until='domcontentloaded'); page.locator('.note-card').first.wait_for()
     page.locator('.note-card').first.click(); page.wait_for_timeout(500)
     note_url = page.url
-    page.reload(wait_until='domcontentloaded'); page.wait_for_timeout(1000)
+    page.reload(wait_until='domcontentloaded')
+    # 详情要等 markdown-it(CDN)加载完才渲染，按元素出现等待，而不是固定 1 秒
+    try: page.locator('.note-detail-card').first.wait_for(timeout=10000)
+    except Exception: pass
     check('note deep-link refresh retains detail', page.locator('.note-detail-card').count()>0 and 'note=' in page.url)
     page.goto(BASE+'/html/anime-detail.html?id=majo',wait_until='domcontentloaded'); page.wait_for_timeout(500)
     page.locator('#search-toggle').click(); page.locator('#search-input').fill('傅里叶'); page.locator('.search-result-card').first.wait_for()

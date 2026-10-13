@@ -3,7 +3,7 @@
 // 站点统计(About · 统计分区):轻量 SVG/HTML 渲染
 //
 // 数据来源(均由 npm run aggregate:stats / aggregate:updates 生成):
-//   data/site-meta.json      总条目、建站日、最近内容日期
+//   data/site-meta.json      内容总数(笔记 + 作品 + 收藏)、建站日、最近内容日期
 //   data/stats.json          月度快照(增长图)、数据中心、最近变化
 //   data/updates-index.json  更新日志(最近更新日期与日志保持一致)
 // 下面 statsData 里的数字只是加载前 / 加载失败时的占位,真实数据到达后整体覆盖。
@@ -73,11 +73,12 @@
     },
   };
 
+  // 堆叠柱 = 内容(笔记 + 作品 + 收藏),柱顶与「累计」折线(快照 total)同一口径;
+  // 更新日志不算内容,不进堆叠柱,单独在 About 概览 / 更新分区统计
   const growthSeries = [
     { key: "notes", label: "笔记", color: "#4f8cff" },
     { key: "anime", label: "动漫", color: "#9b7cff" },
     { key: "gallery", label: "画廊", color: "#7bdff2" },
-    { key: "updates", label: "更新", color: "#f6b26b" },
   ];
 
   const dataCenterColors = [

@@ -345,7 +345,8 @@ npm run aggregate:stats
 
 - 读取 `data/notes-index.json`、`js/anime-data.js`、画廊数据、`data/updates-index.json`、`data/playlist.json`。
 - 写入 `data/stats.json`,供统计页主图和详情卡片读取。
-- 写入 `data/site-meta.json`,供统计页 Hero 区展示总内容数、建站天数、最新更新等单点指标。
+- 写入 `data/site-meta.json`,供统计页 Hero 区展示内容总数、建站天数、最新更新等单点指标。
+- 统计口径：内容总数(`totalContent`、快照 `total`)= 笔记 + 作品 + 收藏；更新日志是网站自身的记录，不算内容，单独记在 `totals.updates` 和快照的 `updates`。每次运行都会按这个口径重算历史快照的 `total`。
 - 音乐总数、艺术家总数和 Top 8 歌手直接根据 `data/playlist.json` 聚合；联合艺人名称不会被擅自拆分。
 - 同一个月份重复运行时会覆盖当月快照,不会重复追加。
 

@@ -49,7 +49,7 @@
 
             <!-- 4 个控件:loop / prev / play / next;歌单常驻右侧(移动端在下方) -->
             <div class="music-controls">
-              <button type="button" class="music-btn" data-music-act="loop" data-loop-mode="sequential" aria-label="循环模式:顺序播放">
+              <button type="button" class="music-btn" data-music-act="loop" data-loop-mode="sequential" aria-label="循环模式：顺序播放">
                 <!-- 顺序播放 -->
                 <svg class="music-icon-loop-sequential" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <line x1="4" y1="8" x2="17" y2="8"></line>
@@ -142,19 +142,19 @@
             <!-- Tab 切换 -->
             <div class="timer-tabs" role="tablist">
               <button type="button" class="timer-tab is-active" role="tab" data-timer-tab="stopwatch" aria-selected="true">秒表</button>
-              <button type="button" class="timer-tab" role="tab" data-timer-tab="countdown" aria-selected="false">计时</button>
+              <button type="button" class="timer-tab" role="tab" data-timer-tab="countdown" aria-selected="false">倒计时</button>
             </div>
 
             <!-- 显示器 -->
             <div class="timer-display" data-timer-display>00:00</div>
 
-            <!-- 计时模式 slider(秒表模式隐藏) -->
+            <!-- 倒计时模式 slider(秒表模式隐藏) -->
             <div class="timer-slider-wrap" data-timer-slider-wrap hidden>
-              <input type="range" class="timer-slider" data-timer-slider min="1" max="60" step="1" value="25" aria-label="计时时长(分钟)">
+              <input type="range" class="timer-slider" data-timer-slider min="1" max="60" step="1" value="25" aria-label="倒计时时长（分钟）">
               <span class="timer-slider-value" data-timer-slider-value>25 min</span>
             </div>
 
-            <!-- 进度条(仅计时模式 + 非 idle 时显示) -->
+            <!-- 进度条(仅倒计时模式 + 非 idle 时显示) -->
             <div class="timer-progress" data-timer-progress hidden>
               <div class="timer-progress__bar" data-timer-progress-bar></div>
             </div>
