@@ -54,13 +54,13 @@ with sync_playwright() as pw:
               return { rail: r.width, gap: Math.round(card.left - r.right), mainWidth: Math.round(main.width),
                 rightGap: Math.round(innerWidth - main.right) }; }''')
             states[expanded] = m
-            check(f'{w}px {"expanded" if expanded else "collapsed"} rail width', m['rail'] == (220 if expanded else 68), m)
+            check(f'{w}px {"expanded" if expanded else "collapsed"} rail width', m['rail'] == (192 if expanded else 68), m)
             check(f'{w}px {"expanded" if expanded else "collapsed"} rail-to-card gap is moderate', 40 <= m['gap'] <= 80, m)
             check(f'{w}px no horizontal overflow', page.evaluate(NO_OVERFLOW))
             if w in (1920, 1680, 1440):
                 page.screenshot(path=str(OUT / f'fix-desktop-{w}-{"expanded" if expanded else "collapsed"}.png'))
         report['metrics'][f'desktop-{w}'] = states
-        check(f'{w}px collapsing widens content by 152px', states[False]['mainWidth'] - states[True]['mainWidth'] == 152, states)
+        check(f'{w}px collapsing widens content by 124px', states[False]['mainWidth'] - states[True]['mainWidth'] == 124, states)
     page.set_viewport_size({'width': 1440, 'height': 900})
     if page.evaluate("document.documentElement.dataset.sidebarPinned") == 'true':
         page.locator('.rail-pin').click()
@@ -81,14 +81,15 @@ with sync_playwright() as pw:
     pin.click(); page.wait_for_timeout(450)
     check('expanded pin aria state + labels visible', pin.get_attribute('aria-expanded') == 'true' and pin.get_attribute('aria-label') == '收起侧栏'
           and page.evaluate("getComputedStyle(document.querySelector('.nav-label')).opacity") == '1'
-          and page.evaluate("getComputedStyle(document.querySelector('.rail-pin svg')).transform") != 'none')
+          and page.evaluate("getComputedStyle(document.querySelector('.rail-pin__close')).display") != 'none'
+          and page.evaluate("getComputedStyle(document.querySelector('.rail-pin__open')).display") == 'none')
     check('expanded state stored', page.evaluate("localStorage.getItem('y181_sidebar_pinned')") == 'true')
     page.reload(wait_until='load'); page.wait_for_timeout(600)
-    check('expanded survives reload', page.locator('.rail').bounding_box()['width'] == 220)
+    check('expanded survives reload', page.locator('.rail').bounding_box()['width'] == 192)
     page.locator('.site-nav a[href*="page=notes"]').click(); page.wait_for_timeout(800)
-    check('expanded survives SPA navigation', page.locator('.rail').bounding_box()['width'] == 220)
+    check('expanded survives SPA navigation', page.locator('.rail').bounding_box()['width'] == 192)
     page.goto(BASE + '/html/stats.html', wait_until='load'); page.wait_for_timeout(600)
-    check('expanded survives standalone page', page.locator('.rail').bounding_box()['width'] == 220)
+    check('expanded survives standalone page', page.locator('.rail').bounding_box()['width'] == 192)
     page.locator('.rail-pin').click(); page.wait_for_timeout(450)
     page.goto(BASE, wait_until='load'); page.wait_for_timeout(600)
     check('collapsed survives page change', page.locator('.rail').bounding_box()['width'] == 68)
@@ -161,7 +162,7 @@ with sync_playwright() as pw:
 
     # ---------- 3. Calendar month widget ----------
     now = page.evaluate("(() => { const d = new Date(); return [d.getMonth() + 1, d.getDate()]; })()")
-    check('date button shows local date', page.locator('.rail [data-date-month]').text_content() == f'{now[0]}月' and page.locator('.rail [data-date-day]').text_content() == str(now[1]))
+    check('date button shows local date', f'{now[0]}月' in page.evaluate("document.querySelector('[data-tool=calendar]').getAttribute('aria-label')") and page.locator('.rail [data-date-day]').text_content() == str(now[1]))
     page.locator('[data-tool="calendar"]').click(); page.wait_for_timeout(250)
     check('calendar today highlighted', page.locator('.cal-day--today').text_content() == str(now[1]))
     title = page.locator('[data-cal-title]').text_content()
@@ -181,9 +182,9 @@ with sync_playwright() as pw:
         page = ctx.new_page(); watch(page, f'clock-{w}')
         page.clock.install(time=datetime(2026, 10, 31, 23, 59, 50, tzinfo=tz))
         page.goto(BASE, wait_until='load'); page.wait_for_timeout(300)
-        before = page.evaluate("[document.querySelector('[data-date-month]').textContent, document.querySelector('[data-date-day]').textContent]")
+        before = page.evaluate("[document.querySelector('[data-tool=calendar]').getAttribute('aria-label').match(/(\\d+)月\\d+日/)[1] + '月', document.querySelector('[data-date-day]').textContent]")
         page.clock.run_for(15000)
-        after = page.evaluate("[document.querySelector('[data-date-month]').textContent, document.querySelector('[data-date-day]').textContent]")
+        after = page.evaluate("[document.querySelector('[data-tool=calendar]').getAttribute('aria-label').match(/(\\d+)月\\d+日/)[1] + '月', document.querySelector('[data-date-day]').textContent]")
         check(f'{w}px midnight rollover updates button', before == ['10月', '31'] and after == ['11月', '1'], [before, after])
         page.locator('[data-tool="calendar"]').click(); page.wait_for_timeout(200)
         check(f'{w}px month view follows rollover', '11 月' in page.locator('[data-cal-title]').text_content() and page.locator('.cal-day--today').text_content() == '1')
@@ -194,7 +195,7 @@ with sync_playwright() as pw:
         check(f'{w}px focus re-checks date', page.locator('[data-date-day]').first.text_content() == '2')
         ctx.close()
 
-    # ---------- 4. Mobile layout, toolbar, capsule; search/theme on touch ----------
+    # ---------- 4. Mobile layout, toolbar; search/theme on touch ----------
     for w, h in [(900, 768), (390, 844), (375, 812), (320, 720)]:
         ctx = browser.new_context(viewport={'width': w, 'height': h}, has_touch=True, is_mobile=True, timezone_id='Asia/Shanghai')
         page = ctx.new_page(); watch(page, f'mobile-{w}')
@@ -242,26 +243,10 @@ with sync_playwright() as pw:
         tabs = page.evaluate("document.querySelector('.anime-tabs').getBoundingClientRect().top")
         check(f'{w}px sticky anime tabs not under toolbar', tabs >= tb() - 0.5, [tabs, tb()])
 
-        # Activity capsule (timer running, off the home page).
+        # Timer running, off the home page (the mobile activity capsule was removed).
         page.goto(BASE + '/?page=notes', wait_until='load'); page.wait_for_timeout(1200)
         page.locator('.mobile-tools [data-tool="timer"]').tap(); page.locator('[data-timer-act="start"]').tap(); page.keyboard.press('Escape'); page.wait_for_timeout(600)
-        island = lambda: page.evaluate("(() => { const r = document.querySelector('.mobile-activity-island').getBoundingClientRect(); return [r.top, r.bottom]; })()")
-        visible = page.evaluate("document.querySelector('.mobile-activity-island').classList.contains('is-visible')")
-        if w <= 900 and visible:
-            i = island(); card = page.evaluate(FIRST_CARD)
-            check(f'{w}px capsule below toolbar, card below capsule', i[0] >= tb() and card - i[1] >= 12, [tb(), i, card])
-            if w == 390: page.screenshot(path=str(OUT / 'fix-mobile-390-capsule.png'))
-            page.mouse.move(w // 2, h // 2)
-            for _ in range(8): page.mouse.wheel(0, 120); page.wait_for_timeout(50)
-            page.wait_for_timeout(350)
-            st, top = page.evaluate("document.querySelector('.layout').scrollTop"), page.evaluate(FIRST_CARD)
-            check(f'{w}px capsule follows hidden toolbar', page.evaluate("document.documentElement.classList.contains('toolbar-hidden')") and island()[0] < 20)
-            for _ in range(3): page.mouse.wheel(0, -60); page.wait_for_timeout(50)
-            page.wait_for_timeout(350)
-            st2, top2 = page.evaluate("document.querySelector('.layout').scrollTop"), page.evaluate(FIRST_CARD)
-            check(f'{w}px capsule: toolbar toggle causes no content jump', abs((top2 - top) - (st - st2)) < 1 and island()[0] >= tb(), [st, st2, top, top2])
-        else:
-            check(f'{w}px capsule visible with running timer', visible)
+        check(f'{w}px no activity capsule, first card right below toolbar', page.locator('.mobile-activity-island').count() == 0 and page.evaluate(FIRST_CARD) >= tb())
         page.locator('.site-nav a[href*="page=about"]').tap(); page.wait_for_timeout(800)
         check(f'{w}px timer survives navigation, single instances',
               page.locator('.rail-widget--timer').get_attribute('data-status') == 'running'

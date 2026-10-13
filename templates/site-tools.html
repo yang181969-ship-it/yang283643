@@ -1,4 +1,4 @@
-<dialog class="tool-dialog tool-dialog--wide tool-dialog--music" id="tool-music" aria-labelledby="tool-title-music"><div class="tool-heading"><h2 id="tool-title-music">音乐</h2><button type="button" class="tool-close" data-tool-close aria-label="关闭音乐">✕</button></div><div class="music-panel"><article class="rail-widget rail-widget--music" data-widget="music" data-status="idle" aria-label="音乐播放器">
+<dialog class="tool-dialog tool-dialog--wide tool-dialog--music" id="tool-music" aria-labelledby="tool-title-music"><div class="tool-heading"><h2 id="tool-title-music">音乐</h2><button type="button" class="tool-close" data-tool-close aria-label="关闭音乐"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="music-panel"><article class="rail-widget rail-widget--music" data-widget="music" data-status="idle" aria-label="音乐播放器">
           <header class="rail-widget__header">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M9 18V5l12-2v13"></path>
@@ -125,9 +125,9 @@
             <input class="music-playlist__search-input" type="search" data-music-playlist-search placeholder="搜索歌曲或歌手" aria-label="搜索歌单" autocomplete="off">
           </div>
           <p class="music-playlist__empty" data-music-playlist-empty hidden>没有找到匹配的音乐</p>
-          <ul class="music-playlist__list" data-music-playlist-list aria-label="歌曲列表"></ul>
+          <ul class="music-playlist__list" data-music-playlist-list data-scroll-fade aria-label="歌曲列表"></ul>
         </section></div></dialog>
-<dialog class="tool-dialog" id="tool-timer" aria-labelledby="tool-title-timer"><div class="tool-heading"><h2 id="tool-title-timer">计时</h2><button type="button" class="tool-close" data-tool-close aria-label="关闭计时">✕</button></div><article class="rail-widget rail-widget--timer" data-widget="timer" data-status="idle" aria-label="专注计时器">
+<dialog class="tool-dialog tool-dialog--timer" id="tool-timer" aria-labelledby="tool-title-timer"><div class="tool-heading"><h2 id="tool-title-timer">计时</h2><button type="button" class="tool-close" data-tool-close aria-label="关闭计时"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><article class="rail-widget rail-widget--timer" data-widget="timer" data-status="idle" aria-label="专注计时器">
           <header class="rail-widget__header">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="10" y1="2" x2="14" y2="2"></line>
@@ -171,7 +171,7 @@
 
           </div>
         </article></dialog>
-<dialog class="tool-dialog tool-dialog--wide tool-dialog--calendar" id="tool-calendar" aria-labelledby="tool-title-calendar"><div class="tool-heading"><h2 id="tool-title-calendar">日历</h2><button type="button" class="tool-close" data-tool-close aria-label="关闭日历">✕</button></div><div class="calendar-panel">
+<dialog class="tool-dialog tool-dialog--wide tool-dialog--calendar" id="tool-calendar" aria-labelledby="tool-title-calendar"><div class="tool-heading"><h2 id="tool-title-calendar">日历</h2><button type="button" class="tool-close" data-tool-close aria-label="关闭日历"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="calendar-panel" data-scroll-fade>
         <section class="cal-summary" aria-live="polite">
           <span class="cal-summary__day" data-cal-sel-day>—</span>
           <div class="cal-summary__text">
@@ -236,11 +236,10 @@
                 aria-controls="search-results"
               >
               <button id="search-clear" class="search-clear" type="button" title="清空" aria-label="清空搜索">✕</button>
-              <kbd class="search-esc" aria-hidden="true">Esc</kbd>
-              <button type="button" class="tool-close search-close" data-tool-close aria-label="关闭搜索">✕</button>
+              <button type="button" class="tool-close search-close" data-tool-close aria-label="关闭搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
             </div>
           </div></div></dialog>
-<dialog class="tool-dialog tool-dialog--popover" id="tool-theme" data-panel="popover" aria-labelledby="tool-title-theme"><div class="tool-heading"><h2 id="tool-title-theme">主题</h2><button type="button" class="tool-close" data-tool-close aria-label="关闭主题">✕</button></div><div class="theme-control"><div class="theme-panel" id="theme-panel">
+<dialog class="tool-dialog tool-dialog--popover" id="tool-theme" data-panel="popover" aria-labelledby="tool-title-theme"><div class="tool-heading"><h2 id="tool-title-theme">主题</h2><button type="button" class="tool-close" data-tool-close aria-label="关闭主题"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="theme-control"><div class="theme-panel" id="theme-panel">
 
             <label>模式</label>
             <div class="theme-mode-group" role="radiogroup" aria-label="主题模式">

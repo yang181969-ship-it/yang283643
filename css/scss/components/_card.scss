@@ -14,7 +14,8 @@
 // Phase 2: 复用 card-surface + card-hover,DRY 掉原来手写的三行
 //
 // 额外排除画廊/番剧的自定义工具区,避免通用 section 卡片覆盖页面级样式。
-section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+// 工具弹窗(.tool-dialog)内的 section 自带面板样式,不套通用卡片。
+section:not(.no-card):not(.tool-dialog section):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
   @include card-surface;
   @include card-hover;
   padding: 24px;
@@ -51,7 +52,7 @@ section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not
   .note-card,
   .update-card,
   .update-detail-card,
-  section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+  section:not(.no-card):not(.tool-dialog section):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 20px;
     border-radius: var(--radius-card);
   }
@@ -63,7 +64,7 @@ section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not
   .note-card,
   .update-card,
   .update-detail-card,
-  section:not(.no-card):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
+  section:not(.no-card):not(.tool-dialog section):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
     padding: 18px;
   }
 }

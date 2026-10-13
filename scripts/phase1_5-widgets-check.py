@@ -150,7 +150,7 @@ with sync_playwright() as pw:
           and page.locator('[data-music-playlist-list] li.is-current').get_attribute('data-idx') == '1')
     page.locator('[data-music-act="next"]').click(); page.wait_for_timeout(300)
     check('music: no duplicated listeners after repeated open/close', page.locator('[data-music-playlist-list] li.is-current').get_attribute('data-idx') == '2')
-    page.locator('.music-panel').click(position={'x': 5, 'y': 5}); page.wait_for_timeout(150)
+    page.locator('.music-panel').click(position={'x': 30, 'y': 30}); page.wait_for_timeout(150)
     check('music: click inside does not close', page.evaluate(OPEN) == ['tool-music'])
     page.mouse.click(10, 10); page.wait_for_timeout(250)
     check('music: backdrop click closes, music continues', page.evaluate(OPEN) == [] and page.evaluate("!document.getElementById('music-audio').paused"))
@@ -185,9 +185,9 @@ with sync_playwright() as pw:
     check('calendar: back to today', page.locator('[data-cal-title]').text_content() == title and page.locator('.cal-day--selected').text_content() == str(today))
     page.screenshot(path=str(OUT / 'calendar-desktop.png'))
     page.keyboard.press('Escape')
-    m = page.evaluate("[document.querySelector('.rail [data-date-month]').textContent, document.querySelector('.rail [data-date-day]').textContent, "
-                      "(() => { const e = document.querySelector('.rail .date-icon__month'); return e.scrollWidth <= e.clientWidth; })()]")
-    check('date icon shows local month/day without overflow', m[0] == page.evaluate("`${new Date().getMonth() + 1}月`") and m[1] == str(today) and m[2], m)
+    m = page.evaluate("[document.querySelector('.rail [data-tool=calendar]').getAttribute('aria-label'), document.querySelector('.rail [data-date-day]').textContent, "
+                      "(() => { const t = document.querySelector('.rail .date-icon__day').getBBox(), r = document.querySelector('.rail .date-icon rect').getBBox(); return t.x >= r.x && t.x + t.width <= r.x + r.width; })()]")
+    check('date icon shows local day without overflow (month in label)', page.evaluate("`${new Date().getMonth() + 1}月`") in m[0] and m[1] == str(today) and m[2], m)
     ctx.close()
 
     # ---------- Important days + leap year (simulated clock) ----------

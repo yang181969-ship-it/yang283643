@@ -96,7 +96,7 @@ try:
     clockpage.clock.pause_at(datetime.fromisoformat('2026-12-31T23:59:59+08:00'))
     check('date before local midnight', clockpage.locator('[data-date-day]').text_content()=='31')
     clockpage.clock.fast_forward(2000)
-    check('midnight year rollover updates icon', clockpage.locator('[data-date-day]').text_content()=='1' and clockpage.locator('[data-date-month]').text_content()=='1月')
+    check('midnight year rollover updates icon', clockpage.locator('[data-date-day]').text_content()=='1' and '2027年1月1日' in clockpage.locator('[data-tool=calendar]').first.get_attribute('aria-label'))
     clockpage.evaluate('document.querySelector("[data-tool=calendar]").click(); document.querySelector("[data-cal-today]").click()')
     check('today uses current local year and month', '2027' in clockpage.locator('[data-cal-title]').text_content() and clockpage.locator('.cal-day--today').text_content()=='1')
     clockpage.evaluate('''() => {

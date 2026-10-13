@@ -61,7 +61,7 @@ try:
     touch = browser.new_context(viewport={'width':1024,'height':768},has_touch=True,is_mobile=True)
     touchpage=touch.new_page();touchpage.goto(BASE,wait_until='domcontentloaded');touchpage.wait_for_timeout(1600)
     touchpage.locator('.rail-pin').tap();touchpage.wait_for_timeout(300)
-    check('touch desktop click alternative expands sidebar',touchpage.locator('.rail').bounding_box()['width']==220)
+    check('touch desktop click alternative expands sidebar',touchpage.locator('.rail').bounding_box()['width']==192)
     touchpage.set_viewport_size({'width':1024,'height':400})
     check('short desktop sidebar scrolls internally',touchpage.locator('.rail').evaluate('(r)=>r.scrollHeight>r.clientHeight && getComputedStyle(r).overflowY==="auto"'))
     browser.close()

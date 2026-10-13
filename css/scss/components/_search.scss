@@ -20,11 +20,11 @@
 #tool-search {
   --palette-top: max(10vh, 24px);
   margin: var(--palette-top) auto auto;
-  width: min(720px, calc(100vw - 32px));
+  width: min(680px, calc(100vw - 32px));
   max-height: calc(100dvh - var(--palette-top) - 24px);
   padding: 0;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--tool-radius);
   background: var(--glass-bg-fallback);
   box-shadow:
     var(--glass-shadow-hover),
@@ -67,12 +67,13 @@
   border-bottom: 1px solid var(--border-soft);
 }
 
+// 行高 = 关闭按钮 + 上下各一个 --tool-close-inset,关闭按钮与其他弹窗处于同一右上角位置
 .search-input-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 60px;
-  padding: 0 12px 0 18px;
+  height: calc(var(--tool-close) + 2 * var(--tool-close-inset));
+  padding: 0 var(--tool-close-inset) 0 18px;
 }
 
 .search-icon {
@@ -132,7 +133,6 @@
   }
 }
 
-.search-esc,
 .search-popover__footer kbd {
   display: inline-flex;
   align-items: center;
@@ -148,17 +148,9 @@
   font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-.search-esc {
-  flex: none;
-}
-
-// 桌面显示 Esc 提示;触屏/窄屏改为关闭按钮
+// 显式关闭按钮(所有设备);Esc 仍可关闭,桌面底栏保留快捷键说明
 #tool-search .search-close {
-  display: none;
-  flex-basis: 40px;
-  width: 40px;
-  height: 40px;
-  font-size: 13px;
+  margin-left: 4px;
 }
 
 // ============================================================
@@ -451,13 +443,8 @@
 // 触屏 / 窄屏:顶部工具栏下方的宽搜索层,按可见视口(含软键盘)限高
 // ============================================================
 @media (hover: none), (max-width: 900px) {
-  .search-esc,
   .search-popover__footer {
     display: none;
-  }
-
-  #tool-search .search-close {
-    display: inline-flex;
   }
 }
 
@@ -466,21 +453,21 @@
     // 56px 为移动顶栏高度;--vv-* 由 search.js 根据 visualViewport 更新
     --palette-top: calc(env(safe-area-inset-top) + 56px + 8px);
     --nav-space: calc(72px + env(safe-area-inset-bottom));
+    // 约 92vw 居中;高度随内容,最多 70dvh,软键盘弹出时再按可见视口收紧
     position: fixed;
-    inset: auto max(8px, env(safe-area-inset-right)) auto max(8px, env(safe-area-inset-left));
+    inset: auto max(4vw, env(safe-area-inset-right)) auto max(4vw, env(safe-area-inset-left));
     top: calc(var(--vv-top, 0px) + var(--palette-top));
     width: auto;
     margin: 0;
     max-height: min(
+      70dvh,
       calc(var(--vv-height, 100dvh) - var(--palette-top) - 8px),
       calc(100dvh - var(--palette-top) - var(--nav-space))
     );
-    border-radius: 18px;
   }
 
   .search-input-wrap {
-    height: 54px;
-    padding: 0 6px 0 14px;
+    padding-left: 14px;
   }
 
   #tool-search .search-input {

@@ -57,13 +57,27 @@
     stack.push(key);
     syncModalState();
     emit('site-panel:open', key);
+    requestAnimationFrame(() => syncFades(panel.dialog));
     // Text inputs (search) take focus; music focuses its play button rather than the playlist filter,
     // so touch devices do not pop the keyboard on open.
     const first = panel.dialog.querySelector('[data-autofocus]:not(:disabled), [autofocus], input[type="text"]:not([hidden])');
     (first || panel.dialog.querySelector(focusable))?.focus({ preventScroll: true });
   }
+  // Scroll hint for inner scroll areas marked [data-scroll-fade]: data-fade-bottom is set only while
+  // content continues below. Updated on scroll / resize / interaction inside the panel, never polled.
+  function syncFades(dialog) {
+    dialog.querySelectorAll('[data-scroll-fade]').forEach(el => {
+      el.toggleAttribute('data-fade-bottom', el.scrollHeight - el.clientHeight - el.scrollTop > 2);
+    });
+  }
+  const fadeObserver = new ResizeObserver(entries => {
+    new Set(entries.map(entry => entry.target.closest('dialog'))).forEach(dialog => dialog && syncFades(dialog));
+  });
   function register(key, dialog, onClose) {
     panels.set(key, { dialog, onClose });
+    dialog.querySelectorAll('[data-scroll-fade]').forEach(el => fadeObserver.observe(el));
+    dialog.addEventListener('scroll', () => syncFades(dialog), { capture: true, passive: true });
+    ['input', 'click'].forEach(type => dialog.addEventListener(type, () => requestAnimationFrame(() => syncFades(dialog))));
     dialog.addEventListener('cancel', event => { event.preventDefault(); close(key); });
     let backdropDown = false;
     dialog.addEventListener('pointerdown', event => {
@@ -210,7 +224,7 @@
     midnightTimer = setTimeout(refreshDate, midnight - now + 50);
     if (key === today) return;
     today = key;
-    document.querySelectorAll('[data-date-month]').forEach(el => { el.textContent = `${now.getMonth() + 1}月`; });
+    // Line calendar icon shows the day number only; the month is in the button's aria-label.
     document.querySelectorAll('[data-date-day]').forEach(el => { el.textContent = now.getDate(); });
     document.querySelectorAll('[data-tool="calendar"]').forEach(el => {
       el.setAttribute('aria-label', `日历，今天 ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`);

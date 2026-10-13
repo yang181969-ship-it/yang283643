@@ -46,7 +46,8 @@
       loopBtn, prevBtn, playBtn, nextBtn,
       volumeEl, volumeValueEl,
       lyricsToggleBtn, lyricsEl, lyricsInnerEl,
-      playlistEl, playlistListEl, playlistCountEl, playlistSearchEl, playlistEmptyEl;
+      playlistEl, playlistListEl, playlistCountEl, playlistSearchEl, playlistEmptyEl,
+      ringEls = [];
 
   function getSiteRootUrl() {
     const script = document.currentScript
@@ -87,6 +88,7 @@
     playlistCountEl = playlistEl?.querySelector('[data-music-playlist-count]');
     playlistSearchEl = playlistEl?.querySelector('[data-music-playlist-search]');
     playlistEmptyEl = playlistEl?.querySelector('[data-music-playlist-empty]');
+    ringEls = [...document.querySelectorAll('[data-music-ring]')];
 
     bindEvents();
     restoreLoop();
@@ -536,7 +538,9 @@
     const item = playlistListEl?.querySelector(`li[data-idx="${index}"]`);
     if (!item || item.hidden) return;
     const list = playlistListEl;
-    const top = item.offsetTop - list.clientHeight / 2 + item.offsetHeight / 2;
+    // 按列表自身坐标计算(offsetTop 相对的是弹窗,会多算上方播放区/标题的高度)
+    const offset = item.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+    const top = offset - list.clientHeight / 2 + item.offsetHeight / 2;
     list.scrollTo({ top: Math.max(0, top), behavior: smooth ? 'smooth' : 'auto' });
   }
 
@@ -596,6 +600,7 @@
     root.dataset.status = isPlaying ? 'playing' : 'idle';
     if (playlistEl) playlistEl.dataset.status = root.dataset.status;
     playBtn.setAttribute('aria-label', isPlaying ? '暂停' : '播放');
+    syncRing();
     persistState();
   }
 
@@ -610,6 +615,33 @@
     timeCurEl.textContent = formatTime(cur);
     timeTotEl.textContent = formatTime(dur);
     syncLyric(cur);
+    syncRing();
+  }
+
+  // 导航音乐按钮的进度环:剩余比例 = 1 - currentTime / duration。
+  // 只在 audio 事件(timeupdate / seek / 切歌 / 播放暂停)时更新,不额外轮询;
+  // 平滑过渡由 CSS 完成,回退或大幅跳转(拖动、切歌、单曲循环重头)时直接跳到位。
+  // 只在音频真实播放时显示:暂停、结束、出错、停止都恢复静态音符。
+  const RING_LENGTH = 2 * Math.PI * 16; // 与模板中 r="16" 一致
+  let ringLast = 0;
+  let ringShown = false;
+  function syncRing(snap) {
+    if (!ringEls.length) return;
+    const dur = audio.duration;
+    const p = Number.isFinite(dur) && dur > 0 ? Math.min(1, Math.max(0, audio.currentTime / dur)) : 0;
+    const playing = !audio.paused && !audio.ended && !audio.error;
+    // 重新出现时直接定位到当前进度,不从上次隐藏前的位置动画过来
+    const jump = snap || !ringShown || p < ringLast || p - ringLast > 0.02;
+    ringLast = p;
+    ringShown = playing;
+    ringEls.forEach((ring) => {
+      const button = ring.closest('[data-tool="music"]');
+      if (playing) button.dataset.ring = 'playing';
+      else delete button.dataset.ring;
+      ring.style.transition = jump ? 'none' : '';
+      ring.style.strokeDashoffset = (p * RING_LENGTH).toFixed(2);
+      ring.style.opacity = p >= 0.999 ? '0' : '';
+    });
   }
 
   function formatTime(s) {
@@ -712,6 +744,9 @@
     audio.addEventListener('pause',    () => updatePlayingState(false));
     audio.addEventListener('timeupdate', updateProgress);
     audio.addEventListener('loadedmetadata', updateProgress);
+    audio.addEventListener('emptied', () => syncRing(true));
+    audio.addEventListener('seeking', () => syncRing(true));
+    ['ended', 'error', 'abort'].forEach((type) => audio.addEventListener(type, () => syncRing(true)));
     audio.addEventListener('ended', () => {
       // one 由 audio.loop 处理(不会触发 ended);这里只处理 shuffle / sequential
       if (state.loopMode === 'one') return;
