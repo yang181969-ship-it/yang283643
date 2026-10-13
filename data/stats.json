@@ -60,8 +60,8 @@
       "notes": 8,
       "anime": 10,
       "gallery": 17,
-      "updates": 16,
-      "total": 51
+      "updates": 17,
+      "total": 52
     }
   ],
   "breakdowns": {
@@ -152,7 +152,7 @@
       },
       {
         "label": "2026-10",
-        "value": 2
+        "value": 3
       }
     ],
     "musicTopArtists": [
@@ -199,16 +199,16 @@
           {
             "id": "overview-content",
             "name": "内容构成",
-            "total": 63,
+            "total": 64,
             "unit": "项",
             "items": [
               {
-                "name": "画廊图片",
+                "name": "更新日志",
                 "value": 17
               },
               {
-                "name": "更新日志",
-                "value": 16
+                "name": "画廊图片",
+                "value": 17
               },
               {
                 "name": "音乐",
@@ -227,7 +227,7 @@
           {
             "id": "overview-updates",
             "name": "更新概况",
-            "total": 16,
+            "total": 17,
             "unit": "条",
             "items": [
               {
@@ -236,7 +236,7 @@
               },
               {
                 "name": "optimization",
-                "value": 4
+                "value": 5
               },
               {
                 "name": "fix",
@@ -537,12 +537,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 25385,
+            "total": 29086,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 19964
+                "value": 23665
               },
               {
                 "name": "笔记字数",
@@ -577,12 +577,12 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 19964,
+            "total": 23665,
             "unit": "字",
             "items": [
               {
                 "name": "optimization",
-                "value": 11452
+                "value": 15153
               },
               {
                 "name": "feature",
@@ -615,6 +615,13 @@
     ]
   },
   "recentChanges": [
+    {
+      "date": "2026-10-14",
+      "title": "主页全面重构：轻量欢迎区 + 五张功能卡片，移动端布局重新设计",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
     {
       "date": "2026-10-13",
       "title": "全站导航与小组件系统重构，新增「生活」页面，「关于」升级为网站信息中心",
@@ -1057,5 +1064,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-13T13:20:17.013Z"
+  "generatedAt": "2026-10-13T15:17:04.084Z"
 }

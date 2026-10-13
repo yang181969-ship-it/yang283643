@@ -231,7 +231,7 @@ npm run portrait:rotation
 作用:
 
 - 扫描 `assets/portrait/q` 和 `assets/portrait/half`。
-- 为两组主页卡片人像生成一个稳定打乱的每日轮换顺序。
+- 为两组人像生成一个稳定打乱的每日轮换顺序(主页欢迎区目前使用 Q 版一组 `sets.q`,半身一组 `sets.half` 保留备用)。
 - 写入 `data/portrait-rotation.json`,供 `js/home-cards.js` 在首页读取。
 - 首页会按浏览器本地日期计算当天图片,并在每天零点后自动刷新。
 
@@ -393,7 +393,7 @@ node scripts/12-split-notes.mjs
 
 ### portrait-rotation.json
 
-这是 `11-generate-portrait-rotation.mjs` 生成的主页人像每日轮换数据。`js/home-cards.js` 会读取其中的 `startDate` 和 `sets.q` / `sets.half`,按当天日期选择首页卡片右下角的人像图片。
+这是 `11-generate-portrait-rotation.mjs` 生成的主页人像每日轮换数据。`js/home-cards.js` 会读取其中的 `startDate` 和 `sets.q`,按当天日期选择主页欢迎区右侧的 Q 版人物图片(`sets.half` 目前没有页面使用)。
 
 这个文件可以手动检查顺序,但通常不建议手写维护。需要换顺序时重新运行:
 
@@ -423,7 +423,7 @@ npm run aggregate:stats
 
 ### site-meta.json
 
-这是 `7-aggregate-stats.mjs` 生成的站点单点指标数据。统计页会读取其中的 `siteBirthday`、`totalDays`、`totalContent`、`totals`、`latestUpdate` 和 `newAnimeCount`。
+这是 `7-aggregate-stats.mjs` 生成的站点单点指标数据。统计页会读取其中的 `siteBirthday`、`totalDays`、`totalContent`、`totals`、`latestUpdate` 和 `newAnimeCount`;About 概览和主页「站点速览」卡读取 `siteBirthday` 与 `totals`(笔记 / 作品 = `totals.anime` / 收藏 = `totals.gallery`)。
 
 这个文件通常不手写维护。需要刷新时重新运行:
 

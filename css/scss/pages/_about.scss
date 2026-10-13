@@ -1,7 +1,8 @@
 // ============================================================
-// 关于页：分区标签（样式见 components/_section-tabs.scss）+ 概览 / 统计 / 更新
+// 关于页：Hero（三个分区共用）+ 分区标签（样式见 components/_section-tabs.scss）+ 概览 / 统计 / 更新
+// 顶部结构与 Life 统一：大横幅在上、分区标签在下。
 // main 在 About 下保持全宽：统计分区沿用原统计页的宽屏图表，
-// 标签栏、概览与更新分区收窄到原阅读宽度并居中，三个分区切换时标签栏位置不变。
+// Hero、标签栏、概览与更新分区收窄到原阅读宽度并居中，三个分区切换时标签栏位置不变。
 // ============================================================
 
 @use '../abstracts/mixins' as *;
@@ -17,6 +18,7 @@
   gap: 20px;
 }
 
+.about-hero,
 .about-tabs,
 .about-panel:not(.about-panel--wide) {
   width: 100%;
@@ -68,61 +70,96 @@
   scroll-margin-top: var(--about-tabs-space);
 }
 
+// ============================================================
+// Hero：与 Life / 主页同一视觉——左侧主题色渐变 + 文字，右侧 Q 版半身人物
+// （渐变与光晕都跟随主题色、辉光开关和深色模式，无需单独的背景大图）
+// ============================================================
 .about-hero {
-  --about-hero-image: url("../assets/pages/aboutpage.webp");
-
   position: relative;
-  min-height: 280px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 36px;
   overflow: hidden;
   border-radius: var(--radius-card-lg);
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  box-shadow:
-    0 18px 48px rgba(86, 103, 160, 0.16),
-    inset 0 0 0 1px rgba(120, 140, 210, 0.08);
-  background-image:
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.68) 0%,
-      rgba(255, 255, 255, 0.46) 36%,
-      rgba(255, 255, 255, 0.12) 68%,
-      rgba(255, 255, 255, 0.04) 100%
-    ),
-    var(--about-hero-image);
-  background-size: cover;
-  background-position: center 48%;
-  background-repeat: no-repeat;
+  background:
+    linear-gradient(115deg, var(--primary-soft) 0%, transparent 62%),
+    var(--glass-bg-weak);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+
+  // 右侧一团柔和的主题色光晕，跟随辉光开关
+  &::before {
+    content: "";
+    position: absolute;
+    right: -60px;
+    bottom: -120px;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsla(var(--primary-hue), 80%, 68%, calc(0.28 * var(--glow-intensity))), transparent 68%);
+    pointer-events: none;
+  }
 }
 
-.about-hero__content {
+.about-hero__text {
   position: relative;
-  z-index: 1;
-  max-width: 560px;
-  padding: 64px 56px;
+  min-width: 0;
+  max-width: 720px;
 }
 
 .about-hero__eyebrow {
-  margin: 0 0 10px;
-  color: var(--primary);
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0;
+  margin: 0 0 6px;
+  color: var(--primary-dark);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.about-hero h1 {
+.about-hero__title {
   margin: 0;
-  color: #23345f;
-  font-size: 3rem;
-  line-height: 1.14;
-  letter-spacing: 0;
+  color: var(--text-main);
+  font-size: clamp(28px, 3.2vw, 40px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
 }
 
-.about-hero p:not(.about-hero__eyebrow) {
-  max-width: 520px;
-  margin: 16px 0 0;
-  color: #4f5f83;
-  font-size: 1.05rem;
-  line-height: 1.9;
+.about-hero__lead {
+  margin: 10px 0 0;
+  color: var(--text-main);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.about-hero__desc {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.about-hero__art {
+  position: relative;
+  width: 188px;
+  height: 188px;
+  margin: -8px 0 -28px;
+  align-self: end;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent);
+    mask-image: linear-gradient(to bottom, #000 72%, transparent);
+  }
 }
 
 .about-layout {
@@ -780,27 +817,6 @@ html.is-modal-open .content-scroll {
 }
 
 [data-theme="dark"] {
-  .about-hero {
-    border-color: rgba(255, 255, 255, 0.16);
-    background-image:
-      linear-gradient(
-        90deg,
-        rgba(13, 18, 32, 0.74) 0%,
-        rgba(13, 18, 32, 0.52) 40%,
-        rgba(13, 18, 32, 0.16) 72%,
-        rgba(13, 18, 32, 0.06) 100%
-      ),
-      var(--about-hero-image);
-  }
-
-  .about-hero h1 {
-    color: #eef2ff;
-  }
-
-  .about-hero p:not(.about-hero__eyebrow) {
-    color: rgba(238, 242, 255, 0.86);
-  }
-
   .about-declaration-modal__close {
     background: rgba(28, 34, 48, 0.72);
   }
@@ -832,21 +848,14 @@ html.is-modal-open .content-scroll {
 
 @include laptop {
   .about-hero {
-    min-height: 240px;
-    background-position: center;
+    gap: 16px;
+    padding: 22px 22px 20px;
   }
 
-  .about-hero__content {
-    padding: 38px 28px;
-  }
-
-  .about-hero h1 {
-    font-size: 2.2rem;
-  }
-
-  .about-hero p:not(.about-hero__eyebrow) {
-    font-size: 1rem;
-    line-height: 1.9;
+  .about-hero__art {
+    width: 132px;
+    height: 132px;
+    margin: -4px -6px -20px 0;
   }
 
   .about-layout {
@@ -878,45 +887,8 @@ html.is-modal-open .content-scroll {
     gap: 16px;
   }
 
-  .about-hero {
-    --about-hero-image: url("../assets/pages/about-mobile.webp");
-
-    min-height: 220px;
-    border-radius: var(--radius-card);
-    background-image:
-      linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.90) 0%,
-        rgba(255, 255, 255, 0.78) 40%,
-        rgba(255, 255, 255, 0.55) 72%,
-        rgba(255, 255, 255, 0.30) 100%
-      ),
-      var(--about-hero-image);
-  }
-
-  [data-theme="dark"] .about-hero {
-    background-image:
-      linear-gradient(
-        90deg,
-        rgba(13, 18, 32, 0.92) 0%,
-        rgba(13, 18, 32, 0.75) 40%,
-        rgba(13, 18, 32, 0.50) 72%,
-        rgba(13, 18, 32, 0.28) 100%
-      ),
-      var(--about-hero-image);
-  }
-
-  .about-hero__content {
-    padding: 30px 20px;
-  }
-
-  .about-hero h1 {
-    font-size: 1.85rem;
-  }
-
-  .about-hero p:not(.about-hero__eyebrow) {
-    font-size: 0.94rem;
-  }
+  .about-hero__lead { font-size: 16px; }
+  .about-hero__desc { font-size: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -933,17 +905,22 @@ html.is-modal-open .content-scroll {
     gap: 14px;
   }
 
+  // 小屏：插画缩到标题右侧，正文占满整行（同 Life）
   .about-hero {
-    min-height: 220px;
-    border-radius: var(--radius-card);
+    display: block;
+    padding: 20px 18px 18px;
   }
 
-  .about-hero__content {
-    padding: 30px 20px;
-  }
+  .about-hero__title,
+  .about-hero__eyebrow { padding-right: 92px; }
 
-  .about-hero h1 {
-    font-size: 1.85rem;
+  .about-hero__art {
+    position: absolute;
+    top: 10px;
+    right: 8px;
+    width: 92px;
+    height: 92px;
+    margin: 0;
   }
 
   .about-card--declaration,

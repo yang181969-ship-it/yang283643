@@ -162,11 +162,12 @@ with sync_playwright() as pw:
 
     # home cards still lead to the content
     page.goto(f'{BASE}/index.html', wait_until='load'); settle(page, 1500)
-    page.click('[data-card="anime"] .bento-card-link'); page.wait_for_load_state('load'); settle(page, 1200)
-    check('home anime card -> Life works', query(page).get('tab') == 'works' and page.locator('.life-work').count() == 10, page.url)
+    # Phase 4：动漫 / 画廊卡并入主页「生活片段」，改用卡内的分区入口
+    page.click('[data-card="life"] .home-life-chip >> nth=0'); page.wait_for_load_state('load'); settle(page, 1200)
+    check('home life card works link -> Life works', query(page).get('tab') == 'works' and page.locator('.life-work').count() == 10, page.url)
     page.goto(f'{BASE}/index.html', wait_until='load'); settle(page, 1500)
-    page.click('[data-card="gallery"] .bento-card-link'); page.wait_for_load_state('load'); settle(page, 1500)
-    check('home gallery card -> Life gallery', query(page).get('type') == 'gallery' and page.locator('.gallery-item').count() == 55, page.url)
+    page.click('[data-card="life"] .home-life-chip >> nth=1'); page.wait_for_load_state('load'); settle(page, 1500)
+    check('home life card collections link -> Life gallery', query(page).get('type') == 'gallery' and page.locator('.gallery-item').count() == 55, page.url)
 
     # SPA re-entry: home -> life -> notes -> life (no duplicate bindings)
     page.goto(f'{BASE}/index.html', wait_until='load'); settle(page, 1500)

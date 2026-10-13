@@ -80,25 +80,26 @@
 
 | 分类 | 使用次数 |
 | --- | ---: |
-| 建站日志 | 16 |
+| 建站日志 | 17 |
 
 ### 当前已使用标签
 
 | 标签值 | 显示文案 | 使用次数 |
 | --- | --- | ---: |
-| `feature` | 功能更新 | 13 |
-| `mobile` | 移动端适配 | 4 |
-| `visual` | 视觉优化 | 4 |
-| `fix` | 修复问题 | 2 |
+| `feature` | 功能更新 | 14 |
+| `mobile` | 移动端适配 | 5 |
+| `visual` | 视觉优化 | 5 |
+| `fix` | 修复问题 | 3 |
+| `interaction` | interaction | 2 |
+| `perf` | 性能优化 | 2 |
+| `responsive` | responsive | 2 |
 | `about` | about | 1 |
 | `cloudflare` | cloudflare | 1 |
 | `deployment` | deployment | 1 |
+| `home` | home | 1 |
 | `infrastructure` | infrastructure | 1 |
-| `interaction` | interaction | 1 |
 | `life` | life | 1 |
 | `navigation` | navigation | 1 |
-| `perf` | 性能优化 | 1 |
-| `responsive` | responsive | 1 |
 | `widgets` | widgets | 1 |
 
 ### 当前已使用 primary
@@ -106,7 +107,7 @@
 | primary | 使用次数 |
 | --- | ---: |
 | `feature` | 11 |
-| `optimization` | 4 |
+| `optimization` | 5 |
 | `fix` | 1 |
 
 ### 页面已配置但暂无内容的筛选项

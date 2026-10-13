@@ -1,0 +1,205 @@
+// ============================================================
+// 主页 Home —— Phase 4
+// 轻量欢迎区 + 两层五张卡
+//
+// DOM 顺序 = 阅读优先级:欢迎区 → 数学与笔记 → 生活片段 → 最近更新 → 今日一隅 → 站点速览
+//   ≥ 901px  第一层:今日一隅 / 最近更新 / 站点速览(各 4/12)
+//            第二层:数学与笔记(7/12)/ 生活片段(5/12)
+//   640–900  两列:笔记 | 生活,更新通栏,今日 | 速览
+//   < 640    单列,按 DOM 顺序自然排列
+// 所有行高随内容伸展,不设固定行高。
+// ============================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// ============================================================
+// 网格摆放
+// ============================================================
+.home-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: stretch;
+
+  > .home-hero               { grid-column: 1 / -1;       grid-row: 1; }
+  > [data-card="today"]      { grid-column: 1 / span 4;   grid-row: 2; }
+  > [data-card="update"]     { grid-column: 5 / span 4;   grid-row: 2; }
+  > [data-card="stats"]      { grid-column: 9 / span 4;   grid-row: 2; }
+  > [data-card="notes"]      { grid-column: 1 / span 7;   grid-row: 3; }
+  > [data-card="life"]       { grid-column: 8 / span 5;   grid-row: 3; }
+
+  // 卡片高度由内容决定(共用骨架的 min-height 只适合旧固定行高)
+  > .bento-card { min-height: 0; }
+
+  // 卡内容纵向排布:底栏 / 分区入口用 margin-top:auto 贴底,同排卡片等高时不在中间留空
+  .bento-card-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .bento-card-body.is-skeleton { min-height: 60px; }
+}
+
+// 站点速览:右上箭头的点击区域铺满整卡(卡内没有其他链接,键盘仍只停在箭头上)
+.bento-card[data-card="stats"] {
+  cursor: pointer;
+
+  .bento-card-link::after {
+    content: "";
+    position: absolute;
+    inset: -100vmax;
+  }
+}
+
+// ============================================================
+// 欢迎区 —— 柔和渐变 + Q 版人物,桌面约 130–150px
+// ============================================================
+.home-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 0;
+  padding: 22px 24px 22px 30px;
+  overflow: hidden;
+  border-radius: var(--radius-card-lg);
+  background:
+    linear-gradient(115deg, var(--primary-soft) 0%, transparent 62%),
+    var(--glass-bg-weak);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+
+  // 右侧柔和主题色光晕,跟随辉光开关
+  &::before {
+    content: "";
+    position: absolute;
+    right: -40px;
+    bottom: -140px;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsla(var(--primary-hue), 80%, 68%, calc(0.26 * var(--glow-intensity, 1))), transparent 68%);
+    pointer-events: none;
+  }
+}
+
+.home-hero__text {
+  position: relative;
+  min-width: 0;
+}
+
+.home-hero__eyebrow {
+  margin: 0 0 6px;
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.home-hero__title {
+  margin: 0;
+  color: var(--text-main);
+  font-size: clamp(22px, 2.2vw, 30px);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+.home-hero__lead {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+// 人物贴底站立:负边距抵消底部内边距,不增加欢迎区高度
+.home-hero__art {
+  position: relative;
+  flex: 0 0 auto;
+  align-self: flex-end;
+  width: 120px;
+  height: 120px;
+  margin: -6px 0 -22px;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(15, 23, 42, 0.14));
+    transition: transform var(--dur-glass) var(--ease-glass);
+  }
+}
+
+.home-hero:hover .home-hero__art img { transform: translateY(-3px) rotate(-2deg); }
+
+// ============================================================
+// 平板:两列
+// ============================================================
+@media (min-width: 640px) and (max-width: 900px) {
+  .home-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > .home-hero,
+    > [data-card="update"]   { grid-column: 1 / -1; grid-row: auto; }
+    > [data-card="notes"],
+    > [data-card="today"]    { grid-column: 1;      grid-row: auto; }
+    > [data-card="life"],
+    > [data-card="stats"]    { grid-column: 2;      grid-row: auto; }
+  }
+}
+
+// ============================================================
+// 手机:单列,自然高度
+// ============================================================
+@media (max-width: 639px) {
+  .home-grid {
+    grid-template-columns: minmax(0, 1fr);
+
+    > .home-hero,
+    > .bento-card { grid-column: 1; grid-row: auto; }
+  }
+
+  .home-hero {
+    gap: 12px;
+    padding: 16px 12px 16px 18px;
+    border-radius: var(--radius-card);
+
+    &::before {
+      width: 220px;
+      height: 220px;
+      bottom: -110px;
+    }
+  }
+
+  .home-hero__eyebrow {
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+
+  .home-hero__title { font-size: 20px; }
+
+  .home-hero__lead {
+    margin-top: 6px;
+    font-size: 13px;
+  }
+
+  .home-hero__art {
+    width: 88px;
+    height: 88px;
+    margin: -4px 0 -16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .home-hero__title { font-size: 18px; }
+  .home-hero__art { width: 76px; height: 76px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero__art img { transition: none; }
+  .home-hero:hover .home-hero__art img { transform: none; }
+}

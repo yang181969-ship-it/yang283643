@@ -87,14 +87,12 @@ main {
 
 // ============================================================
 // .bento-grid —— 12 列 bento 容器
+// 行高随内容自然伸展(不再固定行高);主页的具体摆放见 pages/_home.scss
 // ============================================================
 .bento-grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  grid-template-rows:
-    minmax(180px, auto)
-    minmax(180px, 240px)
-    minmax(180px, auto);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-rows: auto;
   gap: var(--bento-gap, 16px);
   width: 100%;
 }

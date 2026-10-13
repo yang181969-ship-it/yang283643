@@ -283,8 +283,9 @@ document.addEventListener("DOMContentLoaded", () => {
       url = `${url}${joiner}search=${encodeURIComponent(search)}`;
     }
 
-    const note = page === 'notes' && options.preserveNote
-      ? new URLSearchParams(window.location.search).get('note') : '';
+    // options.note：站内入口（如主页笔记卡）直接指定文章，格式同 URL 中的 note 参数值
+    const note = page !== 'notes' ? ''
+      : options.note || (options.preserveNote ? new URLSearchParams(window.location.search).get('note') : '');
     if (note) url += `&note=${encodeURIComponent(note)}`;
 
     const state = { page };

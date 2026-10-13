@@ -1,12 +1,10 @@
 // ============================================================
-// 主页 8 张主卡片 —— Commit 4 (B1) 视觉精修版
+// Bento 卡片骨架(主页五张卡 + Life 总览卡共用)
 //
-// 改动相对 Commit 2:
 //   1. 变量名对齐项目实际 --primary / --primary-soft / --text-main
-//      (Commit 2 用的 --accent / --accent-tint / --text-strong 项目里没定义,调色盘失效)
-//   2. 装饰图尺寸按 span 适配:span3 = 48,span4 = 64,intro/about-me = 96
-//   3. 装饰图右下贴边 12px(对齐定稿规范),并给 body / head 用 :has() 自动让位避免重叠
-//   4. 暗色模式下 icon tint 走 hsla 形态,避免被强 light 残影
+//   2. 装饰图右下贴边 12px,并给 body / head 用 :has() 自动让位避免重叠
+//   3. 暗色模式下 icon tint 走 hsla 形态,避免被强 light 残影
+// 主页的网格摆放与各卡尺寸见 pages/_home.scss,卡内结构见 _bento-card-content.scss
 // ============================================================
 
 @use '../abstracts/variables' as *;
@@ -59,13 +57,6 @@
   }
 }
 
-// ---------- span 通过 data 属性控制 ----------
-.bento-card[data-span="3"] { grid-column: span 3; }
-.bento-card[data-span="4"] { grid-column: span 4; }
-.bento-card[data-span="6"] { grid-column: span 6; }
-
-// 移动端单列必须同时重置卡片 span，见下方响应式规则。
-
 // ============================================================
 // 卡片头部:左上小图标 + 标题
 // ============================================================
@@ -114,8 +105,23 @@
   white-space: nowrap;
 }
 
+// 标题本身可点击(主页笔记 / 生活卡):外观不变,只加悬停与键盘焦点反馈
+.bento-card-title-link {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: color var(--dur-glass-quick) var(--ease-glass-quick);
+
+  &:hover { color: var(--primary-dark); }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
 // ============================================================
-// 右上跳转箭头(6 张卡有,intro/mood 例外)
+// 右上跳转箭头
 // ============================================================
 .bento-card-link {
   position: absolute;
@@ -176,13 +182,6 @@
     padding-right: 84px;
     padding-bottom: 4px;
   }
-  .bento-card[data-span="3"]:has(> .bento-card-deco) & {
-    padding-right: 64px;
-  }
-  .bento-card[data-card="intro"]:has(> .bento-card-deco) &,
-  .bento-card[data-card="about-me"]:has(> .bento-card-deco) & {
-    padding-right: 116px;
-  }
 }
 
 // ============================================================
@@ -209,31 +208,10 @@
   }
 }
 
-// ---------- 按 span / 卡型差异化装饰图尺寸 ----------
-// 小卡(span3)装饰图小一点,与卡片视觉比例匹配
-.bento-card[data-span="3"] .bento-card-deco {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-}
-
-// intro / about-me:Q版 / 半身,要更大更亮眼
-.bento-card[data-card="intro"] .bento-card-deco,
-.bento-card[data-card="about-me"] .bento-card-deco {
-  width: 96px;
-  height: 96px;
-  bottom: 14px;
-  right: 14px;
-}
-
 // ============================================================
 // 移动端:bento-grid 已在 _layout 里改单列;这里只做密度收紧
 // ============================================================
 @media (max-width: 900px) {
-  .bento-card[data-span] {
-    grid-column: 1 / -1;
-  }
-
   .bento-card {
     min-height: 160px;
     padding: 18px;
@@ -261,36 +239,8 @@
     width: 56px;
     height: 56px;
   }
-  .bento-card[data-span="3"] .bento-card-deco { width: 44px; height: 44px; }
-  .bento-card[data-card="intro"] .bento-card-deco,
-  .bento-card[data-card="about-me"] .bento-card-deco {
-    width: 80px; height: 80px;
-  }
 
   .bento-card:has(> .bento-card-deco) .bento-card-body { padding-right: 72px; }
-  .bento-card[data-span="3"]:has(> .bento-card-deco) .bento-card-body { padding-right: 56px; }
-  .bento-card[data-card="intro"]:has(> .bento-card-deco) .bento-card-body,
-  .bento-card[data-card="about-me"]:has(> .bento-card-deco) .bento-card-body {
-    padding-right: 96px;
-  }
-}
-
-// ============================================================
-// Phase D1:窄桌面段(901-1023px)bento 改 6 列
-// span6 占满一行,其余 span3/4 都缩成 span3(1/2 行)
-// ============================================================
-@media (min-width: 901px) and (max-width: 1023px) {
-  .bento-grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-
-  .bento-card[data-span="6"] { grid-column: span 6; }
-  // 前六张卡在窄桌面保持原有顺序，画廊填满末行，避免退役卡片留下空位。
-  .bento-card[data-card="gallery"][data-span="4"] { grid-column: span 6; }
-  .bento-card[data-card="update"][data-span="6"],
-  .bento-card[data-card="about-me"][data-span="6"] { grid-column: span 3; }
-  .bento-card[data-span="4"] { grid-column: span 3; }
-  .bento-card[data-span="3"] { grid-column: span 3; }
 }
 
 // ============================================================
@@ -308,17 +258,7 @@
     right: 10px;
   }
 
-  .bento-card[data-card="intro"] .bento-card-deco,
-  .bento-card[data-card="about-me"] .bento-card-deco {
-    width: 72px;
-    height: 72px;
-  }
-
   .bento-card:has(> .bento-card-deco) .bento-card-body {
     padding-right: 64px;
-  }
-  .bento-card[data-card="intro"]:has(> .bento-card-deco) .bento-card-body,
-  .bento-card[data-card="about-me"]:has(> .bento-card-deco) .bento-card-body {
-    padding-right: 80px;
   }
 }

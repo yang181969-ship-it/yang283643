@@ -18,9 +18,22 @@
   必须保持完整文档结构，并且全文只出现一次 body 结束标签（原因见 html/life.html 顶部说明）。
 -->
 <main id="main-content">
-  <section class="about-page no-card" data-about-root aria-label="关于">
+  <section class="about-page no-card" data-about-root aria-labelledby="about-title">
 
-    <!-- ============ 分区标签（三个分区共用，位置固定） ============ -->
+    <!-- ============ Hero：网站介绍（三个分区共用；与 Life 同一结构：左侧渐变文字 + 右侧人物） ============ -->
+    <header class="about-hero">
+      <div class="about-hero__text">
+        <p class="about-hero__eyebrow">About · 关于</p>
+        <h1 class="about-hero__title" id="about-title">关于这个小站 ✨</h1>
+        <p class="about-hero__lead">记录生活、兴趣、笔记与成长。</p>
+        <p class="about-hero__desc">也把喜欢的东西慢慢整理成自己的角落。</p>
+      </div>
+      <figure class="about-hero__art" aria-hidden="true">
+        <img src="assets/portrait/half/half-10.webp" alt="" width="1254" height="1254" decoding="async">
+      </figure>
+    </header>
+
+    <!-- ============ 分区标签（三个分区共用，位于 Hero 下方，切换分区时位置不变） ============ -->
     <nav class="about-tabs" aria-label="关于分区">
       <div class="about-tabs__track" role="tablist" aria-label="关于分区" data-about-tablist>
         <button type="button" role="tab" class="about-tab" id="about-tab-overview" aria-controls="about-panel-overview" aria-selected="true" data-about-tab="overview">概览</button>
@@ -31,16 +44,6 @@
 
     <!-- ============ 概览 Overview ============ -->
     <section class="about-panel no-card" id="about-panel-overview" role="tabpanel" aria-labelledby="about-tab-overview" tabindex="-1" data-about-panel="overview">
-      <section class="about-hero" aria-labelledby="about-title">
-        <div class="about-hero__content">
-          <p class="about-hero__eyebrow">About this site</p>
-          <h1 id="about-title">关于这个小站 ✨</h1>
-          <p>
-            记录生活、兴趣、笔记与成长，也把喜欢的东西慢慢整理成自己的角落。
-          </p>
-        </div>
-      </section>
-
       <section class="about-layout no-card" aria-label="关于页面内容">
         <div class="about-main">
           <article class="card about-card about-card--intro">
