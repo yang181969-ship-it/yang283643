@@ -55,13 +55,13 @@
       "total": 49
     },
     {
-      "date": "2026-10-12",
+      "date": "2026-10-13",
       "month": "2026-10",
       "notes": 8,
       "anime": 10,
       "gallery": 17,
-      "updates": 15,
-      "total": 50
+      "updates": 16,
+      "total": 51
     }
   ],
   "breakdowns": {
@@ -152,7 +152,7 @@
       },
       {
         "label": "2026-10",
-        "value": 1
+        "value": 2
       }
     ],
     "musicTopArtists": [
@@ -199,7 +199,7 @@
           {
             "id": "overview-content",
             "name": "内容构成",
-            "total": 62,
+            "total": 63,
             "unit": "项",
             "items": [
               {
@@ -208,7 +208,7 @@
               },
               {
                 "name": "更新日志",
-                "value": 15
+                "value": 16
               },
               {
                 "name": "音乐",
@@ -227,7 +227,7 @@
           {
             "id": "overview-updates",
             "name": "更新概况",
-            "total": 15,
+            "total": 16,
             "unit": "条",
             "items": [
               {
@@ -236,7 +236,7 @@
               },
               {
                 "name": "optimization",
-                "value": 3
+                "value": 4
               },
               {
                 "name": "fix",
@@ -521,12 +521,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 17836,
+            "total": 21611,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 12415
+                "value": 16190
               },
               {
                 "name": "笔记字数",
@@ -561,7 +561,7 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 12415,
+            "total": 16190,
             "unit": "字",
             "items": [
               {
@@ -570,7 +570,7 @@
               },
               {
                 "name": "optimization",
-                "value": 3903
+                "value": 7678
               },
               {
                 "name": "fix",
@@ -595,6 +595,13 @@
     ]
   },
   "recentChanges": [
+    {
+      "date": "2026-10-13",
+      "title": "全站导航与小组件系统重构，交互体验全面升级",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
     {
       "date": "2026-10-12",
       "title": "留言系统正式退役，网站全面迁移至 Cloudflare",
@@ -1030,5 +1037,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-12T16:08:54.465Z"
+  "generatedAt": "2026-10-13T06:10:06.224Z"
 }

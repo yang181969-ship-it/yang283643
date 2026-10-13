@@ -80,27 +80,31 @@
 
 | 分类 | 使用次数 |
 | --- | ---: |
-| 建站日志 | 15 |
+| 建站日志 | 16 |
 
 ### 当前已使用标签
 
 | 标签值 | 显示文案 | 使用次数 |
 | --- | --- | ---: |
 | `feature` | 功能更新 | 12 |
-| `mobile` | 移动端适配 | 3 |
-| `visual` | 视觉优化 | 3 |
+| `mobile` | 移动端适配 | 4 |
+| `visual` | 视觉优化 | 4 |
 | `cloudflare` | cloudflare | 1 |
 | `deployment` | deployment | 1 |
 | `fix` | 修复问题 | 1 |
 | `infrastructure` | infrastructure | 1 |
+| `interaction` | interaction | 1 |
+| `navigation` | navigation | 1 |
 | `perf` | 性能优化 | 1 |
+| `responsive` | responsive | 1 |
+| `widgets` | widgets | 1 |
 
 ### 当前已使用 primary
 
 | primary | 使用次数 |
 | --- | ---: |
 | `feature` | 11 |
-| `optimization` | 3 |
+| `optimization` | 4 |
 | `fix` | 1 |
 
 ### 页面已配置但暂无内容的筛选项
