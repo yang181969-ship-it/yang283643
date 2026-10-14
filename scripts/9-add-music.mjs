@@ -14,6 +14,11 @@ const MUSIC_DIR = path.join(ROOT, 'assets', 'music');
 const PLAYLIST_PATH = path.join(ROOT, 'data', 'playlist.json');
 const SUPPORTED_EXTS = new Set(['.mp3', '.m4a', '.aac', '.ogg', '.wav', '.flac']);
 
+// 2026-10 版权清理:导入暂停。下面的导入代码保留,但它不写 license 元数据,
+// 重新启用前必须先接入 scripts/17-check-music.mjs 的 validateTrack(),
+// 只让授权信息完整、且已登记在人工批准清单 APPROVED_MEDIA 中的歌曲进入歌单。
+const IMPORT_DISABLED = true;
+
 function printHelp() {
   console.log(`
 用法:
@@ -600,6 +605,11 @@ async function main() {
   if (options.help) {
     printHelp();
     return;
+  }
+
+  if (IMPORT_DISABLED) {
+    throw new Error('音乐导入已暂停:曲库正在重新整理,未经授权核验的音频不得加入歌单。'
+      + '\n授权元数据规范见 scripts/README.md,可用 npm run music:check 检查歌单。');
   }
 
   if (sourceArgs.length === 0 && !options.sync) {

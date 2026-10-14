@@ -809,6 +809,13 @@
   }
 }
 
+// 曲库为空(music-player.js 设置 data-library="empty"):说明文字可换行,进度条不可交互、不显示把手
+.tool-dialog--music .rail-widget--music[data-library="empty"] {
+  .music-artist { white-space: normal; }
+  .music-progress { cursor: default; }
+  .music-progress__bar::after { display: none; }
+}
+
 .music-volume {
   display: flex;
   align-items: center;

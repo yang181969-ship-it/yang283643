@@ -155,40 +155,7 @@
         "value": 3
       }
     ],
-    "musicTopArtists": [
-      {
-        "label": "G.E.M.邓紫棋",
-        "value": 2
-      },
-      {
-        "label": "陈一发儿",
-        "value": 1
-      },
-      {
-        "label": "橘子海",
-        "value": 1
-      },
-      {
-        "label": "买辣椒也用券",
-        "value": 1
-      },
-      {
-        "label": "朴树",
-        "value": 1
-      },
-      {
-        "label": "尚雯婕",
-        "value": 1
-      },
-      {
-        "label": "Don Toliver/Doja Cat",
-        "value": 1
-      },
-      {
-        "label": "EYAir",
-        "value": 1
-      }
-    ]
+    "musicTopArtists": []
   },
   "dataCenter": {
     "groups": [
@@ -469,46 +436,6 @@
             ]
           },
           {
-            "id": "resources-music",
-            "name": "音乐",
-            "total": 12,
-            "unit": "首",
-            "items": [
-              {
-                "name": "G.E.M.邓紫棋",
-                "value": 2
-              },
-              {
-                "name": "陈一发儿",
-                "value": 1
-              },
-              {
-                "name": "橘子海",
-                "value": 1
-              },
-              {
-                "name": "买辣椒也用券",
-                "value": 1
-              },
-              {
-                "name": "朴树",
-                "value": 1
-              },
-              {
-                "name": "尚雯婕",
-                "value": 1
-              },
-              {
-                "name": "Don Toliver/Doja Cat",
-                "value": 1
-              },
-              {
-                "name": "其他",
-                "value": 4
-              }
-            ]
-          },
-          {
             "id": "resources-image-format",
             "name": "图片格式",
             "total": 17,
@@ -658,72 +585,9 @@
     },
     {
       "date": "2026-05-06",
-      "title": "新增音乐：平凡之路 - 朴树",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：起风了 - 买辣椒也用券",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：泡沫 - G.E.M.邓紫棋",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：鳥の詩 (鸟之诗) - Lia",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：❀ (纯音乐) - MappleHY",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
-      "title": "新增音乐：童话镇 - 陈一发儿",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-06",
       "title": "更新页大改，右上角三个按钮合并成两个",
       "type": "更新",
       "page": "update",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增音乐：Lose My Mind (feat. Doja Cat) - Don Toliver/Doja Cat",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增音乐：F1 - Hans Zimmer",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增音乐：夏日漱石 (Summer Cozy Rock) - 橘子海",
-      "type": "音乐",
-      "page": "home",
       "href": ""
     },
     {
@@ -826,13 +690,6 @@
     },
     {
       "date": "2026-05-04",
-      "title": "新增音乐：倒数 - G.E.M.邓紫棋",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
-      "date": "2026-05-04",
       "title": "移动端加灵动岛，调色盘补上光晕开关",
       "type": "更新",
       "page": "update",
@@ -843,13 +700,6 @@
       "title": "主页大改：从静态欢迎页到 Bento 仪表盘",
       "type": "更新",
       "page": "update",
-      "href": ""
-    },
-    {
-      "date": "2026-04-30",
-      "title": "新增音乐：Call of Silence × YouSeeBIGGIRL - EYAir",
-      "type": "音乐",
-      "page": "home",
       "href": ""
     },
     {
@@ -1014,13 +864,6 @@
       "href": ""
     },
     {
-      "date": "2026-02-26",
-      "title": "新增音乐：鹿 be free - 尚雯婕",
-      "type": "音乐",
-      "page": "home",
-      "href": ""
-    },
-    {
       "date": "2025-10-21",
       "title": "新增笔记：矩阵的特征值与迹",
       "type": "笔记",
@@ -1056,5 +899,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-14T03:45:11.684Z"
+  "generatedAt": "2026-10-14T04:26:20.551Z"
 }

@@ -27,10 +27,12 @@
     "music:add": "node scripts/9-add-music.mjs",
     "music:sync": "node scripts/9-add-music.mjs --sync",
     "music:covers": "node scripts/10-generate-music-covers.mjs",
+    "music:check": "node scripts/17-check-music.mjs",
+    "music:test": "node --test scripts/17-check-music.test.mjs",
     "portrait:rotation": "node scripts/11-generate-portrait-rotation.mjs",
     "tags:sync": "node scripts/13-sync-site-tags.mjs",
 
-    "build:all": "npm run gallery:data && npm run life:data && npm run aggregate:updates && npm run tags:sync && npm run aggregate:stats && npm run build && npm run build:critical && npm run inline:critical"
+    "build:all": "npm run music:check && npm run gallery:data && npm run life:data && npm run aggregate:updates && npm run tags:sync && npm run aggregate:stats && npm run build && npm run build:critical && npm run inline:critical"
   },
 
   "devDependencies": {

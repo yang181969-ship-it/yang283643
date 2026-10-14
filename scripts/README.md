@@ -10,7 +10,7 @@
 | `npm run build` | 编译并压缩完整样式到 `css/style.css` |
 | `npm run build:critical` | 编译首屏关键样式到 `css/critical.css` |
 | `npm run inline:critical` | 把 `css/critical.css` 内联到指定 HTML |
-| `npm run build:all` | 依次执行画廊数据、更新索引、标签参考、站点统计、完整 CSS、critical CSS、critical 内联 |
+| `npm run build:all` | 依次执行音乐授权检查、画廊数据、更新索引、标签参考、站点统计、完整 CSS、critical CSS、critical 内联 |
 | `npm run life:data` | 生成 Life 的统一图片索引 `data/image-index.json` 与日记索引 `data/journal-index.json` |
 | `npm run aggregate:updates` | 扫描更新日志 Markdown,生成更新页索引数据 |
 | `npm run aggregate:stats` | 聚合站点统计页数据和 Hero 区单点指标 |
@@ -21,13 +21,66 @@
 | `npm run portrait:rotation` | 生成主页人像每日轮换顺序 |
 | `npm run tags:sync` | 汇总网站已使用和已配置的标签,更新 `site-tags.md` |
 | `npm run purgecss` | 诊断未使用 CSS |
-| `npm run music:add -- ...` | 添加一首或批量添加音乐到播放器歌单 |
-| `npm run music:sync` | 扫描 `assets/music/`,把尚未加入歌单的音频自动追加到播放器歌单 |
+| `npm run music:check` | 音乐版权闸门:扫描所有会发布的文件中的音频/歌词,并检查歌单授权元数据;未获人工批准即失败(`build:all` 第一步) |
+| `npm run music:test` | `music:check` 的正反用例测试(临时 Git 仓库,不改动项目) |
+| `npm run music:add -- ...` | **已暂停**:曲库重新整理期间直接报错退出 |
+| `npm run music:sync` | **已暂停**:同上 |
 | `npm run music:covers` | 为歌单生成或补齐音乐封面 SVG |
 
 ## 音乐维护
 
-### 9-add-music.mjs
+> **2026-10 版权清理**:原有 12 首未确认授权的歌曲已从歌单和仓库当前版本移除,播放器显示「曲库整理中」空状态。
+> `.gitignore` 已忽略所有音频与 `.lrc` / `.krc` / `.qrc` 歌词文件(大小写不敏感);`music:add` / `music:sync` 暂停(代码保留,见脚本顶部 `IMPORT_DISABLED`)。
+
+### 音乐版权闸门(17-check-music.mjs)
+
+`npm run music:check` 做两件事,任一项不通过都会让 `build:all` 失败:
+
+1. **扫描所有会发布的文件**,不限于 `assets/music/`。Cloudflare Pages 从 GitHub 克隆仓库后发布,所以发布范围 = Git 跟踪的文件 + 未被忽略的新文件(下一次 `git add -A` 会提交的文件)。`.local/` 等被忽略的本地文件不会进入克隆。按扩展名(大小写不敏感)和文件头(ID3 / fLaC / OggS / RIFF WAVE / M4A 等)识别音频,改了扩展名的音频也能识别;`.lrc` / `.krc` / `.qrc` 歌词同样拦截。Git 不可用时改为扫描整个目录(从严)。如果以后有独立输出目录,可用 `node scripts/17-check-music.mjs --dir <输出目录>` 直接扫描产物。
+2. **人工批准清单**:任何待发布的音频/歌词都必须登记在脚本顶部的 `APPROVED_MEDIA` 中,登记项绑定文件内容的 SHA-256,并写明 `reviewedBy`、`reviewedAt`、`evidence`(授权凭据存档位置)。文件被替换后批准自动失效。当前清单为空,即目前没有任何音乐获准公开发布。只在 `playlist.json` 里填写授权声明不会让任何文件通过。
+
+每首进入 `data/playlist.json` 的歌曲还必须带完整的 `license`:
+
+```json
+{
+  "id": "track-001",
+  "title": "歌曲名称",
+  "artist": "作者或表演者",
+  "src": "assets/music/song.mp3",
+  "cover": "assets/music/covers/track-001.svg",
+  "lyric": "",
+  "license": {
+    "type": "CC BY 4.0",
+    "sourceUrl": "https://原始来源页面",
+    "basis": "许可或授权依据:许可证链接、授权邮件/合同编号、自创声明等",
+    "allowPublicHosting": true,
+    "attribution": "\"歌曲名称\" by 作者, licensed under CC BY 4.0"
+  }
+}
+```
+
+检查规则:
+
+- `id`、`title`、`artist`、`src` 必填;`id`、`src` 不得重复。
+- `src` 必须是 `assets/music/` 下真实存在的本地音频(不接入外部音频服务),且该文件已在 `APPROVED_MEDIA` 中批准。
+- `license.type`、`license.basis` 必填,不能是「未知 / 待定 / TBD」之类占位词。
+- `license.sourceUrl` 必须是原始来源的 http(s) 链接。
+- `license.allowPublicHosting` 必须严格为 `true`;`false` 或缺失都不能进入公开歌单。
+- `license.attribution` 必须是字符串;除 CC0 / Public Domain / 公有领域 / 原创外不能为空。
+
+注意:这个检查只能防止遗漏授权信息,不能代替对许可证本身的法律审查。歌词同样受版权保护,没有授权时 `lyric` 留空。
+
+授权核验通过后添加一首歌的流程:
+
+1. 确认许可允许公开托管和网络传播,保存授权依据。
+2. 把音频放进 `assets/music/`,在 `data/playlist.json` 手动写入完整条目。
+3. 计算文件哈希(`certutil -hashfile <文件> SHA256` 或 `sha256sum <文件>`),在 `APPROVED_MEDIA` 中登记;这一步应作为单独的代码改动接受审查。
+4. 运行 `npm run music:check`,通过后运行 `npm run music:covers`。
+5. 音频默认被 `.gitignore` 忽略,确认无误后用 `git add -f assets/music/<文件>` 单独添加。
+
+### 9-add-music.mjs(已暂停)
+
+以下为暂停前的用法,保留供重建时参考。重新启用前必须先让它写入并校验 `license` 元数据。
 
 作用:复制一首或多首音频到 `assets/music/`,并追加到 `data/playlist.json`。
 

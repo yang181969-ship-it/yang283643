@@ -269,7 +269,7 @@ async function runSearch(kw) {
    索引与 runSearch 不变;这里只负责展示与交互:
    - 输入即搜(防抖),分类筛选,↑/↓ 选择,Enter 打开,Esc/外部点击关闭(site-shell.js)
    - 输入法组字期间的 Enter 不触发打开 */
-const SEARCH_SUGGESTIONS = ["音乐", "倒数", "F1", "动漫", "笔记", "画廊"];
+const SEARCH_SUGGESTIONS = ["生活", "数学", "更新", "动漫", "笔记", "画廊"];
 const SEARCH_FILTERS = [
   { key: "all", label: "全部" },
   { key: "页面", label: "页面" },

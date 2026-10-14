@@ -78,6 +78,38 @@ assets/backup/
 
 
 # ==========================================
+# Audio / 音频与歌词(版权保护)
+# 本地音乐收藏一律不进仓库。用大小写字符组匹配,Linux/macOS(core.ignorecase=false)
+# 下 .MP3 / .Flac 等变体同样被忽略。获得公开托管授权、并通过 npm run music:check
+# 的人工批准清单后,才可用 git add -f 单独添加。
+# ==========================================
+*.[mM][pP]3
+*.[mM]4[aA]
+*.[mM]4[bB]
+*.[aA][aA][cC]
+*.[fF][lL][aA][cC]
+*.[wW][aA][vV]
+*.[oO][gG][gG]
+*.[oO][gG][aA]
+*.[oO][pP][uU][sS]
+*.[wW][eE][bB][aA]
+*.[wW][mM][aA]
+*.[aA][iI][fF]
+*.[aA][iI][fF][fF]
+*.[aA][iI][fF][cC]
+*.[aA][pP][eE]
+*.[aA][lL][aA][cC]
+*.[aA][mM][rR]
+*.[cC][aA][fF]
+*.[mM][kK][aA]
+*.[mM][iI][dD]
+*.[mM][iI][dD][iI]
+*.[lL][rR][cC]
+*.[kK][rR][cC]
+*.[qQ][rR][cC]
+
+
+# ==========================================
 # PurgeCSS / CSS 清理诊断产物
 # ==========================================
 css/purged/

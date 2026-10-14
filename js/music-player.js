@@ -7,7 +7,7 @@
  * - 首次进站不 autoplay;state 里 isPlaying=true 也用 .play().catch() 优雅降级
  *
  * 持久化 key:
- *   y181_music_state          { trackIndex, currentTime, isPlaying }
+ *   y181_music_state          { trackId, currentTime, isPlaying }(只恢复仍在歌单里的同一 id)
  *   y181_music_loop            'sequential' | 'shuffle' | 'one'
  *   y181_music_lyrics_visible  '1' | '0'
  *   y181_music_volume          0–100
@@ -59,6 +59,20 @@
     return new URL(path, SITE_ROOT_URL).href;
   }
 
+  // localStorage 在禁用站点数据 / 部分隐私模式下,访问本身就可能抛 SecurityError,
+  // 写入也可能抛 QuotaExceededError:读失败按"无记录"处理,写失败静默忽略,播放器照常初始化。
+  function storageGet(key) {
+    try { return window.localStorage.getItem(key); } catch (_) { return null; }
+  }
+
+  function storageSet(key, value) {
+    try { window.localStorage.setItem(key, value); } catch (_) {}
+  }
+
+  function storageRemove(key) {
+    try { window.localStorage.removeItem(key); } catch (_) {}
+  }
+
   // ============================================================
   // 入口
   // ============================================================
@@ -107,7 +121,7 @@
       const data = await res.json();
       const tracks = Array.isArray(data) ? data : data.tracks;
       if (!Array.isArray(tracks) || tracks.length === 0) {
-        console.warn('[music] playlist 为空,跳过');
+        showEmptyLibrary();
         return;
       }
       state.tracks = tracks;
@@ -117,7 +131,24 @@
       playPendingTrackRequest();
     } catch (err) {
       console.warn('[music] 加载歌单失败:', err);
+      showEmptyLibrary();
     }
+  }
+
+  // 曲库为空(或歌单加载失败):保留播放器外观,禁用所有播放操作,不设置任何音频地址,
+  // 并清掉旧的播放记录,避免之后恢复已删除的歌曲。
+  function showEmptyLibrary() {
+    state.tracks = [];
+    state.currentIndex = -1;
+    storageRemove(KEY_STATE);
+    root.dataset.library = 'empty';
+    titleEl.textContent = '曲库整理中';
+    artistEl.textContent = '正在重新整理音乐资源，暂未开放播放。';
+    [loopBtn, prevBtn, playBtn, nextBtn].forEach((btn) => { btn.disabled = true; });
+    progressEl.setAttribute('aria-disabled', 'true');
+    progressEl.tabIndex = -1;
+    if (playlistSearchEl) playlistSearchEl.disabled = true;
+    renderPlaylist();
   }
 
   function enableControls() {
@@ -131,13 +162,18 @@
   // ============================================================
   function restorePlayback() {
     let saved = null;
-    try { saved = JSON.parse(localStorage.getItem(KEY_STATE) || 'null'); } catch (_) {}
+    try { saved = JSON.parse(storageGet(KEY_STATE) || 'null'); } catch (_) {}
 
-    const idx = (saved && Number.isInteger(saved.trackIndex) && saved.trackIndex >= 0 && saved.trackIndex < state.tracks.length)
-      ? saved.trackIndex
-      : 0;
+    // 只按 id 恢复仍在歌单里的同一首歌;旧版记录(只有 trackIndex)或已删除的曲目一律丢弃
+    const savedIdx = typeof saved?.trackId === 'string'
+      ? state.tracks.findIndex((track) => track.id === saved.trackId)
+      : -1;
+    if (savedIdx < 0) {
+      saved = null;
+      storageRemove(KEY_STATE);
+    }
 
-    loadTrack(idx, false);
+    loadTrack(Math.max(0, savedIdx), false);
 
     if (saved && Number.isFinite(saved.currentTime) && saved.currentTime > 0) {
       // 等 metadata 加载好再 seek,避免 race
@@ -161,7 +197,7 @@
   }
 
   function restoreLoop() {
-    const saved = localStorage.getItem(KEY_LOOP);
+    const saved = storageGet(KEY_LOOP);
     // 旧值 'all' / 'none' 一律 fallback 到默认
     state.loopMode = LOOP_MODES.includes(saved) ? saved : DEFAULT_LOOP;
     applyLoopUI();
@@ -188,10 +224,8 @@
       return;
     }
     let saved = DEFAULT_VOLUME;
-    try {
-      const raw = localStorage.getItem(KEY_VOLUME);
-      if (raw !== null && Number.isFinite(Number(raw))) saved = Number(raw);
-    } catch (_) {}
+    const raw = storageGet(KEY_VOLUME);
+    if (raw !== null && Number.isFinite(Number(raw))) saved = Number(raw);
     setVolume(saved, false);
   }
 
@@ -203,12 +237,12 @@
     volumeEl.setAttribute('aria-valuetext', v + '%');
     if (volumeValueEl) volumeValueEl.textContent = v + '%';
     if (persist) {
-      try { localStorage.setItem(KEY_VOLUME, String(v)); } catch (_) {}
+      storageSet(KEY_VOLUME, String(v));
     }
   }
 
   function restoreLyricsToggle() {
-    state.lyricsVisible = localStorage.getItem(KEY_LYRICS) === '1';
+    state.lyricsVisible = storageGet(KEY_LYRICS) === '1';
     applyLyricsToggle();
   }
 
@@ -329,7 +363,8 @@
   // 播放控制
   // ============================================================
   function togglePlay() {
-    if (state.currentIndex < 0 && state.tracks.length > 0) {
+    if (state.tracks.length === 0) return;
+    if (state.currentIndex < 0) {
       loadTrack(0, true);
       return;
     }
@@ -340,7 +375,7 @@
   function toggleLoop() {
     const cur = LOOP_MODES.indexOf(state.loopMode);
     state.loopMode = LOOP_MODES[(cur + 1) % LOOP_MODES.length];
-    localStorage.setItem(KEY_LOOP, state.loopMode);
+    storageSet(KEY_LOOP, state.loopMode);
     applyLoopUI();
   }
 
@@ -582,7 +617,9 @@
     });
 
     if (playlistEmptyEl) {
-      playlistEmptyEl.hidden = visibleCount > 0 || state.tracks.length === 0;
+      const libraryEmpty = state.tracks.length === 0;
+      playlistEmptyEl.textContent = libraryEmpty ? '曲库整理中，暂无可播放的歌曲' : '没有找到匹配的音乐';
+      playlistEmptyEl.hidden = !libraryEmpty && visibleCount > 0;
     }
     updatePlaylistCount(visibleCount);
   }
@@ -659,13 +696,13 @@
   // 持久化
   // ============================================================
   function persistState() {
-    try {
-      localStorage.setItem(KEY_STATE, JSON.stringify({
-        trackIndex: state.currentIndex,
-        currentTime: audio.currentTime || 0,
-        isPlaying: !audio.paused,
-      }));
-    } catch (_) {}
+    const track = state.tracks[state.currentIndex];
+    if (!track) return;
+    storageSet(KEY_STATE, JSON.stringify({
+      trackId: track.id,
+      currentTime: audio.currentTime || 0,
+      isPlaying: !audio.paused,
+    }));
   }
 
   // ============================================================
@@ -682,7 +719,7 @@
     // 歌词 toggle
     lyricsToggleBtn.addEventListener('click', () => {
       state.lyricsVisible = !state.lyricsVisible;
-      localStorage.setItem(KEY_LYRICS, state.lyricsVisible ? '1' : '0');
+      storageSet(KEY_LYRICS, state.lyricsVisible ? '1' : '0');
       applyLyricsToggle();
     });
 
