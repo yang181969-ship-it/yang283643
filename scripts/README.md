@@ -14,9 +14,7 @@
 | `npm run life:data` | 生成 Life 的统一图片索引 `data/image-index.json` 与日记索引 `data/journal-index.json` |
 | `npm run aggregate:updates` | 扫描更新日志 Markdown,生成更新页索引数据 |
 | `npm run aggregate:stats` | 聚合站点统计页数据和 Hero 区单点指标 |
-| `npm run optimize:animes` | 处理动漫页图片 |
 | `npm run optimize:gallery` | 处理画廊图片 |
-| `npm run update:refs` | 根据图片重命名映射更新动漫页引用 |
 | `npm run optimize:portraits` | 处理人像、装饰图、心情头像 |
 | `npm run portrait:rotation` | 生成主页人像每日轮换顺序 |
 | `npm run tags:sync` | 汇总网站已使用和已配置的标签,更新 `site-tags.md` |
@@ -199,24 +197,8 @@ npm run music:covers
 
 ## 图片优化脚本
 
-### 1-rename-anime-images.js
-
-命令:
-
-```bash
-npm run optimize:animes
-```
-
-作用:
-
-- 处理 `assets/animes/` 中的动漫图片。
-- 根据脚本内的 `ANIME_RENAME_MAP` 把原图重命名为 `{animeId}-cover.webp`、`{animeId}-1.webp` 等。
-- 按图片体积动态选择 WebP 质量。
-- WebP 体积收益不足时回退保留原格式。
-- 原图移动到 `assets/_originals/animes/`。
-- 生成 `scripts/rename-mapping.json`,供 `3-update-html-references.js` 使用。
-
-新增动漫图片时,需要先在脚本里的 `ANIME_RENAME_MAP` 增加条目。
+> **2026-10 内容归零(Phase 6)**:原有动漫作品与画廊图片已从当前版本移除,`assets/animes/`、`assets/gallery/real/`、`assets/gallery/anime/` 只保留 `.gitkeep`。
+> 只服务于旧动漫页面的 `1-rename-anime-images.js`(写死了旧作品文件名)、`3-update-html-references.js`(改写已删除的 `html/anime.html` / `js/anime-detail.js`)与其映射表 `rename-mapping.json` 已一并退役;对应的 `npm run optimize:animes` / `npm run update:refs` 已移除。
 
 ### 2-optimize-gallery.js
 
@@ -239,22 +221,6 @@ npm run optimize:gallery
 ```bash
 python generate_gallery_data.py
 ```
-
-### 3-update-html-references.js
-
-命令:
-
-```bash
-npm run update:refs
-```
-
-作用:
-
-- 读取 `scripts/rename-mapping.json`。
-- 更新 `html/anime.html` 和 `js/anime-detail.js` 里的旧图片路径。
-- 修改前会生成 `.bak` 备份。
-
-这个脚本通常在 `npm run optimize:animes` 之后运行。
 
 ### 4-optimize-portraits.mjs
 
@@ -333,7 +299,7 @@ npm run inline:critical
 作用:
 
 - 读取 `css/critical.css`。
-- 内联到 `index.html`、`html/anime-detail.html`、`html/notes-detail.html`、`html/stats.html`。
+- 内联到 `index.html`、`html/notes-detail.html`、`html/stats.html`(`14-sync-shell.mjs`、`15-version-assets.mjs` 处理同一组文档)。
 - 把完整 `css/style.css` 改成异步加载。
 - 已有内联块会刷新到当前 critical CSS；重复执行不会重复插入，也不生成 `.bak`。
 
@@ -351,11 +317,12 @@ npm run life:data
 
 作用:
 
-- 合并 `js/gallery-data.js`(原画廊)、`js/anime-data.js`(详情页封面与插图)、`data/life.json`(足迹/收藏/作品图片)和日记 `@cover`,生成 `data/image-index.json`,Life 的图片画廊读取它。
+- 合并 `js/gallery-data.js`(原画廊)、`js/anime-data.js`(动漫作品封面与插图)、`data/life.json`(足迹/收藏/作品图片)和日记 `@cover`,生成 `data/image-index.json`,Life 的图片画廊读取它。
 - 同一路径只收录一次,其他位置对它的使用记为 `refs`(例如某张画廊照片同时出现在旅行记录里),不复制文件。
 - 没有可靠日期的图片 `date` 留空,不用文件时间补。
 - 扫描 `content/life/journal/*.md`(`_` 开头的文件除外)生成 `data/journal-index.json`,按日期倒序。
 - 输出与运行时间无关,重复运行结果一致。`build:all` 已包含这一步(在 `gallery:data` 之后)。
+- 所有来源为空时输出合法的空索引 `{ "version": 1, "count": 0, "sources": {}, "images": [] }`;Life 画廊把 `images: []` 当作正常的空画廊,只有索引读取失败才退回 `js/gallery-data.js`。
 
 ### 6-aggregate-updates.mjs
 
@@ -441,10 +408,6 @@ node scripts/12-split-notes.mjs
 
 ## 数据文件
 
-### rename-mapping.json
-
-这是 `1-rename-anime-images.js` 生成的图片路径映射文件,不是手写脚本。`3-update-html-references.js` 会读取它来替换动漫页和详情页里的图片引用。
-
 ### portrait-rotation.json
 
 这是 `11-generate-portrait-rotation.mjs` 生成的主页人像每日轮换数据。`js/home-cards.js` 会读取其中的 `startDate` 和 `sets.q`,按当天日期选择主页欢迎区右侧的 Q 版人物图片(`sets.half` 目前没有页面使用)。
@@ -528,14 +491,10 @@ npm run music:covers
 
 ### 新增动漫图片
 
-1. 图片放进 `assets/animes/`。
-2. 编辑 `scripts/1-rename-anime-images.js` 的 `ANIME_RENAME_MAP`。
-3. 在 `js/anime-data.js` 末尾追加条目(含 `watchStatus` / `badge` / `order`)。Life 作品列表直接读取它,不再需要编辑 `html/anime.html`。
-4. 运行 `npm run life:data`,让新图片进入画廊统一索引。
-5. 运行 `npm run optimize:animes`。
-6. 运行 `npm run update:refs`。
-7. 运行 `npm run build`。
-8. 检查页面无误后删除 `.bak`。
+1. 封面与插图先压缩为 WebP(宽度不超过 1920),命名为 `{animeId}-cover.webp`、`{animeId}-2.webp` 等,放进 `assets/animes/`。原图留在本地 `assets/_originals/`(已被 Git 忽略),不要放进公开目录。
+2. 在 `js/anime-data.js` 的 `animeData` 中追加条目(字段说明见文件顶部:`title` / `image` / `watchStatus` / `badge` / `order`,可选 `link` / `rating` / `info` / `gallery` / `updateDate`)。Life 作品列表、主页生活片段、全站搜索与统计都直接读取它。
+3. 没有详情页时不要填 `link`,卡片会渲染为不跳转的卡片;填了 `link` 时卡片、搜索结果和画廊灯箱都会链接到它。
+4. 运行 `npm run life:data`,让作品图片进入画廊统一索引;再运行 `npm run aggregate:stats`(或直接 `npm run build:all`)。
 
 ### 新增画廊图片
 
@@ -549,6 +508,7 @@ npm run music:covers
 - 影视、书籍、银行卡、数码设备、足迹事件、通用愿望:编辑 `data/life.json`(文件顶部 `_readme` 有字段说明),然后运行 `npm run life:data`。
 - 日记:复制 `content/life/journal/_template.md` 为 `content/life/journal/YYYY-MM-DD-slug.md`,修改后运行 `npm run life:data`。
 - 浏览器回归检查:先运行 `python scripts/phase1-preview.py`,再运行 `python scripts/phase2-life-check.py`,截图与报告在 `artifacts/phase2/`。
+- 内容归零检查:`python scripts/phase6-empty-content-check.py`。静态部分确认动漫 / 画廊数据为空、旧图片与旧详情页没有回来;浏览器部分检查空状态,并通过请求拦截注入临时模拟数据(不写入磁盘)验证角标四色、状态筛选、瀑布流、筛选排序和灯箱。截图与报告在 `artifacts/phase6/`。
 
 ### About(概览 / 统计 / 更新)
 

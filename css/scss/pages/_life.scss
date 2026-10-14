@@ -535,7 +535,8 @@ a.life-wish:focus-visible { outline: 2px solid var(--primary); outline-offset: -
     box-shadow var(--dur-glass) var(--ease-glass);
 }
 
-a.life-work:hover {
+// 悬停效果对所有作品卡片生效（含没有详情链接的 <article> 卡片）；焦点框只属于可交互的链接卡片
+.life-work:hover {
   transform: translateY(-3px);
   box-shadow: var(--glass-shadow-hover), var(--glow-card), var(--glass-highlight);
 
@@ -1030,6 +1031,6 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   .life-journal-card,
   .life-mini-cover img,
   .life-mini-gallery__item img { transition: none; }
-  a.life-work:hover,
+  .life-work:hover,
   .life-journal-card:hover { transform: none; }
 }

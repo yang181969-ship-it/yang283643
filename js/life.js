@@ -34,6 +34,12 @@
   };
   const ANIME_STATUS = { watched: "done", watching: "doing", wishlist: "want" };
   const BADGE_LABELS = { upcoming: "待更新", ongoing: "连载中", finished: "已完结", movie: "电影" };
+  // 某一类作品一条记录都没有时的空状态（与状态筛选无关）
+  const WORKS_EMPTY = {
+    anime: ["动漫收藏暂时为空", "新的作品记录将在这里展示。"],
+    film: ["这里还没有影视记录", "看过的电影和剧集会慢慢整理到这里。"],
+    book: ["这里还没有书籍记录", "读过和想读的书会慢慢整理到这里。"],
+  };
   const CARD_STATUS = { collected: "已收藏", using: "使用中", retired: "已停用", want: "想要" };
   const DEVICE_STATUS = { using: "使用中", retired: "已退役", collected: "收藏" };
   const WISH_TYPES = { work: "作品", travel: "旅行", device: "设备", goal: "目标" };
@@ -106,7 +112,8 @@
         status: ANIME_STATUS[a.watchStatus] || "done",
         badge: a.badge || "",
         rating: Number.isFinite(a.rating) ? a.rating : null,
-        href: `html/anime-detail.html?id=${encodeURIComponent(id)}`,
+        // 详情地址可选：没有配置时卡片渲染为不跳转的 <article>
+        href: String(a.link || "").trim(),
         order: Number.isFinite(a.order) ? a.order : 1000 + index,
       }))
       .sort((x, y) => x.order - y.order);
@@ -274,11 +281,13 @@
     const slot = (name) => $(`[data-life-slot="${name}"]`);
 
     // 看过的作品：已有排序中的已看动漫（没有真实观看时间，不显示「最近观看时间」）
-    const watched = animeWorks().filter((w) => w.status === "done").slice(0, 4);
+    // 只取有封面的作品，避免出现空 src 的破损缩略图（与主页生活片段一致）
+    const watched = animeWorks().filter((w) => w.status === "done" && w.cover).slice(0, 4);
+    const animeHref = lifeUrl({ tab: "works", type: "anime" });
     slot("works").innerHTML = watched.length
       ? `<ul class="life-mini-covers">${watched.map((w) => `
           <li>
-            <a class="life-mini-cover" href="${esc(w.href)}">
+            <a class="life-mini-cover" href="${esc(w.href || animeHref)}">
               <span class="life-mini-cover__img"><img src="${esc(w.cover)}" alt="" loading="lazy" decoding="async"></span>
               <span class="life-mini-cover__title">${esc(w.title)}</span>
               <span class="life-mini-cover__meta">${esc(BADGE_LABELS[w.badge] || STATUS_LABELS.anime[w.status])}</span>
@@ -371,17 +380,14 @@
       SUBTYPES.works.forEach((type) => {
         const count = all.filter((w) => w.type === type).length;
         const el = $(`[data-life-count="${type}"]`);
-        if (el) el.textContent = count ? String(count) : "";
+        if (el) el.textContent = String(count);
       });
 
       const ofType = all.filter((w) => w.type === state.type);
       const shown = state.status === "all" ? ofType : ofType.filter((w) => w.status === state.status);
 
       if (!ofType.length) {
-        grid.innerHTML = empty(
-          state.type === "book" ? "这里还没有书籍记录" : "这里还没有影视记录",
-          state.type === "book" ? "读过和想读的书会慢慢整理到这里。" : "看过的电影和剧集会慢慢整理到这里。"
-        );
+        grid.innerHTML = empty(...WORKS_EMPTY[state.type]);
         return;
       }
       if (!shown.length) {
@@ -430,13 +436,15 @@
     if (state.type === "devices") renderOnce("devices", renderDevices);
   }
 
-  // Gallery：读取统一图片索引交给原 gallery.js；索引不可用时退回 gallery-data.js
+  // Gallery：读取统一图片索引交给原 gallery.js。
+  // images: [] 是合法的空画廊，照常渲染；只有索引读取失败（null）或格式不对时才退回 gallery-data.js
   function mountGallery() {
     const grid = $("[data-gallery-list]");
     loadImages().then((index) => {
-      if (!isMounted() || typeof initGalleryPage !== "function") return;
-      const images = Array.isArray(index?.images) && index.images.length ? index.images : undefined;
-      initGalleryPage(images);
+      if (!isMounted()) return;
+      if (typeof initGalleryPage === "function") {
+        initGalleryPage(Array.isArray(index?.images) ? index.images : undefined);
+      }
       grid?.removeAttribute("aria-busy");
     });
   }

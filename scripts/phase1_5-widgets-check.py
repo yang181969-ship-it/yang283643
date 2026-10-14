@@ -9,6 +9,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from music_mock import install_music_mock, remove_music_mock, empty_library_state
 
 OUT = Path('artifacts/phase1_5')
 OUT.mkdir(parents=True, exist_ok=True)
@@ -88,7 +89,8 @@ with sync_playwright() as pw:
     check('search: top ~8-12vh, centred, 680-760px', 0.07 * 900 <= s['y'] <= 0.13 * 900 and abs((s['x'] + s['w'] / 2) - 720) <= 2 and 680 <= s['w'] <= 760, s)
     bd = page.evaluate(BACKDROP, 'tool-search')
     check('search: backdrop only lightly dimmed, no blur', bd['filter'] in ('none', '') and float(bd['bg'].rstrip(')').split(',')[-1]) <= 0.12, bd)
-    page.keyboard.type('魔')
+    # Phase 6: no anime entries; 「关于」 matches three static pages (关于 / 统计 / 更新)
+    page.keyboard.type('关于')
     page.locator('.search-result-card').first.wait_for(timeout=8000)
     first = page.evaluate("document.getElementById('search-input').getAttribute('aria-activedescendant')")
     page.keyboard.press('ArrowDown')
@@ -96,14 +98,14 @@ with sync_playwright() as pw:
     page.keyboard.press('ArrowUp')
     check('search: live results + arrow keys move selection', first == 'search-opt-0' and second == 'search-opt-1'
           and page.evaluate("document.getElementById('search-input').getAttribute('aria-activedescendant')") == 'search-opt-0')
-    page.locator('.search-filter[data-search-filter="动漫"]').click()
-    check('search: category filter keeps focus in input', page.locator('.search-filter.is-active').get_attribute('data-search-filter') == '动漫'
+    page.locator('.search-filter[data-search-filter="页面"]').click()
+    check('search: category filter keeps focus in input', page.locator('.search-filter.is-active').get_attribute('data-search-filter') == '页面'
           and page.evaluate("document.activeElement.id") == 'search-input')
     check('search: only result area scrolls, panel within viewport', page.evaluate(RECT, '#tool-search')['b'] <= 900)
     page.screenshot(path=str(OUT / 'search-desktop.png'))
     page.keyboard.press('ArrowDown'); title = page.locator('.search-result-card.is-active .search-result-title').text_content()
     page.keyboard.press('Enter'); page.wait_for_timeout(1500)
-    check('search: Enter opens the selected result', 'anime-detail' in page.url and page.evaluate(OPEN) == [], [title, page.url])
+    check('search: Enter opens the selected result', 'page=about' in page.url and 'tab=stats' in page.url and page.evaluate(OPEN) == [], [title, page.url])
     page.goto(BASE, wait_until='load'); page.wait_for_timeout(900)
     page.locator('#search-toggle').click(); page.keyboard.type('zzqqxx-无结果'); page.wait_for_timeout(900)
     check('search: empty state', page.locator('.search-empty').count() == 1 and page.locator('.search-result-card').count() == 0)
@@ -115,6 +117,13 @@ with sync_playwright() as pw:
     page.keyboard.press('Escape')
 
     # ---------- Music panel ----------
+    # The published library is empty: check its empty state, then run the player checks against a
+    # temporary mock library served through request routing (scripts/music_mock.py, nothing on disk).
+    page.locator('.rail [data-tool="music"]').click(); page.wait_for_timeout(500)
+    check('music: production library shows the empty state', empty_library_state(page))
+    page.keyboard.press('Escape'); page.wait_for_timeout(200)
+    install_music_mock(ctx)
+    page.reload(wait_until='load'); page.wait_for_timeout(900)
     page.locator('.rail [data-tool="music"]').click(); page.wait_for_timeout(500)
     pl = page.evaluate(RECT, '.music-panel .rail-widget--music'); ls = page.evaluate(RECT, '.music-playlist'); d = page.evaluate(RECT, '#tool-music')
     check('music: player and playlist visible together (no second step)', page.evaluate(OPEN) == ['tool-music']
@@ -159,6 +168,7 @@ with sync_playwright() as pw:
           and abs(page.evaluate("document.getElementById('music-audio').volume") - 0.3) < 0.01)
     page.evaluate("document.getElementById('music-audio').pause(); localStorage.setItem('y181_music_volume', '80')")
     check('single audio + widget instances', page.evaluate("document.querySelectorAll('audio').length === 1 && document.querySelectorAll('.rail-widget').length === 3"))
+    remove_music_mock(ctx)
 
     # ---------- Calendar ----------
     page.locator('.rail [data-tool="calendar"]').click(); page.wait_for_timeout(300)
@@ -209,6 +219,7 @@ with sync_playwright() as pw:
     # ================= Mobile =================
     for w, h in [(390, 844), (375, 812), (320, 720)]:
         ctx = browser.new_context(viewport={'width': w, 'height': h}, has_touch=True, is_mobile=True, timezone_id='Asia/Shanghai')
+        install_music_mock(ctx)  # stacked music layout needs a playlist; the empty library is checked on desktop
         page = ctx.new_page(); watch(page, f'mobile-{w}')
         page.goto(BASE, wait_until='load'); page.wait_for_timeout(1100)
         tb = page.evaluate("document.querySelector('.site-toolbar').getBoundingClientRect().bottom")

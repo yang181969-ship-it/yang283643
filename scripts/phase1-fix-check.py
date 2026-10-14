@@ -104,7 +104,8 @@ with sync_playwright() as pw:
     # ---------- 2. Search (desktop) ----------
     page.locator('#search-toggle').click(); page.wait_for_timeout(300)
     check('search opens', page.evaluate(OPEN) == ['tool-search'] and page.evaluate("document.activeElement.id") == 'search-input')
-    page.keyboard.type('魔女')
+    # Phase 6: no anime entries any more; 「关于」 matches static pages (and note text)
+    page.keyboard.type('关于')
     page.locator('.search-result-card').first.wait_for(timeout=8000)
     check('typing shows live results', page.locator('.search-result-card').count() > 0)
     page.locator('.search-popover__status').click(); page.wait_for_timeout(250)
@@ -114,7 +115,7 @@ with sync_playwright() as pw:
     check('category filter works', page.locator('.search-filter.is-active').count() == 1 and page.locator('.search-filter.is-active').get_attribute('data-search-filter') != 'all')
     page.locator('#search-clear').click(); page.wait_for_timeout(300)
     check('clear empties input', page.input_value('#search-input') == '' and page.evaluate(OPEN) == ['tool-search'])
-    page.keyboard.type('魔女'); page.locator('.search-result-card').first.wait_for()
+    page.keyboard.type('关于'); page.locator('.search-result-card').first.wait_for()
     check('search after clearing', page.locator('.search-result-card').count() > 0)
     page.screenshot(path=str(OUT / 'fix-search-desktop.png'))
     page.keyboard.press('Escape'); page.wait_for_timeout(250)
@@ -225,7 +226,7 @@ with sync_playwright() as pw:
         # Search + theme through the mobile toolbar.
         page.locator('.mobile-tools [data-tool="search"]').tap(); page.wait_for_timeout(300)
         check(f'{w}px mobile search opens', page.evaluate(OPEN) == ['tool-search'])
-        page.locator('#search-input').fill('魔女'); page.locator('.search-result-card').first.wait_for()
+        page.locator('#search-input').fill('关于'); page.locator('.search-result-card').first.wait_for()
         check(f'{w}px mobile search results', page.locator('.search-result-card').count() > 0)
         if w == 390: page.screenshot(path=str(OUT / 'fix-search-mobile-390.png'))
         page.locator('#tool-search .tool-close').tap(); page.wait_for_timeout(250)

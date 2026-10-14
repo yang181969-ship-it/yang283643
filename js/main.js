@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const main = document.getElementById("main-content");
   const navLinks = document.querySelectorAll(".site-nav a");
 
-  // 独立详情页（如 anime-detail.html、notes-detail.html）跳过 SPA 路由逻辑
+  // 独立页面（notes-detail.html、stats.html）跳过 SPA 路由逻辑
   if (document.body.dataset.standalone === "true") return;
 
   if (!main) return;
@@ -682,7 +682,7 @@ function initFloatingBtns() {
     target?.scrollTo({ top: 0, behavior: "smooth" });
   });
 
-  // 返回上一页：独立详情页（anime-detail.html / notes-detail.html）
+  // 返回上一页：独立页面（notes-detail.html / stats.html）
   // 有自己的 inline script 绑定 history.back()，这里不重复绑定，
   // 否则会双重触发导致 history.back() 执行两次，跳过中间一级。
   if (document.body.dataset.standalone === "true") return;

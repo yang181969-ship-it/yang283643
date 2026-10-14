@@ -8,11 +8,12 @@ import sharp from 'sharp';
 //
 // 1. data/image-index.json —— 全站公开图片的统一索引（Gallery 读取）
 //    来源：js/gallery-data.js（原画廊，保留全部元数据）
-//         js/anime-data.js（详情页封面与插图）
+//         js/anime-data.js（动漫作品封面与插图）
 //         data/life.json（足迹、收藏、作品中的图片）
 //         content/life/journal/*.md（日记 @cover）
 //    同一路径只收录一次；其他位置对它的使用记为 refs，不复制文件、不重复收藏。
 //    没有可靠日期的图片 date 留空，不用文件时间伪造。
+//    任一来源为空（[] / {}）都是合法输入，全部为空时输出 images: [] 的合法索引。
 //
 // 2. data/journal-index.json —— 生活日记索引（按日期倒序）
 //
@@ -106,12 +107,14 @@ for (const g of [...galleryData].sort((a, b) => (a.order || 0) - (b.order || 0))
 }
 const galleryCount = images.length;
 
-// ---------- 2. 动漫详情页图片 ----------
+// ---------- 2. 动漫作品图片 ----------
 const animeData = loadJsGlobal(ANIME_DATA, 'animeData') || {};
 const animeEntries = Object.entries(animeData)
   .sort(([, a], [, b]) => (a.order ?? 999) - (b.order ?? 999));
 for (const [id, anime] of animeEntries) {
-  const ref = { type: 'anime', id, title: anime.title || id, href: `html/anime-detail.html?id=${encodeURIComponent(id)}` };
+  // 作品配置了 link 时灯箱链接到它，否则回到 Life「作品 → 动漫」
+  const href = String(anime.link || '').trim() || 'index.html?page=life&tab=works&type=anime';
+  const ref = { type: 'anime', id, title: anime.title || id, href };
   const list = [anime.image, ...(Array.isArray(anime.gallery) ? anime.gallery : [])].filter(Boolean);
   let n = 0;
   for (const src of list) {
@@ -235,6 +238,6 @@ fs.writeFileSync(IMAGE_INDEX_OUT, `${JSON.stringify({ version: 1, count: images.
 fs.writeFileSync(JOURNAL_INDEX_OUT, `${JSON.stringify({ version: 1, count: journal.length, entries: journal }, null, 2)}\n`);
 
 console.log(`✓ ${IMAGE_INDEX_OUT}：${images.length} 张图片（画廊 ${galleryCount}，其他来源 ${images.length - galleryCount}）`);
-console.log(`  来源分布：${Object.entries(sourceCounts).map(([k, v]) => `${k} ${v}`).join('，')}`);
+console.log(`  来源分布：${Object.entries(sourceCounts).map(([k, v]) => `${k} ${v}`).join('，') || '无'}`);
 console.log(`✓ ${JOURNAL_INDEX_OUT}：${journal.length} 篇日记`);
 if (missing.length) console.warn(`⚠ 跳过 ${missing.length} 个无法读取的图片：\n  ${missing.join('\n  ')}`);

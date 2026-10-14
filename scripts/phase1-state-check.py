@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from music_mock import install_music_mock, remove_music_mock, empty_library_state
 
 OUT = Path('artifacts/phase1')
 BASE = 'http://127.0.0.1:8765'
@@ -17,6 +18,12 @@ try:
     context = browser.new_context(viewport={'width':1440,'height':900}, timezone_id='Asia/Shanghai')
     page = context.new_page()
     page.on('pageerror', lambda e: errors.append(str(e)))
+    # Published library is empty: check that first, then use the temporary mock library (scripts/music_mock.py)
+    page.goto(BASE, wait_until='domcontentloaded'); page.wait_for_timeout(2000)
+    page.locator('[data-tool="music"]').click(); page.wait_for_timeout(300)
+    check('production music library shows the empty state', empty_library_state(page))
+    page.keyboard.press('Escape')
+    install_music_mock(context)
     page.goto(BASE, wait_until='domcontentloaded'); page.wait_for_timeout(2000)
     page.locator('[data-tool="music"]').click()
     page.locator('[data-music-act="play"]').click()
@@ -56,6 +63,7 @@ try:
     check('long press resets timer', page.locator('.rail-widget--timer').get_attribute('data-status')=='idle')
     page.keyboard.press('Escape')
     page.locator('audio').evaluate('(a)=>a.pause()')
+    remove_music_mock(context)
     page.locator('[data-tool="calendar"]').click()
     page.locator('[data-cal-next]').click(); month = page.locator('[data-cal-title]').text_content()
     page.keyboard.press('Escape'); page.locator('[data-tool="calendar"]').click()
@@ -77,9 +85,13 @@ try:
     check('glow persisted', page.evaluate('localStorage.getItem("ambient-glow")')==page.locator('html').get_attribute('data-glow'))
     page.keyboard.press('Escape')
     page.goto(BASE+'/?page=gallery',wait_until='domcontentloaded'); page.wait_for_timeout(900)
-    page.locator('[data-gallery-id]').first.click() if page.locator('[data-gallery-id]').count() else page.locator('.gallery-item').first.click()
-    check('gallery lightbox opens', page.locator('#gallery-lightbox').is_visible())
-    page.keyboard.press('Escape'); check('gallery lightbox closes', not page.locator('#gallery-lightbox').is_visible())
+    # Phase 6: the gallery may legitimately be empty; then it shows the empty state and never opens the lightbox.
+    if page.locator('.gallery-item').count():
+        page.locator('.gallery-item').first.click()
+        check('gallery lightbox opens', page.locator('#gallery-lightbox').is_visible())
+        page.keyboard.press('Escape'); check('gallery lightbox closes', not page.locator('#gallery-lightbox').is_visible())
+    else:
+        check('empty gallery shows empty state, lightbox stays closed', page.locator('.gallery-empty').count() == 1 and not page.locator('#gallery-lightbox').is_visible())
     page.goto(BASE+'/?page=notes',wait_until='domcontentloaded'); page.locator('.note-card').first.wait_for()
     page.locator('.note-card').first.click(); page.wait_for_timeout(500)
     note_url = page.url
@@ -88,10 +100,13 @@ try:
     try: page.locator('.note-detail-card').first.wait_for(timeout=10000)
     except Exception: pass
     check('note deep-link refresh retains detail', page.locator('.note-detail-card').count()>0 and 'note=' in page.url)
-    page.goto(BASE+'/html/anime-detail.html?id=majo',wait_until='domcontentloaded'); page.wait_for_timeout(500)
+    page.goto(BASE+'/html/stats.html',wait_until='domcontentloaded'); page.wait_for_timeout(500)
     page.locator('#search-toggle').click(); page.locator('#search-input').fill('傅里叶'); page.locator('.search-result-card').first.wait_for()
-    page.locator('.search-result-card').first.click(); page.wait_for_timeout(900)
-    check('standalone note search navigates', '/html/notes-detail.html' in page.url and page.locator('.note-detail-title').count()>0)
+    page.locator('.search-result-card').first.click()
+    # stats.html has the SPA router, so the note opens as index.html?page=notes&note=…; pages without it use notes-detail.html
+    try: page.locator('.note-detail-title').first.wait_for(timeout=10000)
+    except Exception: pass
+    check('standalone note search navigates', ('/html/notes-detail.html' in page.url or 'note=' in page.url) and page.locator('.note-detail-title').count()>0)
     # Deterministic local midnight, including year rollover, without high-frequency polling.
     clockpage = context.new_page()
     clockpage.clock.install(time=datetime.fromisoformat('2026-12-31T23:59:58+08:00'))

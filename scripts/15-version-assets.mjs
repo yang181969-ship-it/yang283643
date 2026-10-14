@@ -5,11 +5,14 @@ import crypto from 'node:crypto';
 // The shared shell depends on several scripts agreeing with the HTML; without a
 // version, a browser or edge cache can pair new markup with an older script.
 // Runs after CSS is compiled (postinline:critical), so style.css hashes are final.
-const files = ['index.html', 'html/anime-detail.html', 'html/notes-detail.html', 'html/stats.html'];
+const files = ['index.html', 'html/notes-detail.html', 'html/stats.html'];
 const hashes = new Map();
 function versionOf(asset) {
   if (!hashes.has(asset)) {
-    hashes.set(asset, crypto.createHash('sha1').update(fs.readFileSync(asset)).digest('hex').slice(0, 8));
+    // Hash LF-normalised text so the version only changes with content, not with the checkout's line endings
+    // (core.autocrlf checkouts are CRLF, CI / Cloudflare clones are LF).
+    const text = fs.readFileSync(asset, 'utf8').replace(/\r\n/g, '\n');
+    hashes.set(asset, crypto.createHash('sha1').update(text).digest('hex').slice(0, 8));
   }
   return hashes.get(asset);
 }

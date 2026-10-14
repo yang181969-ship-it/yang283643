@@ -58,10 +58,10 @@
       "date": "2026-10-14",
       "month": "2026-10",
       "notes": 8,
-      "anime": 10,
-      "gallery": 17,
+      "anime": 0,
+      "gallery": 0,
       "updates": 17,
-      "total": 35
+      "total": 8
     }
   ],
   "breakdowns": {
@@ -87,60 +87,9 @@
         "value": 1
       }
     ],
-    "animeByStatus": [
-      {
-        "label": "看完",
-        "value": 10
-      }
-    ],
-    "animeByTag": [
-      {
-        "label": "奇幻",
-        "value": 8
-      },
-      {
-        "label": "战斗",
-        "value": 4
-      },
-      {
-        "label": "治愈",
-        "value": 3
-      },
-      {
-        "label": "日常",
-        "value": 2
-      },
-      {
-        "label": "热血",
-        "value": 2
-      },
-      {
-        "label": "青春",
-        "value": 2
-      },
-      {
-        "label": "公路",
-        "value": 1
-      },
-      {
-        "label": "旅行",
-        "value": 1
-      },
-      {
-        "label": "其他",
-        "value": 7
-      }
-    ],
-    "galleryByCategory": [
-      {
-        "label": "动漫",
-        "value": 10
-      },
-      {
-        "label": "现实",
-        "value": 7
-      }
-    ],
+    "animeByStatus": [],
+    "animeByTag": [],
+    "galleryByCategory": [],
     "updatesByMonth": [
       {
         "label": "2026-04",
@@ -166,17 +115,9 @@
           {
             "id": "overview-content",
             "name": "内容构成",
-            "total": 35,
+            "total": 8,
             "unit": "项",
             "items": [
-              {
-                "name": "画廊图片",
-                "value": 17
-              },
-              {
-                "name": "动漫",
-                "value": 10
-              },
               {
                 "name": "笔记",
                 "value": 8
@@ -256,207 +197,13 @@
         ]
       },
       {
-        "id": "anime",
-        "name": "动漫",
-        "children": [
-          {
-            "id": "anime-watch-status",
-            "name": "观看状态",
-            "total": 10,
-            "unit": "部",
-            "items": [
-              {
-                "name": "已看",
-                "value": 8
-              },
-              {
-                "name": "想看",
-                "value": 2
-              }
-            ]
-          },
-          {
-            "id": "anime-genres",
-            "name": "题材分布",
-            "total": 30,
-            "unit": "部",
-            "items": [
-              {
-                "name": "奇幻",
-                "value": 8
-              },
-              {
-                "name": "战斗",
-                "value": 4
-              },
-              {
-                "name": "治愈",
-                "value": 3
-              },
-              {
-                "name": "青春",
-                "value": 2
-              },
-              {
-                "name": "热血",
-                "value": 2
-              },
-              {
-                "name": "日常",
-                "value": 2
-              },
-              {
-                "name": "爱情",
-                "value": 1
-              },
-              {
-                "name": "其他",
-                "value": 8
-              }
-            ]
-          },
-          {
-            "id": "anime-years",
-            "name": "年份分布",
-            "total": 10,
-            "unit": "部",
-            "items": [
-              {
-                "name": "2026",
-                "value": 10
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "id": "gallery",
-        "name": "画廊",
-        "children": [
-          {
-            "id": "gallery-anime",
-            "name": "动漫",
-            "total": 24,
-            "unit": "次",
-            "items": [
-              {
-                "name": "人物",
-                "value": 5
-              },
-              {
-                "name": "风景",
-                "value": 4
-              },
-              {
-                "name": "治愈",
-                "value": 4
-              },
-              {
-                "name": "插画",
-                "value": 2
-              },
-              {
-                "name": "蓝色",
-                "value": 2
-              },
-              {
-                "name": "自然",
-                "value": 2
-              },
-              {
-                "name": "抽象",
-                "value": 1
-              },
-              {
-                "name": "其他",
-                "value": 4
-              }
-            ]
-          },
-          {
-            "id": "gallery-real",
-            "name": "现实",
-            "total": 21,
-            "unit": "次",
-            "items": [
-              {
-                "name": "城市",
-                "value": 4
-              },
-              {
-                "name": "天空",
-                "value": 4
-              },
-              {
-                "name": "夜景",
-                "value": 4
-              },
-              {
-                "name": "自然",
-                "value": 3
-              },
-              {
-                "name": "风景",
-                "value": 2
-              },
-              {
-                "name": "蓝色",
-                "value": 2
-              },
-              {
-                "name": "草原",
-                "value": 1
-              },
-              {
-                "name": "建筑",
-                "value": 1
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "id": "resources",
-        "name": "资源",
-        "children": [
-          {
-            "id": "resources-gallery",
-            "name": "画廊",
-            "total": 17,
-            "unit": "张",
-            "items": [
-              {
-                "name": "动漫",
-                "value": 10
-              },
-              {
-                "name": "现实",
-                "value": 7
-              }
-            ]
-          },
-          {
-            "id": "resources-image-format",
-            "name": "图片格式",
-            "total": 17,
-            "unit": "张",
-            "items": [
-              {
-                "name": "webp",
-                "value": 17
-              }
-            ]
-          }
-        ]
-      },
-      {
         "id": "writing",
         "name": "写作",
         "children": [
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 29086,
+            "total": 28097,
             "unit": "字",
             "items": [
               {
@@ -466,10 +213,6 @@
               {
                 "name": "笔记字数",
                 "value": 4432
-              },
-              {
-                "name": "动漫详情字数",
-                "value": 989
               }
             ]
           },
@@ -510,22 +253,6 @@
               {
                 "name": "fix",
                 "value": 541
-              }
-            ]
-          },
-          {
-            "id": "writing-anime",
-            "name": "动漫详情字数",
-            "total": 989,
-            "unit": "字",
-            "items": [
-              {
-                "name": "已看",
-                "value": 634
-              },
-              {
-                "name": "想看",
-                "value": 355
               }
             ]
           }
@@ -591,104 +318,6 @@
       "href": ""
     },
     {
-      "date": "2026-05-05",
-      "title": "新增动漫图：010.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增动漫图：009.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增动漫图：008.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增动漫图：007.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增照片：007.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增动漫图：006.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增照片：006.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增动漫图：005.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增照片：005.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增照片：004.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增照片：003.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增照片：002.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增照片：001.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-05-05",
-      "title": "新增动漫：你的名字",
-      "type": "动漫",
-      "page": "anime",
-      "href": ""
-    },
-    {
       "date": "2026-05-04",
       "title": "移动端加灵动岛，调色盘补上光晕开关",
       "type": "更新",
@@ -703,80 +332,10 @@
       "href": ""
     },
     {
-      "date": "2026-04-25",
-      "title": "新增动漫：魔法少女小圆",
-      "type": "动漫",
-      "page": "anime",
-      "href": ""
-    },
-    {
-      "date": "2026-04-25",
-      "title": "新增动漫：铃芽之旅",
-      "type": "动漫",
-      "page": "anime",
-      "href": ""
-    },
-    {
-      "date": "2026-04-25",
-      "title": "新增动漫：进击的巨人",
-      "type": "动漫",
-      "page": "anime",
-      "href": ""
-    },
-    {
-      "date": "2026-04-25",
-      "title": "新增动漫：鬼灭之刃",
-      "type": "动漫",
-      "page": "anime",
-      "href": ""
-    },
-    {
-      "date": "2026-04-24",
-      "title": "新增动漫：间谍过家家",
-      "type": "动漫",
-      "page": "anime",
-      "href": ""
-    },
-    {
-      "date": "2026-04-22",
-      "title": "新增动漫图：004.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-04-22",
-      "title": "新增动漫图：003.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-04-22",
-      "title": "新增动漫图：002.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
-      "date": "2026-04-22",
-      "title": "新增动漫图：001.webp",
-      "type": "画廊",
-      "page": "gallery",
-      "href": ""
-    },
-    {
       "date": "2026-04-22",
       "title": "性能优化五步收官 —— 从「能看」到「真的快」",
       "type": "更新",
       "page": "update",
-      "href": ""
-    },
-    {
-      "date": "2026-04-21",
-      "title": "新增动漫：紫罗兰永恒花园",
-      "type": "动漫",
-      "page": "anime",
       "href": ""
     },
     {
@@ -801,20 +360,6 @@
       "href": ""
     },
     {
-      "date": "2026-04-18",
-      "title": "新增动漫：葬送的芙莉莲",
-      "type": "动漫",
-      "page": "anime",
-      "href": ""
-    },
-    {
-      "date": "2026-04-18",
-      "title": "新增动漫：魔女之旅",
-      "type": "动漫",
-      "page": "anime",
-      "href": ""
-    },
-    {
       "date": "2026-04-17",
       "title": "换域名，留言板加了 VPN 提示弹窗",
       "type": "更新",
@@ -833,13 +378,6 @@
       "title": "手机端适配起步，画廊功能上线，增加悬浮按钮",
       "type": "更新",
       "page": "update",
-      "href": ""
-    },
-    {
-      "date": "2026-04-14",
-      "title": "新增动漫：约会大作战",
-      "type": "动漫",
-      "page": "anime",
       "href": ""
     },
     {
@@ -899,5 +437,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-14T04:26:20.551Z"
+  "generatedAt": "2026-10-14T09:40:40.677Z"
 }

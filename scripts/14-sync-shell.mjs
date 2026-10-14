@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 // Build-time includes: full navigation and tool DOM exist before deferred scripts run.
-const files = ['index.html', 'html/anime-detail.html', 'html/notes-detail.html', 'html/stats.html'];
+const files = ['index.html', 'html/notes-detail.html', 'html/stats.html'];
 for (const file of files) {
   let html = fs.readFileSync(file, 'utf8');
   // Keep each document's line endings so repeated syncs are byte-for-byte idempotent.
@@ -17,4 +17,4 @@ for (const file of files) {
   }
   fs.writeFileSync(file, html);
 }
-console.log('Shared shell and tools synchronized in four documents.');
+console.log(`Shared shell and tools synchronized in ${files.length} documents.`);

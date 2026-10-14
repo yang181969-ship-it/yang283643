@@ -3,6 +3,10 @@ Run against a local static server with PHASE2_BASE_URL (default 127.0.0.1:8765),
   python -m http.server 8765 --bind 127.0.0.1
   python scripts/phase2-life-check.py
 Writes screenshots and a JSON report under artifacts/phase2/ (or PHASE2_OUT).
+
+Phase 6: anime works and gallery images are intentionally empty, so this script asserts the empty
+states. Rendering with data (badges, waterfall, filters, lightbox) is covered by
+scripts/phase6-empty-content-check.py with temporary mock data injected through request routing.
 """
 import json
 import os
@@ -62,9 +66,12 @@ with sync_playwright() as pw:
     check('tab labels are Chinese only', labels == ['总览', '作品', '收藏', '足迹', '日记'], labels)
     widths = page.eval_on_selector_all('.life-tab', 'els => els.map(e => Math.round(e.getBoundingClientRect().width))')
     check('desktop tabs evenly distributed', max(widths) - min(widths) <= 2, widths)
-    check('Life overview renders by default', page.is_visible('[data-life-panel="overview"]') and page.locator('.life-mini-cover').count() == 4)
-    check('overview featured collections has thumbnails', page.locator('.life-mini-gallery__item').count() == 6)
-    check('overview wishlist shows anime wishlist', page.locator('.life-wish').count() == 2)
+    check('Life overview renders by default', page.is_visible('[data-life-panel="overview"]') and page.locator('.life-mini-cover').count() == 0
+          and page.locator('[data-life-slot="works"] .life-empty').count() == 1)
+    check('overview featured collections shows placeholder', page.locator('.life-mini-gallery__item').count() == 0
+          and page.locator('[data-life-slot="collections"] .life-empty').count() == 1)
+    check('overview wishlist empty', page.locator('.life-wish').count() == 0 and page.locator('[data-life-slot="wishlist"] .life-empty').count() == 1)
+    check('overview has no images (no stale covers)', page.locator('[data-life-panel="overview"] img').count() == 0)
     check('overview journal/milestone empty states', page.locator('[data-life-slot="journal"] .life-empty').count() == 1 and page.locator('[data-life-slot="milestones"] .life-empty').count() == 1)
     page.screenshot(path=str(OUT / 'desktop-overview-light.png'), full_page=False)
 
@@ -72,15 +79,18 @@ with sync_playwright() as pw:
     h0 = page.evaluate('history.length')
     page.click('[data-life-tab="works"]'); settle(page)
     check('works tab updates URL', query(page).get('tab') == 'works' and query(page).get('type') == 'anime', page.url)
-    check('works grid shows 10 anime', page.locator('.life-works-grid .life-work').count() == 10)
-    check('detail links preserved', page.locator('a.life-work[href="html/anime-detail.html?id=majo"]').count() == 1)
+    check('anime works empty state', page.locator('.life-works-grid .life-work').count() == 0
+          and page.inner_text('.life-works-grid .life-empty strong').strip() == '动漫收藏暂时为空', page.inner_text('.life-works-grid'))
+    check('anime count chip shows 0', page.inner_text('[data-life-count="anime"]').strip() == '0')
+    check('no links to the removed anime detail page', page.locator('a[href*="anime-detail"]').count() == 0)
     h1 = page.evaluate('history.length')
     page.click('[data-life-tab="works"]'); settle(page, 300)
     check('clicking active tab adds no history', page.evaluate('history.length') == h1 == h0 + 1, (h0, h1, page.evaluate('history.length')))
     page.click('[data-life-status-value="want"]'); settle(page, 300)
-    check('status filter want = 2', page.locator('.life-works-grid .life-work').count() == 2 and query(page).get('status') == 'want')
+    check('status filter want keeps anime empty state', page.locator('.life-works-grid .life-work').count() == 0 and query(page).get('status') == 'want'
+          and page.get_attribute('[data-life-status-value="want"]', 'aria-pressed') == 'true' and '动漫收藏暂时为空' in page.inner_text('.life-works-grid'))
     page.click('[data-life-type="film"]'); settle(page, 400)
-    check('film type shows empty state', page.locator('.life-works-grid .life-empty').count() == 1, page.url)
+    check('film type shows its own empty state', page.inner_text('.life-works-grid .life-empty strong').strip() == '这里还没有影视记录', page.url)
     page.click('[data-life-type="book"]'); settle(page, 300)
     check('book status labels switch to 已读/想读', page.inner_text('[data-life-status-value="want"]').strip() == '想读')
     page.go_back(); settle(page)
@@ -96,49 +106,35 @@ with sync_playwright() as pw:
     page.focus('[data-life-tab="works"]'); page.keyboard.press('ArrowRight'); settle(page)
     check('ArrowRight moves to collections', query(page).get('tab') == 'collections' and page.evaluate('document.activeElement.dataset.lifeTab') == 'collections')
 
-    # gallery
-    page.wait_for_selector('.gallery-item', timeout=5000); settle(page, 600)
-    total = page.locator('.gallery-item').count()
-    check('gallery uses unified index (55 images)', total == 55 and page.inner_text('[data-gallery-total]') == '55', total)
+    # gallery (Phase 6: legitimately empty unified index)
+    page.wait_for_selector('.gallery-empty', timeout=5000); settle(page, 600)
+    check('empty gallery: 0 images, organising empty state', page.locator('.gallery-item').count() == 0 and page.inner_text('[data-gallery-total]') == '0'
+          and page.inner_text('.gallery-empty strong').strip() == '画廊正在整理中', page.inner_text('[data-gallery-list]'))
+    check('empty gallery: grid not left busy', page.get_attribute('[data-gallery-list]', 'aria-busy') is None)
     page.screenshot(path=str(OUT / 'desktop-gallery-light.png'))
     page.click('[data-gallery-action="search"]'); settle(page, 200)
     check('gallery search panel opens once (no double binding)', page.locator('[data-gallery-panel="search"].is-open').count() == 1)
     page.fill('[data-gallery-search-input]', '芙莉莲'); settle(page, 300)
-    # 4 anime-detail images + 1 original gallery image whose note mentions 芙莉莲
-    check('search by related work finds anime art', page.locator('.gallery-item').count() == 5, page.locator('.gallery-item').count())
+    check('search on empty gallery keeps organising state', page.locator('.gallery-item').count() == 0 and '画廊正在整理中' in page.inner_text('.gallery-empty'))
     page.click('[data-gallery-search-clear]'); settle(page, 200)
     page.keyboard.press('Escape'); settle(page, 200)
     page.click('[data-gallery-action="filter"]'); settle(page, 200)
     page.click('[data-category="real"]'); settle(page, 300)
-    real = page.locator('.gallery-item').count()
-    check('category filter real', 0 < real < total, real)
+    check('category filter on empty gallery is safe', page.locator('.gallery-item').count() == 0 and page.locator('.gallery-empty').count() == 1)
+    check('source filter hidden without sources', page.locator('[data-gallery-source-list] [data-source]').count() == 0)
     page.click('[data-gallery-filter-clear]'); settle(page, 200)
-    page.click('[data-source="gallery"]'); settle(page, 300)
-    check('source filter: original gallery = 17', page.locator('.gallery-item').count() == 17, page.locator('.gallery-item').count())
-    page.click('[data-source="anime"]'); settle(page, 300)
-    check('source filter: anime detail art = 38 (deduplicated)', page.locator('.gallery-item').count() == 38, page.locator('.gallery-item').count())
-    page.click('[data-gallery-filter-clear]'); settle(page, 200)
-    check('clear filter restores all', page.locator('.gallery-item').count() == total)
     page.click('[data-gallery-action="sort"]'); settle(page, 200)
     page.click('[data-sort="time-desc"]'); settle(page, 300)
-    check('sort time-desc keeps all items', page.locator('.gallery-item').count() == total)
+    check('sort on empty gallery is safe', page.locator('.gallery-item').count() == 0 and page.locator('.gallery-empty').count() == 1)
     page.keyboard.press('Escape'); settle(page, 200)
-    page.click('.gallery-item >> nth=0'); settle(page, 300)
-    check('lightbox opens', page.is_visible('#gallery-lightbox') and page.evaluate("document.documentElement.classList.contains('is-modal-open')"))
-    page.click('[data-lightbox-next]'); settle(page, 200)
-    check('lightbox next', page.inner_text('[data-current-index]') == '2')
-    page.keyboard.press('Escape'); settle(page, 200)
-    check('Esc closes lightbox and scroll lock', not page.is_visible('#gallery-lightbox') and not page.evaluate("document.documentElement.classList.contains('is-modal-open')"))
-    # anime art shows related work link in lightbox
-    page.click('[data-gallery-action="search"]'); page.fill('[data-gallery-search-input]', '魔女之旅'); settle(page, 300)
-    page.keyboard.press('Escape'); page.click('.gallery-item[aria-label="打开 魔女之旅 · 封面"]'); settle(page, 300)
-    check('lightbox shows related work link', page.locator('[data-lightbox-source] a[href="html/anime-detail.html?id=majo"]').count() == 1, page.inner_text('[data-lightbox-source]'))
+    page.click('.gallery-empty'); page.keyboard.press('ArrowRight'); settle(page, 200)
+    check('empty gallery never opens the lightbox', not page.is_visible('#gallery-lightbox') and not page.evaluate("document.documentElement.classList.contains('is-modal-open')"))
     # leaving tab with the lightbox open releases it
     page.evaluate("document.querySelector('[data-life-tab=\"journey\"]').click()"); settle(page, 300)
     check('switching tab closes lightbox + lock', page.evaluate("document.getElementById('gallery-lightbox').hidden && !document.documentElement.classList.contains('is-modal-open')"))
     check('journey timeline empty state', page.locator('[data-life-list="journey"] .life-empty').count() == 1)
     page.click('[data-life-tab="collections"]'); settle(page, 300)
-    check('collections remembers gallery and keeps state', query(page).get('type') == 'gallery' and page.locator('.gallery-item').count() >= 1)
+    check('collections remembers gallery and keeps state', query(page).get('type') == 'gallery' and page.locator('.gallery-empty').count() == 1)
     page.click('[data-life-type="cards"]'); settle(page, 300)
     check('cards empty state', page.locator('[data-life-list="cards"] .life-empty').count() == 1 and not page.is_visible('[data-life-sub="gallery"]'))
     page.click('[data-life-type="devices"]'); settle(page, 300)
@@ -164,10 +160,10 @@ with sync_playwright() as pw:
     page.goto(f'{BASE}/index.html', wait_until='load'); settle(page, 1500)
     # Phase 4：动漫 / 画廊卡并入主页「生活片段」，改用卡内的分区入口
     page.click('[data-card="life"] .home-life-chip >> nth=0'); page.wait_for_load_state('load'); settle(page, 1200)
-    check('home life card works link -> Life works', query(page).get('tab') == 'works' and page.locator('.life-work').count() == 10, page.url)
+    check('home life card works link -> Life works', query(page).get('tab') == 'works' and '动漫收藏暂时为空' in page.inner_text('[data-life-works]'), page.url)
     page.goto(f'{BASE}/index.html', wait_until='load'); settle(page, 1500)
     page.click('[data-card="life"] .home-life-chip >> nth=1'); page.wait_for_load_state('load'); settle(page, 1500)
-    check('home life card collections link -> Life gallery', query(page).get('type') == 'gallery' and page.locator('.gallery-item').count() == 55, page.url)
+    check('home life card collections link -> Life gallery', query(page).get('type') == 'gallery' and page.locator('.gallery-empty').count() == 1, page.url)
 
     # SPA re-entry: home -> life -> notes -> life (no duplicate bindings)
     page.goto(f'{BASE}/index.html', wait_until='load'); settle(page, 1500)
@@ -175,7 +171,7 @@ with sync_playwright() as pw:
         page.click('.site-nav a[href="index.html?page=life"]'); settle(page, 700)
         page.click('.site-nav a[href="index.html?page=notes"]'); settle(page, 700)
     page.click('.site-nav a[href="index.html?page=life"]'); settle(page, 800)
-    page.click('[data-life-tab="collections"]'); page.wait_for_selector('.gallery-item'); settle(page, 400)
+    page.click('[data-life-tab="collections"]'); page.wait_for_selector('.gallery-empty'); settle(page, 400)
     page.click('[data-gallery-action="filter"]'); settle(page, 200)
     check('gallery filter toggles after re-entry', page.locator('[data-gallery-panel="filter"].is-open').count() == 1)
     page.keyboard.press('Escape')
@@ -190,19 +186,12 @@ with sync_playwright() as pw:
     # search -> gallery (alias)
     page.goto(f'{BASE}/index.html?page=notes', wait_until='load'); settle(page, 1200)
     page.evaluate("window._loadPage('gallery')"); settle(page, 1500)
-    check('_loadPage("gallery") alias opens Life gallery', query(page).get('type') == 'gallery' and page.locator('.gallery-item').count() == 55, page.url)
+    check('_loadPage("gallery") alias opens Life gallery', query(page).get('type') == 'gallery' and page.locator('.gallery-empty').count() == 1, page.url)
 
-    # anime detail
-    page.goto(f'{BASE}/index.html?page=life&tab=works&type=anime', wait_until='load'); settle(page, 1200)
-    page.click('a.life-work[href*="id=frieren"]'); page.wait_for_load_state('load'); settle(page, 900)
-    check('detail page renders', page.inner_text('#anime-title') == '葬送的芙莉莲' and page.locator('#anime-gallery img').count() == 4)
-    check('detail page highlights 生活', page.get_attribute('.site-nav a[href="../index.html?page=life"]', 'aria-current') == 'page')
-    page.evaluate("document.getElementById('back-to-prev').click()"); page.wait_for_load_state('load'); settle(page, 1200)
-    check('detail back returns to works list', query(page).get('tab') == 'works' and page.locator('.life-work').count() == 10, page.url)
-    p3 = ctx.new_page(); watch(p3)
-    p3.goto(f'{BASE}/html/anime-detail.html?id=majo', wait_until='load'); settle(p3, 800)
-    p3.evaluate("document.getElementById('back-to-prev').click()"); p3.wait_for_load_state('load'); settle(p3, 1200)
-    check('direct-open detail back falls back to Life works', query(p3).get('tab') == 'works', p3.url)
+    # removed anime detail page: the old URL is a plain 404, it never shows old content
+    p3 = ctx.new_page()
+    resp = p3.goto(f'{BASE}/html/anime-detail.html?id=majo', wait_until='load')
+    check('old anime detail URL is gone (404)', resp is not None and resp.status == 404 and '芙莉莲' not in p3.content(), resp and resp.status)
     p3.close()
 
     # dark theme + other hue (own context: the light init script would reset a reload)
@@ -216,11 +205,8 @@ with sync_playwright() as pw:
     dpage.screenshot(path=str(OUT / 'desktop-overview-dark-hue140.png'))
     dpage.click('[data-life-tab="works"]'); settle(dpage, 500)
     dpage.screenshot(path=str(OUT / 'desktop-works-dark.png'))
-    dpage.click('[data-life-tab="collections"]'); dpage.wait_for_selector('.gallery-item'); settle(dpage, 800)
+    dpage.click('[data-life-tab="collections"]'); dpage.wait_for_selector('.gallery-empty'); settle(dpage, 800)
     dpage.screenshot(path=str(OUT / 'desktop-gallery-dark.png'))
-    dpage.click('.gallery-item >> nth=2'); settle(dpage, 400)
-    dpage.screenshot(path=str(OUT / 'desktop-lightbox-dark.png'))
-    dpage.keyboard.press('Escape')
     dpage.click('[data-life-tab="journey"]'); settle(dpage, 400)
     dpage.screenshot(path=str(OUT / 'desktop-journey-dark.png'))
     dctx.close()
@@ -264,8 +250,9 @@ with sync_playwright() as pw:
             p.screenshot(path=str(OUT / f'{label}-{tab}.png'))
 
         if w <= 900:
-            # sticky tab bar under the mobile toolbar; toolbar hides on scroll down
-            p.goto(f'{BASE}/index.html?page=life&tab=works', wait_until='load'); settle(p, 1000)
+            # sticky tab bar under the mobile toolbar; toolbar hides on scroll down.
+            # Phase 6: the empty works panel is too short to scroll, so use the always-tall overview.
+            p.goto(f'{BASE}/index.html?page=life&tab=overview', wait_until='load'); settle(p, 1000)
             p.evaluate("document.querySelector('.layout').scrollBy(0, 220)"); settle(p, 200)
             p.evaluate("document.querySelector('.layout').scrollBy(0, 300)"); settle(p, 500)
             s = p.evaluate('''() => {
@@ -283,14 +270,10 @@ with sync_playwright() as pw:
               toolbarBottom: document.querySelector('.site-toolbar').getBoundingClientRect().bottom })''')
             check(f'{label}: tabs sit below visible toolbar', (not s2['hidden']) and s2['tabsTop'] >= s2['toolbarBottom'] - 1, s2)
             p.screenshot(path=str(OUT / f'{label}-works-toolbar-back.png'))
-            # lightbox on small screen
-            p.goto(f'{BASE}/index.html?page=life&tab=collections&type=gallery', wait_until='load'); p.wait_for_selector('.gallery-item'); settle(p, 800)
-            p.tap('.gallery-item >> nth=1'); settle(p, 400)
-            p.screenshot(path=str(OUT / f'{label}-lightbox.png'))
-            p.tap('[data-lightbox-next]'); settle(p, 200)
-            ok_next = p.inner_text('[data-current-index]') == '3'  # opened the 2nd image
-            p.tap('.gallery-lightbox__close'); settle(p, 300)
-            check(f'{label}: lightbox navigates and closes', ok_next and not p.is_visible('#gallery-lightbox'))
+            # empty gallery on small screen (lightbox with data: phase6-empty-content-check.py)
+            p.goto(f'{BASE}/index.html?page=life&tab=collections&type=gallery', wait_until='load'); p.wait_for_selector('.gallery-empty'); settle(p, 800)
+            p.screenshot(path=str(OUT / f'{label}-gallery-empty.png'))
+            check(f'{label}: empty gallery state, no lightbox', p.locator('.gallery-item').count() == 0 and not p.is_visible('#gallery-lightbox'))
             # tapping last tab scrolls it into view on narrow screens
             p.goto(f'{BASE}/index.html?page=life&tab=journal', wait_until='load'); settle(p, 900)
             vis = p.evaluate('''() => { const a = document.querySelector('.life-tab[aria-selected="true"]').getBoundingClientRect(), t = document.querySelector('.life-tabs__track').getBoundingClientRect(); return a.right <= t.right + 1 && a.left >= t.left - 1; }''')

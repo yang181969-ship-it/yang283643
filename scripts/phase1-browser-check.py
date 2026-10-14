@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from music_mock import install_music_mock, remove_music_mock, empty_library_state
 
 OUT = Path('artifacts/phase1')
 OUT.mkdir(parents=True, exist_ok=True)
@@ -64,7 +65,14 @@ with sync_playwright() as pw:
     page.wait_for_timeout(900)
     check('timer survives SPA navigation', page.locator('.rail-widget--timer').get_attribute('data-status')=='running')
     page.locator('[data-tool="music"]').click()
+    check('production music library shows the empty state', page.locator('dialog[open]').count()==1 and empty_library_state(page))
+    page.keyboard.press('Escape')
+    # playlist rendering with tracks: temporary mock library (scripts/music_mock.py, nothing on disk)
+    install_music_mock(page)
+    page.reload(wait_until='domcontentloaded'); page.wait_for_timeout(900)
+    page.locator('[data-tool="music"]').click(); page.wait_for_timeout(300)
     check('playlist is part of the music panel', page.locator('dialog[open]').count()==1 and page.locator('#tool-music [data-music-playlist-list] li').count()>0)
+    remove_music_mock(page)
     page.keyboard.press('Escape')
     check('one Escape closes music and restores trigger', page.locator('dialog[open]').count()==0 and page.evaluate('document.activeElement.dataset.tool')=='music')
     page.locator('#search-toggle').click()
@@ -79,7 +87,7 @@ with sync_playwright() as pw:
     page.keyboard.press('Escape')
     page.screenshot(path=str(OUT/'dark-desktop.png'))
     page.locator('#theme-toggle').click(); page.locator('[data-mode="light"]').click(); page.keyboard.press('Escape')
-    for route in ['?page=notes','?page=anime','?page=gallery','?page=about','?page=stats','?page=update','html/anime-detail.html?id=majo','html/notes-detail.html?file=../content/math/calculus/傅里叶级数的基本形式.md','html/stats.html']:
+    for route in ['?page=notes','?page=anime','?page=gallery','?page=about','?page=stats','?page=update','html/notes-detail.html?file=../content/math/calculus/傅里叶级数的基本形式.md','html/stats.html']:
         page.goto(BASE+'/'+route, wait_until='domcontentloaded'); page.wait_for_timeout(950)
         check(route+' shared shell', page.locator('.site-nav a').count()==4 and page.locator('#music-audio').count()==1 and page.locator('.rail-widget').count()==3)
         check(route+' pinned persists', page.locator('html').get_attribute('data-sidebar-pinned')=='true')

@@ -18,9 +18,7 @@
     "gallery:data": "python generate_gallery_data.py",
     "life:data": "node scripts/16-build-life-data.mjs",
 
-    "optimize:animes": "node scripts/1-rename-anime-images.js",
     "optimize:gallery": "node scripts/2-optimize-gallery.js",
-    "update:refs": "node scripts/3-update-html-references.js",
     "optimize:portraits": "node scripts/4-optimize-portraits.mjs",
 
     "purgecss": "node scripts/8-purgecss.mjs",

@@ -616,11 +616,16 @@ function showEmptyState() {
   const { grid } = galleryRuntime.refs;
   if (!grid) return;
 
+  // 画廊本身没有图片时显示整理中；有图片但筛选 / 搜索无结果时提示换条件
+  const [title, text] = galleryRuntime.images.length
+    ? ["没有找到匹配的收藏", "换一个分类、标签或关键词再试试。"]
+    : ["画廊正在整理中", "新的图片将在这里展示。"];
+
   grid.classList.add("is-empty");
   grid.innerHTML = `
     <div class="gallery-empty">
-      <strong>没有找到匹配的收藏</strong>
-      <span>换一个分类、标签或关键词再试试。</span>
+      <strong>${title}</strong>
+      <span>${text}</span>
     </div>
   `;
 }

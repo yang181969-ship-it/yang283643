@@ -485,7 +485,8 @@
         title: a.title || a.id,
         alt: `${a.title || a.id} 封面`,
         src: assetPath(a.image),
-        href: `html/anime-detail.html?id=${encodeURIComponent(a.id)}`,
+        // 有可选详情地址时直达，否则进入 Life「作品 → 动漫」
+        href: String(a.link || "").trim() || lifeUrl({ tab: "works", type: "anime" }),
         label: `查看作品：${a.title || a.id}`,
       }));
   }

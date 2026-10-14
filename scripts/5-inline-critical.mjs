@@ -8,7 +8,6 @@ import fs from 'fs';
 const CRITICAL_CSS_PATH = './css/critical.css';
 const HTML_FILES = [
   './index.html',
-  './html/anime-detail.html',
   './html/notes-detail.html',
   './html/stats.html',
 ];

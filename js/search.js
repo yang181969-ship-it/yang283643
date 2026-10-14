@@ -23,29 +23,27 @@ function resolveSearchUrl(path) {
   return new URL(path, SEARCH_SITE_ROOT_URL).href;
 }
 
-/* ---------- 动漫数据:优先复用 anime-data.js,缺失时使用兜底 ---------- */
-const ANIME_DATA_FALLBACK = [
-  { id: "majo",      title: "魔女之旅",       desc: "魔女伊蕾娜在世界各地旅行，经历相逢与离别", tags: "奇幻 公路 旅行" },
-  { id: "frieren",   title: "葬送的芙莉莲",   desc: "精灵魔法使芙莉莲重新踏上旅程，理解生命意义", tags: "奇幻 冒险 治愈" },
-  { id: "garden",    title: "紫罗兰永恒花园", desc: "薇尔莉特·伊芙加登的故事",                   tags: "治愈 奇幻 日常" },
-  { id: "slayer",    title: "鬼灭之刃",       desc: "炭治郎为让妹妹恢复原状踏上旅程",            tags: "热血 战斗 奇幻" },
-  { id: "spy",       title: "间谍过家家",     desc: "间谍黄昏、超能力少女阿尼亚、暗杀者约尔的家庭喜剧", tags: "战斗 搞笑 日常" },
-  { id: "titan",     title: "进击的巨人",     desc: "那一天，人类想起了被他们支配的恐惧",        tags: "热血 奇幻 神作" },
-  { id: "datebattle",title: "约会大作战",     desc: "间谍为拯救精灵与其约会的故事",              tags: "奇幻 战斗 后宫" },
-  { id: "suzuya",    title: "铃芽之旅",       desc: "铃芽与闭门师宗像草太一起关闭灾难源头之门",  tags: "青春 恋爱 治愈 电影" },
-  { id: "xiaoyuan",  title: "魔法少女小圆",   desc: "鹿目圆与晓美焰面对魔法少女命运的故事",      tags: "奇幻 战斗 百合" },
-];
-
+/* ---------- 动漫数据:只读 anime-data.js;未加载该文件的独立页面不提供作品结果 ---------- */
 function getAnimeSearchData() {
-  if (typeof animeData === "object" && animeData) {
-    return Object.entries(animeData).map(([id, item]) => ({
-      id,
-      title: item.title || id,
-      desc: item.description || "",
-      tags: Array.isArray(item.info) ? item.info.join(" ") : "",
-    }));
+  if (typeof animeData !== "object" || !animeData) return [];
+  return Object.entries(animeData).map(([id, item]) => ({
+    id,
+    title: item.title || id,
+    desc: item.description || "",
+    tags: Array.isArray(item.info) ? item.info.join(" ") : "",
+    link: String(item.link || "").trim(),
+  }));
+}
+
+// 作品配置了 link 时打开它；否则进入 Life「作品 → 动漫」
+function openAnimeResult(a) {
+  if (a.link) {
+    location.href = resolveSearchUrl(a.link);
+    return;
   }
-  return ANIME_DATA_FALLBACK;
+  const life = { tab: "works", type: "anime" };
+  if (window._loadPage) window._loadPage("life", true, { life });
+  else location.href = resolveSearchUrl("index.html?page=life&tab=works&type=anime");
 }
 
 /* ---------- 工具函数 ---------- */
@@ -161,9 +159,7 @@ async function runSearch(kw) {
         title: a.title,
         desc: a.desc,
         tag: "动漫",
-        action: () => {
-          window.open(resolveSearchUrl(`html/anime-detail.html?id=${a.id}`), "_self");
-        },
+        action: () => openAnimeResult(a),
         titleHl: highlight(a.title, q),
         descHl:  highlight(a.desc,  q),
       });

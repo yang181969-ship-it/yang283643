@@ -16,7 +16,7 @@ try:
     page=context.new_page()
     page.on('pageerror',lambda error:errors.append(str(error)))
     page.on('console',lambda msg:errors.append(msg.text) if msg.type=='error' else None)
-    for path in ['?page=notes','?page=anime','?page=gallery','?page=about','?page=stats','?page=update','html/anime-detail.html?id=majo','html/notes-detail.html?file=../content/math/calculus/傅里叶级数的基本形式.md','html/stats.html']:
+    for path in ['?page=notes','?page=anime','?page=gallery','?page=about','?page=stats','?page=update','html/notes-detail.html?file=../content/math/calculus/傅里叶级数的基本形式.md','html/stats.html']:
       page.goto(BASE+'/'+path,wait_until='domcontentloaded');page.wait_for_timeout(750)
       check(path+' mobile shell',page.locator('.mobile-tools > button').count()==5 and page.locator('.site-nav a').count()==4)
       check(path+' mobile no horizontal overflow',page.evaluate('document.documentElement.scrollWidth<=innerWidth && document.querySelector(".layout").scrollWidth<=innerWidth'))

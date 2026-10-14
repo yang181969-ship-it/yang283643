@@ -112,15 +112,14 @@ with sync_playwright() as p:
     check('notes preview loaded', page.locator('[data-note-preview].is-ready').count() >= 1)
     check('notes title links to Notes', page.get_attribute('[data-card="notes"] .bento-card-title-link', 'href') == 'index.html?page=notes')
 
+    # Phase 6: works and gallery are empty, so the life card shows its placeholder instead of tiles
     tiles = page.eval_on_selector_all('.home-life-tile', 'els => els.map(a => [a.getAttribute("href"), a.querySelector("img").getAttribute("alt"), a.querySelector("img").getAttribute("loading")])')
-    check('life card: 4 tiles with alt + lazy', len(tiles) == 4 and all(t[1] and t[2] == 'lazy' for t in tiles), tiles)
-    check('life tiles use Life / detail routes', all(h.startswith('html/anime-detail.html?id=') or h == 'index.html?page=life&tab=collections&type=gallery' for h, _, _ in tiles), tiles)
+    check('life card: no tiles, placeholder shown', tiles == [] and page.inner_text('[data-card="life"] .home-empty').strip() == '作品与收藏还在整理中', tiles)
+    check('life card: no broken images', page.locator('[data-card="life"] img').count() == 0)
+    check('no links to the removed anime detail page', page.locator('a[href*="anime-detail"]').count() == 0)
     chips = page.eval_on_selector_all('.home-life-chip', 'els => els.map(a => a.getAttribute("href"))')
     check('life section chips', chips == ['index.html?page=life&tab=works&type=anime', 'index.html?page=life&tab=collections&type=gallery',
                                           'index.html?page=life&tab=journey', 'index.html?page=life&tab=journal'], chips)
-    page.wait_for_function('[...document.querySelectorAll(".home-life-tile img")].every(i => i.complete)', timeout=8000)
-    stretch = page.evaluate('''() => [...document.querySelectorAll('.home-life-tile img')].map(i => getComputedStyle(i).objectFit)''')
-    check('life tiles cropped, not stretched', all(v == 'cover' for v in stretch), stretch)
     check('today card rendered (weather or fallback)', page.locator('[data-card="today"] .mood-display').count() == 1)
     page.screenshot(path=str(OUT / 'home-1440.png'))
 
@@ -132,7 +131,7 @@ with sync_playwright() as p:
     check('note detail pushes one history entry', page.evaluate('history.length') == before + 1)
     note_url = page.url
     page.go_back(); wait_home(page); settle(page, 400)
-    check('back returns to home with cards restored', query(page) == {} and page.locator('.home-life-tile').count() == 4)
+    check('back returns to home with cards restored', query(page) == {} and page.locator('.home-life-chip').count() == 4)
     page.go_forward(); page.wait_for_selector('.note-detail-title', timeout=8000)
     check('forward re-opens the article', page.inner_text('.note-detail-title').strip() == latest_notes[0]['title'])
     page.reload(wait_until='load'); page.wait_for_selector('.note-detail-title', timeout=8000)
@@ -155,18 +154,14 @@ with sync_playwright() as p:
 
     # 生活片段
     page.goto(f'{BASE}/index.html', wait_until='load'); wait_home(page)
-    gallery_tile = page.locator('.home-life-tile[href="index.html?page=life&tab=collections&type=gallery"]').first
-    gallery_tile.click(); page.wait_for_selector('.gallery-item', timeout=8000)
-    check('life gallery tile → Life collections/gallery', query(page) == {'page': 'life', 'tab': 'collections', 'type': 'gallery'} and active_nav(page) == ['生活'])
+    page.click('.home-life-chip >> nth=1'); page.wait_for_selector('.gallery-empty', timeout=8000)
+    check('life collections chip → Life collections/gallery (empty state)', query(page) == {'page': 'life', 'tab': 'collections', 'type': 'gallery'}
+          and active_nav(page) == ['生活'] and '画廊正在整理中' in page.inner_text('.gallery-empty'))
     page.go_back(); wait_home(page)
     page.click('.home-life-chip >> nth=0'); settle(page, 1200)
-    check('life works chip → Life works/anime', query(page) == {'page': 'life', 'tab': 'works', 'type': 'anime'} and page.locator('.life-work').count() > 0)
+    check('life works chip → Life works/anime (empty state)', query(page) == {'page': 'life', 'tab': 'works', 'type': 'anime'}
+          and page.locator('.life-work').count() == 0 and '动漫收藏暂时为空' in page.inner_text('[data-life-works]'))
     page.go_back(); wait_home(page)
-    work = page.locator('.home-life-tile[href^="html/anime-detail.html"]').first
-    work_href = work.get_attribute('href')
-    work.click(); page.wait_for_load_state('load'); settle(page, 800)
-    check('life work tile → anime detail', page.url.endswith(work_href) and page.inner_text('#anime-title').strip() not in ('', '加载中...', '未找到该动漫'), page.url)
-    page.go_back(); page.wait_for_load_state('load'); wait_home(page)
     page.click('[data-card="notes"] .bento-card-title-link'); page.wait_for_selector('.note-card', timeout=8000)
     check('notes card title → Notes list', query(page) == {'page': 'notes'} and page.locator('.note-detail-title').count() == 0)
 
@@ -227,7 +222,7 @@ with sync_playwright() as p:
     page.wait_for_selector('[data-card="stats"] .home-stat', timeout=8000)
     stats = page.eval_on_selector_all('[data-card="stats"] .home-stat dd', 'els => els.map(e => e.textContent)')
     check('stats falls back to site-meta update total', stats[-1] == str(t['updates']), stats)
-    check('other cards unaffected by failures', page.locator('.home-note__link').count() == 3 and page.locator('.home-life-tile').count() == 4)
+    check('other cards unaffected by failures', page.locator('.home-note__link').count() == 3 and page.locator('.home-life-chip').count() == 4)
     page.screenshot(path=str(OUT / 'home-fallback.png'))
     ctx.close()
 
