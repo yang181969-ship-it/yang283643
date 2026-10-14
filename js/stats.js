@@ -173,11 +173,9 @@
     return match ? { y: +match[1], m: +match[2], d: +match[3], iso: match[0] } : null;
   }
 
-  // 与主页「建站」统计同一算法:建站日到今天的整天数,至少 1 天
+  // 与主页「站点速览」、About 概览共用 main.js 的 y181SiteDays:访客本地日历日,至少 1 天
   function daysSinceBirthday(value) {
-    const time = new Date(value).getTime();
-    if (Number.isNaN(time)) return null;
-    return Math.max(1, Math.floor((Date.now() - time) / 86400000));
+    return typeof window.y181SiteDays === "function" ? window.y181SiteDays(value) : null;
   }
 
   // 摘要 / 增长图 / 档案:site-meta + 月度快照;「最近更新」取内容与更新日志中较新的日期

@@ -505,12 +505,13 @@ const recentChanges = buildRecentChanges({
 const dataCenterGroups = [];
 
 // 总览 ───────────────────────────────────────
+// 内容构成与 totalContent / 快照 total 同一口径:笔记 + 作品(动漫)+ 收藏(画廊图片),环形图中心总数 = 内容总数。
+// 音乐不算内容,继续在「资源 → 音乐」与 totals.music 中单独统计;更新日志见「更新概况」。
 {
   const content = {};
   addCount(content, '笔记', notes.length);
   addCount(content, '动漫', animeIds.length);
   addCount(content, '画廊图片', gallery.length);
-  addCount(content, '音乐', tracks.length);
 
   const updateTypes = {};
   updates.forEach(update => addCount(updateTypes, updateTypeName(update)));
@@ -705,6 +706,16 @@ const siteMeta = {
   latestUpdate:   allDates[allDates.length - 1] || '',
   newAnimeCount:  newAnime,
 };
+
+// 口径自检:「总览 → 内容构成」的总数必须等于内容总数,避免再混入音乐等非内容分类
+{
+  const overviewContent = dataCenter.groups
+    .find(group => group.id === 'overview')?.children
+    .find(child => child.id === 'overview-content');
+  if (overviewContent && overviewContent.total !== siteMeta.totalContent) {
+    throw new Error(`内容构成总数 ${overviewContent.total} ≠ 内容总数 ${siteMeta.totalContent},请检查统计口径`);
+  }
+}
 
 // ============================================================
 // 写出

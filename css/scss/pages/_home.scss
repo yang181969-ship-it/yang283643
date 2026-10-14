@@ -37,7 +37,16 @@
     min-height: 0;
   }
 
-  .bento-card-body.is-skeleton { min-height: 60px; }
+  // 骨架预留:按各卡真实内容结构预留正文高度(数值 = 内容渲染后的自然高度),数据落地时不推动下方卡片。
+  // 只作用于 .is-skeleton:数据到达或加载失败(home-cards.js 换成内容 / 空状态)都会移除该类,
+  // 卡片随即回到自然高度,失败时不会留下大块空白
+  .bento-card-body.is-skeleton { min-height: var(--home-skeleton-h, 60px); }
+
+  > [data-card="notes"]  { --home-skeleton-h: 299px; } // 3 篇 ×(标题行 + 两行预览)+ 底栏
+  > [data-card="update"] { --home-skeleton-h: 190px; } // 3 条 ×(日期块 + 标题 / 一行摘要)+ 底栏
+  > [data-card="today"]  { --home-skeleton-h: 100px; } // 日期 / 天气 / 一句话 + 心情头像
+  > [data-card="stats"]  { --home-skeleton-h: 167px; } // 2×2 数字格 + 建站天数
+  > [data-card="life"]   { --home-skeleton-h: 193px; } // 缩略图区(与笔记卡同排时被拉伸)+ 分区入口
 }
 
 // 站点速览:右上箭头的点击区域铺满整卡(卡内没有其他链接,键盘仍只停在箭头上)
@@ -161,6 +170,13 @@
 
     > .home-hero,
     > .bento-card { grid-column: 1; grid-row: auto; }
+
+    // 单列骨架预留(卡片仍是自然高度):笔记的分类 · 日期移到标题上方,每篇多一行;速览四格并成一行;
+    // 生活缩略图是 4 列 3:4,高度随宽度变化 —— 正文宽度 ≈ 100vw - 46px,4 列间距 18px,再加分区入口一行
+    > [data-card="notes"] { --home-skeleton-h: 356px; }
+    > [data-card="today"] { --home-skeleton-h: 98px; }
+    > [data-card="stats"] { --home-skeleton-h: 88px; }
+    > [data-card="life"]  { --home-skeleton-h: calc((100vw - 64px) / 3 + 43px); }
   }
 
   .home-hero {

@@ -411,7 +411,7 @@ function renderSearchPanelLoading(kw) {
   panel.querySelector("[data-search-panel-body]").innerHTML = `
     <div class="search-loading">
       <span class="search-loading__dot"></span>
-      <span>搜索中...</span>
+      <span>搜索中…</span>
     </div>
   `;
   setListboxExpanded(false);
@@ -446,7 +446,7 @@ function renderSearchPanel() {
     panel.querySelector("[data-search-panel-body]").innerHTML = `
       <div class="search-empty">
         <p>没有找到「${escapeHtml(kw)}」相关内容</p>
-        <span class="search-empty__hint">换个关键词,或试试:</span>
+        <span class="search-empty__hint">换个关键词，或试试：</span>
         <div class="search-empty__suggestions">
           ${SEARCH_SUGGESTIONS.map(item => `
             <button type="button" data-search-suggestion="${escapeHtml(item)}">${escapeHtml(item)}</button>

@@ -55,7 +55,7 @@
       "total": 35
     },
     {
-      "date": "2026-10-13",
+      "date": "2026-10-14",
       "month": "2026-10",
       "notes": 8,
       "anime": 10,
@@ -199,16 +199,12 @@
           {
             "id": "overview-content",
             "name": "内容构成",
-            "total": 47,
+            "total": 35,
             "unit": "项",
             "items": [
               {
                 "name": "画廊图片",
                 "value": 17
-              },
-              {
-                "name": "音乐",
-                "value": 12
               },
               {
                 "name": "动漫",
@@ -1060,5 +1056,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-13T17:55:35.959Z"
+  "generatedAt": "2026-10-14T03:45:11.684Z"
 }

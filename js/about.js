@@ -269,8 +269,8 @@
   }
 
   function renderStatsEntry(meta, updates) {
-    const birthday = new Date(meta.siteBirthday).getTime();
-    const days = Number.isNaN(birthday) ? "--" : Math.max(1, Math.floor((Date.now() - birthday) / 86400000));
+    // 与主页「站点速览」、统计分区共用 main.js 的 y181SiteDays(访客本地日历日)
+    const days = (typeof window.y181SiteDays === "function" ? window.y181SiteDays(meta.siteBirthday) : null) ?? "--";
     const metrics = [
       ["笔记", meta.totals?.notes],
       ["内容总数", meta.totalContent],

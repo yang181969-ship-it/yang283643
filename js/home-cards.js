@@ -109,11 +109,9 @@
     const d = parseDate(s);
     return d ? `${d.y}.${d.m}.${d.d}` : "";
   }
-  // 与 About 概览 / 统计分区(stats.js daysSinceBirthday)同一算法,三处天数始终一致
+  // 建站天数:与 About 概览 / 统计分区共用 main.js 的 y181SiteDays(访客本地日历日,本地零点切换)
   function daysSince(s) {
-    const time = new Date(s).getTime();
-    if (Number.isNaN(time)) return null;
-    return Math.max(1, Math.floor((Date.now() - time) / 86400000));
+    return typeof window.y181SiteDays === "function" ? window.y181SiteDays(s) : null;
   }
   // "../assets/x.webp" → "assets/x.webp"(主页在站点根目录渲染)
   const assetPath = (p) => String(p || "").trim().replace(/^(\.\.?\/)+/, "").replace(/^\/+/, "");
@@ -614,22 +612,39 @@
     }, MOOD_REFRESH_MS);
   }
 
+  // 每日内容(人像、建站天数、今日日期)都按访客本地日历日切换,刷新也排在本地零点
+  const localDayKey = (date = new Date()) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+  let renderedDayKey = "";
+
+  function refreshDailyCards() {
+    if (!mount || !mount.alive()) return;
+    renderPortrait(mount);
+    renderStats(mount); // 建站天数跨天 +1
+    renderToday(mount); // 本地日期跨天(天气走内存缓存,不额外请求)
+  }
+
   function schedulePortraitRefresh() {
     if (portraitRefreshTimer) window.clearTimeout(portraitRefreshTimer);
+    renderedDayKey = localDayKey();
 
     const now = new Date();
     const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const delay = Math.max(1000, nextMidnight.getTime() - now.getTime() + PORTRAIT_REFRESH_BUFFER_MS);
 
     portraitRefreshTimer = window.setTimeout(() => {
-      if (mount && mount.alive()) {
-        renderPortrait(mount);
-        renderStats(mount); // 建站天数跨天 +1
-        renderToday(mount); // 本地日期跨天(天气走内存缓存,不额外请求)
-      }
+      // 系统时间被校准等情况下计时器可能早于零点触发:日期未变就只重新排期
+      if (localDayKey() !== renderedDayKey) refreshDailyCards();
       schedulePortraitRefresh();
     }, delay);
   }
+
+  // 电脑休眠 / 标签页被冻结时计时器会推迟触发:回到页面时日期已经变了就立即刷新
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible" || !mount || !mount.alive()) return;
+    if (localDayKey() === renderedDayKey) return;
+    refreshDailyCards();
+    schedulePortraitRefresh();
+  });
 
   window.initHomeCards = initHomeCards;
 

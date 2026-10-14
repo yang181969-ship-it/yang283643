@@ -81,29 +81,74 @@ function formatDate(dateStr) {
 /* ===== Markdown 渲染：markdown-it + 公式保护 =====
  * 公式由两条 markdown-it 规则整段接管，原样（仅做 HTML 转义）输出，
  * 之后交给 KaTeX 的 renderMathInElement；公式内部的 * _ \ 等不会被 Markdown 处理。
- * 代码块 / 行内代码里的 $ 不受影响（由 markdown-it 自己的规则先消费）。 */
+ * 代码块 / 行内代码里的 $ 不受影响（由 markdown-it 自己的规则先消费）。
+ * 不接受原始 HTML（html: false）：笔记里写的 <tag> 一律按文字显示，不会成为真实元素。 */
 const MARKDOWN_IT_SOURCES = [
   "https://cdn.bootcdn.net/ajax/libs/markdown-it/13.0.2/markdown-it.min.js",
   "https://cdn.jsdelivr.net/npm/markdown-it@13.0.2/dist/markdown-it.min.js"
 ];
+const MARKDOWN_IT_TIMEOUT_MS = 6000; // 单个 CDN 的等待上限：请求挂起时按失败处理，换下一个源
 const MATH_INLINE_DELIMITERS = [["$$", "$$"], ["$", "$"], ["\\(", "\\)"], ["\\[", "\\]"]];
 const MATH_BLOCK_DELIMITERS  = [["$$", "$$"], ["\\[", "\\]"]];
 
 let _noteMarkdown = null;       // 加载完成后的 markdown-it 实例；加载失败时保持 null，走简易渲染
-let _markdownItPromise = null;
+let _markdownItPromise = null;  // 只代表进行中的加载（并发调用共用）；结束即清空，失败不会被永久缓存
 
+// 加载单个源。失败或超时都会解绑回调并移除这次插入的 script 节点，
+// 超时后才迟到的旧响应不会再改动任何加载状态
+function loadMarkdownItSource(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    let timer = 0;
+    const finish = (error) => {
+      clearTimeout(timer);
+      script.onload = script.onerror = null;
+      if (!error && typeof window.markdownit !== "function") error = new Error(`markdown-it 未就绪：${src}`);
+      if (error) {
+        script.remove();
+        reject(error);
+      } else {
+        resolve(window.markdownit);
+      }
+    };
+    script.src = src;
+    script.async = true;
+    script.onload = () => finish();
+    script.onerror = () => finish(new Error(`markdown-it 加载失败：${src}`));
+    timer = setTimeout(() => finish(new Error(`markdown-it 加载超时：${src}`)), MARKDOWN_IT_TIMEOUT_MS);
+    document.head.appendChild(script);
+  });
+}
+
+// 依次尝试各个源，最多等待「源数 × 超时」；全部失败时返回 null（调用方改用简易渲染）。
+// 不自动重试：下一次进入笔记页时再调用才会重新加载，网络恢复后即可恢复完整渲染
 function loadMarkdownIt() {
+  if (_noteMarkdown) return Promise.resolve(_noteMarkdown);
   if (_markdownItPromise) return _markdownItPromise;
-  _markdownItPromise = MARKDOWN_IT_SOURCES
-    .reduce((chain, src) => chain.catch(() => loadScript(src).then(() => {
-      if (typeof window.markdownit !== "function") throw new Error(`markdown-it 未就绪：${src}`);
-    })), Promise.reject(new Error("start")))
-    .then(() => (_noteMarkdown = createNoteMarkdown(window.markdownit)))
-    .catch((err) => {
-      console.warn("markdown-it 加载失败，改用简易渲染：", err);
-      return null;
-    });
-  return _markdownItPromise;
+
+  const attempt = (async () => {
+    let lastError = null;
+    for (const src of MARKDOWN_IT_SOURCES) {
+      try {
+        // 之前超时的旧脚本可能已经迟到执行完毕，直接复用，不再重复下载
+        const markdownit = typeof window.markdownit === "function"
+          ? window.markdownit
+          : await loadMarkdownItSource(src);
+        _noteMarkdown = createNoteMarkdown(markdownit);
+        return _noteMarkdown;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    console.warn("markdown-it 加载失败，本次改用简易渲染（下次进入笔记页会重试）：", lastError);
+    return null;
+  })();
+
+  _markdownItPromise = attempt;
+  attempt.then(() => {
+    if (_markdownItPromise === attempt) _markdownItPromise = null;
+  });
+  return attempt;
 }
 
 // 直接打开 / 刷新笔记页（含文章深链接）时立刻开始加载，与笔记索引、Markdown 请求并行
@@ -123,7 +168,7 @@ function findMathEnd(src, delimiter, start, max) {
 }
 
 function createNoteMarkdown(markdownit) {
-  const md = markdownit({ html: true, breaks: true, linkify: false, typographer: false });
+  const md = markdownit({ html: false, breaks: true, linkify: false, typographer: false });
 
   // 行内公式：$...$、$$...$$、\(...\)、\[...\]（排在 escape 之前，\( \[ 不会被当成转义字符）
   md.inline.ruler.before("escape", "math_inline", (state, silent) => {
@@ -201,7 +246,9 @@ function renderNoteMarkdown(md, withIds = false) {
   return _noteMarkdown.render(text, { withIds, headingCounter: 0 });
 }
 
-/* ===== 极简 Markdown 渲染（仅在 markdown-it 加载失败时兜底；详情模式给标题加 id 锚点） ===== */
+/* ===== 极简 Markdown 渲染（仅在 markdown-it 加载失败时兜底；详情模式给标题加 id 锚点）=====
+ * 与 markdown-it 一样不接受原始 HTML：除代码块外的每一行也都先转义再拼接；
+ * 公式文字转义后仍由 KaTeX 从文本节点读取，渲染结果不变 */
 function simpleMarkdownToHtml(md, withIds = false) {
   const text = normalizeLineEndings(md).trim();
   if (!text) return "";
@@ -234,7 +281,7 @@ function simpleMarkdownToHtml(md, withIds = false) {
   }
   function flushMathBlock() {
     if (!mathBlockBuffer.length) return;
-    html.push(`<div class="note-formula">${mathBlockBuffer.join("\n")}</div>`);
+    html.push(`<div class="note-formula">${escapeHtml(mathBlockBuffer.join("\n"))}</div>`);
     mathBlockBuffer = [];
   }
   function isDisplayMathLine(line) {
@@ -242,8 +289,8 @@ function simpleMarkdownToHtml(md, withIds = false) {
     return t.startsWith("\\[") || t.endsWith("\\]") || t.startsWith("$$") || t.endsWith("$$");
   }
   function headingTag(level, text) {
-    if (!withIds) return `<h${level}>${text}</h${level}>`;
-    return `<h${level} id="${headingSlug(++headingCounter, text)}">${text}</h${level}>`;
+    if (!withIds) return `<h${level}>${escapeHtml(text)}</h${level}>`;
+    return `<h${level} id="${headingSlug(++headingCounter, text)}">${escapeHtml(text)}</h${level}>`;
   }
 
   for (const rawLine of lines) {
@@ -270,15 +317,15 @@ function simpleMarkdownToHtml(md, withIds = false) {
 
     if (isDisplayMathLine(rawLine) && !inMathBlock) {
       flushParagraph(); flushList();
-      html.push(`<div class="note-formula">${rawLine}</div>`); continue;
+      html.push(`<div class="note-formula">${escapeHtml(rawLine)}</div>`); continue;
     }
 
     if (line.startsWith("### ")) { flushParagraph(); flushList(); html.push(headingTag(3, line.slice(4))); continue; }
     if (line.startsWith("## "))  { flushParagraph(); flushList(); html.push(headingTag(2, line.slice(3))); continue; }
     if (line.startsWith("# "))   { flushParagraph(); flushList(); html.push(headingTag(1, line.slice(2))); continue; }
-    if (line.startsWith("- ") || line.startsWith("* ")) { flushParagraph(); listBuffer.push(line.slice(2)); continue; }
+    if (line.startsWith("- ") || line.startsWith("* ")) { flushParagraph(); listBuffer.push(escapeHtml(line.slice(2))); continue; }
 
-    paragraphBuffer.push(rawLine);
+    paragraphBuffer.push(escapeHtml(rawLine));
   }
 
   flushParagraph(); flushList(); flushCodeBlock(); flushMathBlock();
@@ -323,6 +370,22 @@ async function loadNoteMarkdown(file) {
   return res.text();
 }
 
+// 目录条目放在 <a> 里，只需要标题的可见排版（文字、强调、行内代码、KaTeX 公式）：
+// 再清一遍可执行 / 交互内容和事件属性，正文即使出现意外节点也不会被带进目录
+const TOC_DROP_TAGS   = "script, style, iframe, object, embed, link, meta, form, input, button, textarea, select, img, video, audio";
+const TOC_UNWRAP_TAGS = "a";
+function sanitizeTocNode(root) {
+  root.querySelectorAll(TOC_DROP_TAGS).forEach(el => el.remove());
+  root.querySelectorAll(TOC_UNWRAP_TAGS).forEach(el => el.replaceWith(...el.childNodes));
+  root.querySelectorAll("*").forEach(el => {
+    [...el.attributes].forEach(attr => {
+      if (/^on/i.test(attr.name) || /^(id|href|src|srcset|xlink:href|action|formaction)$/i.test(attr.name)) {
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+}
+
 /* ===== 从已渲染的卡片 DOM 提取 TOC 条目 =====
  * 直接沿用标题里渲染好的公式：去掉 KaTeX 给读屏用的隐藏 MathML（否则 textContent 会把公式重复取三遍），
  * 读屏文字另取 LaTeX 源码，放在 aria-label 里 */
@@ -331,7 +394,7 @@ function buildTocItems(cardEl) {
   return Array.from(headings).map(h => {
     const visual = h.cloneNode(true);
     visual.querySelectorAll(".katex-mathml").forEach(el => el.remove());
-    visual.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+    sanitizeTocNode(visual);
 
     const spoken = h.cloneNode(true);
     spoken.querySelectorAll(".katex").forEach(el => {
@@ -504,7 +567,7 @@ function renderDetailView(note, onBack, pushHistory = true) {
 }
 
 /* ===== 从 JSON 索引渲染所有笔记卡片 ===== */
-async function renderNotesFromJSON(allNotesCache) {
+async function renderNotesFromJSON(allNotesCache, markdownReady = loadMarkdownIt()) {
   const notesPage = document.querySelector(".notes-page");
   if (!notesPage) return [];
 
@@ -529,7 +592,7 @@ async function renderNotesFromJSON(allNotesCache) {
           return parseMarkdownToNote(mdText, item);
         })
       ),
-      loadMarkdownIt()
+      markdownReady
     ]);
     if (!container.isConnected) return [];
 
@@ -728,7 +791,8 @@ function bindNotesFilter(noteCards) {
 async function initNotesPage() {
   const notesPage = document.querySelector(".notes-page");
   if (!notesPage) return;
-  loadMarkdownIt(); // 站内切到笔记页时同样尽早开始，与下面的索引请求并行
+  // 站内切到笔记页时同样尽早开始，与下面的索引请求并行；本次进入只等这一轮加载（失败即降级，不在页内重复尝试）
+  const markdownReady = loadMarkdownIt();
 
   const encodedFile = new URLSearchParams(location.search).get('note');
   if (encodedFile) {
@@ -739,7 +803,7 @@ async function initNotesPage() {
       const index = await fetch('data/notes-index.json').then(res => res.json());
       const item = index.find(note => note.file === file);
       if (item) {
-        const [markdown] = await Promise.all([loadNoteMarkdown(file), loadMarkdownIt()]);
+        const [markdown] = await Promise.all([loadNoteMarkdown(file), markdownReady]);
         if (notesPage.isConnected && new URLSearchParams(location.search).get('note') === encodedFile) {
           renderDetailView(parseMarkdownToNote(markdown, item), () => initNotesPage(), false);
         }
@@ -751,7 +815,7 @@ async function initNotesPage() {
     }
   }
 
-  const noteCards = await renderNotesFromJSON();
+  const noteCards = await renderNotesFromJSON(undefined, markdownReady);
   if (!notesPage.isConnected) return; // 加载期间已离开笔记页：不要把筛选绑到新页面上
   bindNotesFilter(noteCards);
 }

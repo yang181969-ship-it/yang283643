@@ -52,6 +52,20 @@
   };
 })();
 
+/* ===== 建站天数：主页「站点速览」、About 概览、About 统计共用 =====
+ * 口径：按访客本地日历日期，计算建站日到今天经过的自然日数（至少 1 天），数字在本地零点切换。
+ * 两个日期都先折算成「本地年月日」的日序号再相减，不用毫秒差除以 86400000，
+ * 夏令时切换日（23 / 25 小时）也不会多算或少算一天。 */
+(() => {
+  const dayNumber = (year, monthIndex, day) => Math.floor(Date.UTC(year, monthIndex, day) / 86400000);
+  window.y181SiteDays = function (birthday, now = new Date()) {
+    const match = String(birthday || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return null;
+    const today = dayNumber(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.max(1, today - dayNumber(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  };
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
   const main = document.getElementById("main-content");
   const navLinks = document.querySelectorAll(".site-nav a");
