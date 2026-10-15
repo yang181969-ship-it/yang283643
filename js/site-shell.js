@@ -14,7 +14,14 @@
     window.dispatchEvent(new CustomEvent(type, { detail: { key } }));
   }
   // Popovers (theme) are non-modal: no backdrop, no focus trap, the page stays usable.
-  const isPopover = key => panels.get(key)?.dialog.dataset.panel === 'popover';
+  // A popover marked data-mobile-panel="sheet" opens as a modal bottom sheet on mobile instead;
+  // the mode is fixed when it opens, so a breakpoint change can never mix the two lifecycles.
+  const modeFor = dialog => dialog.dataset.panel !== 'popover' ? 'modal'
+    : dialog.dataset.mobilePanel === 'sheet' && mobile.matches ? 'sheet' : 'popover';
+  const isPopover = key => {
+    const panel = panels.get(key);
+    return Boolean(panel) && (panel.mode || modeFor(panel.dialog)) === 'popover';
+  };
   function syncModalState() {
     root.classList.toggle('has-tool-panel', stack.some(key => !isPopover(key)));
     document.querySelectorAll('[data-tool]').forEach(button => {
@@ -47,11 +54,15 @@
     if (!nested && trigger?.closest('dialog[open]') && stack.length) trigger = panels.get(stack.at(-1)).trigger;
     if (!nested) while (stack.length) close(stack.at(-1), false);
     panel.trigger = trigger;
-    if (isPopover(key)) {
+    panel.mode = modeFor(panel.dialog);
+    panel.dialog.dataset.mode = panel.mode;
+    if (panel.mode === 'popover') {
       panel.dialog.show();
       placePopover(key);
       popoverWatch(key);
     } else {
+      // A sheet is laid out by CSS; drop any desktop anchoring left from an earlier popover.
+      if (panel.mode === 'sheet') ['left', 'top', 'max-height'].forEach(prop => panel.dialog.style.removeProperty(prop));
       panel.dialog.showModal();
     }
     stack.push(key);
@@ -168,7 +179,7 @@
       event.preventDefault(); event.stopImmediatePropagation(); close(stack.at(-1));
     } else if (event.key === 'Tab' && !isPopover(stack.at(-1))) {
       const dialog = panels.get(stack.at(-1)).dialog;
-      const items = [...dialog.querySelectorAll(focusable)].filter(el => el.getClientRects().length && !el.closest('[hidden]'));
+      const items = [...dialog.querySelectorAll(focusable)].filter(el => el.getClientRects().length && !el.closest('[hidden], [inert]'));
       const first = items[0], last = items.at(-1);
       if (!first) { event.preventDefault(); dialog.focus(); }
       else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -247,6 +258,13 @@
     tools.forEach(button => (mobile.matches ? toolbar : document.querySelector('.rail-tools')).append(button));
     actions.forEach(button => (mobile.matches ? toolbar : document.querySelector('.rail-actions')).append(button));
   }
+  // A panel whose mode depends on the breakpoint (theme: popover ↔ sheet) closes instead of switching while open.
+  mobile.addEventListener('change', () => {
+    [...stack].reverse().forEach(key => {
+      const panel = panels.get(key);
+      if (panel.mode !== modeFor(panel.dialog)) close(key, false);
+    });
+  });
   mobile.addEventListener('change', responsive);
   responsive();
 

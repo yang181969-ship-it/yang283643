@@ -75,24 +75,9 @@
   border-radius: var(--radius-card-lg);
   background:
     linear-gradient(115deg, var(--primary-soft) 0%, transparent 62%),
-    var(--glass-bg-weak);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
-
-  // 右侧柔和主题色光晕,跟随辉光开关
-  &::before {
-    content: "";
-    position: absolute;
-    right: -40px;
-    bottom: -140px;
-    width: 320px;
-    height: 320px;
-    border-radius: 50%;
-    background: radial-gradient(circle, hsla(var(--primary-hue), 80%, 68%, calc(0.26 * var(--glow-intensity, 1))), transparent 68%);
-    pointer-events: none;
-  }
+    var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
 }
 
 .home-hero__text {

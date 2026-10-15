@@ -1,0 +1,30 @@
+// ============================================================
+// 坐标纸画布(全局静态背景层)
+//
+// 挂在 body::before 上,fixed 锁在视口:不随正文滚动,不随路由切换重建,
+// 不截获指针事件,inset:0 不会产生横向滚动条。桌面(.layout 内的 .page-card 滚动)
+// 与移动端共用同一层。
+// 8px 细网格 + 32px 主网格;浓度 --paper-grid-alpha 由 theme.js 写入,0 即纯色背景。
+// 没有动画,没有辉光。
+// ============================================================
+
+body {
+  // 确保 ::before 能正确定位
+  position: relative;
+  background: var(--bg-main);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--grid-line-minor) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line-minor) 1px, transparent 1px),
+    linear-gradient(to right, var(--grid-line-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line-major) 1px, transparent 1px);
+  background-size: 8px 8px, 8px 8px, 32px 32px, 32px 32px;
+  opacity: var(--paper-grid-alpha);
+}

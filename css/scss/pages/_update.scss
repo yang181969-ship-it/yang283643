@@ -148,10 +148,8 @@ $tag-opt:     ('visual', 'perf', 'mobile');
   padding: 6px;
   border: 1px solid color-mix(in srgb, var(--border-soft) 78%, transparent);
   border-radius: 14px;
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-weak)) saturate(130%);
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14), var(--glass-highlight);
+  background: var(--paper-bg-nav);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14);
 }
 
 .update-filter-menu[hidden] {
@@ -354,21 +352,21 @@ $tag-opt:     ('visual', 'perf', 'mobile');
   align-items: start;
   gap: 16px;
   padding: 18px 20px;
-  border: 1px solid color-mix(in srgb, var(--border-soft) 78%, transparent);
-  border-radius: 16px;
+  border: var(--paper-border);
+  border-radius: var(--radius-card);
   cursor: pointer;
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 
-  background: color-mix(in srgb, var(--bg-card) 92%, transparent);
-  box-shadow: var(--shadow-soft);
+  background: var(--paper-bg);
+  box-shadow: var(--paper-shadow);
 
   &:hover {
     transform: translateY(-2px);
     border-color: hsla(var(--primary-hue), 75%, 60%, 0.32);
-    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.1);
+    box-shadow: var(--paper-shadow-hover);
   }
 
   // 闪光效果(从日历点击日期跳转过来时,临时高亮)
@@ -379,8 +377,8 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 
 @keyframes update-card-flash {
   0%, 100% {
-    box-shadow: var(--shadow-soft);
-    border-color: color-mix(in srgb, var(--border-soft) 78%, transparent);
+    box-shadow: var(--paper-shadow);
+    border-color: var(--paper-border-color);
   }
   20%, 70% {
     box-shadow:
@@ -582,7 +580,7 @@ $tag-opt:     ('visual', 'perf', 'mobile');
   padding: 6px 14px 6px 10px;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-chip);
-  background: var(--glass-bg);
+  background: var(--paper-bg);
   color: var(--text-main);
   font: inherit;
   font-size: 14px;
@@ -597,11 +595,12 @@ $tag-opt:     ('visual', 'perf', 'mobile');
 
 .update-detail-title:focus { outline: none; }
 
+// 长文阅读面:背景见 _card.scss 的 reading-surface
 .update-detail-card {
-  border: 1px solid var(--border-soft);
-  border-radius: 18px;
+  border: var(--paper-border);
+  border-radius: var(--radius-card);
   padding: 36px 40px;
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--paper-shadow);
   min-width: 0;
   max-width: 100%;
   overflow-wrap: break-word;

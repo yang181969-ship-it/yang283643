@@ -30,7 +30,7 @@
 }
 
 .life-tag--quiet {
-  background: var(--glass-bg);
+  background: var(--paper-bg);
   color: var(--text-muted);
   box-shadow: inset 0 0 0 1px var(--border-soft);
 }
@@ -51,7 +51,7 @@
   padding: 44px 20px;
   border-radius: var(--radius-card);
   border: 1px dashed var(--border-soft);
-  background: var(--glass-bg-weak);
+  background: var(--paper-bg);
   color: var(--text-muted);
   font-size: 14px;
   line-height: 1.6;
@@ -104,24 +104,9 @@
   border-radius: var(--radius-card-lg);
   background:
     linear-gradient(115deg, var(--primary-soft) 0%, transparent 62%),
-    var(--glass-bg-weak);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
-
-  // 右侧一团柔和的主题色光晕，跟随辉光开关
-  &::before {
-    content: "";
-    position: absolute;
-    right: -60px;
-    bottom: -120px;
-    width: 360px;
-    height: 360px;
-    border-radius: 50%;
-    background: radial-gradient(circle, hsla(var(--primary-hue), 80%, 68%, calc(0.28 * var(--glow-intensity))), transparent 68%);
-    pointer-events: none;
-  }
+    var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
 }
 
 .life-hero__text {
@@ -174,7 +159,7 @@
   li {
     padding: 4px 12px;
     border-radius: var(--radius-chip);
-    background: var(--glass-bg);
+    background: var(--paper-bg);
     box-shadow: inset 0 0 0 1px var(--border-soft);
     color: var(--text-main);
     font-size: 13px;
@@ -242,7 +227,7 @@
   padding: 7px 16px;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-chip);
-  background: var(--glass-bg-weak);
+  background: var(--paper-bg);
   color: var(--text-main);
   font: inherit;
   font-size: 14px;
@@ -320,7 +305,7 @@
     gap: 12px;
     padding: 10px 14px;
     border-radius: 14px;
-    background: var(--glass-bg-weak);
+    background: var(--paper-bg);
   }
 
   dt {
@@ -365,7 +350,7 @@
   aspect-ratio: 3 / 4;
   overflow: hidden;
   border-radius: 12px;
-  background: var(--glass-bg);
+  background: var(--paper-bg);
 
   img {
     display: block;
@@ -402,7 +387,7 @@
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 14px;
-  background: var(--glass-bg);
+  background: var(--paper-bg);
 
   img {
     display: block;
@@ -437,7 +422,7 @@
     text-decoration: none;
   }
 
-  li > a:hover { background: var(--glass-bg-weak); color: var(--primary-dark); }
+  li > a:hover { background: var(--paper-bg); color: var(--primary-dark); }
 
   time {
     flex: none;
@@ -475,7 +460,7 @@
   transition: background var(--dur-glass-quick) var(--ease-glass-quick);
 }
 
-a.life-wish:hover { background: var(--glass-bg-weak); }
+a.life-wish:hover { background: var(--paper-bg); }
 a.life-wish:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 
 .life-wish__thumb {
@@ -527,20 +512,21 @@ a.life-wish:focus-visible { outline: 2px solid var(--primary); outline-offset: -
   border-radius: 18px;
   color: inherit;
   text-decoration: none;
-  background: var(--glass-bg-weak);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  background: var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
   transition:
     transform var(--dur-glass) var(--ease-glass),
     box-shadow var(--dur-glass) var(--ease-glass);
 }
 
-// 悬停效果对所有作品卡片生效（含没有详情链接的 <article> 卡片）；焦点框只属于可交互的链接卡片
+// 图片微放大对所有作品卡片生效；整卡上浮与焦点框只属于可交互的链接卡片
 .life-work:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--glass-shadow-hover), var(--glow-card), var(--glass-highlight);
-
   img { transform: scale(1.04); }
+}
+a.life-work:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--paper-shadow-hover);
 }
 
 a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
@@ -551,7 +537,7 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   aspect-ratio: 3 / 4;
   overflow: hidden;
   border-radius: 12px;
-  background: var(--glass-bg);
+  background: var(--paper-bg);
 
   img {
     display: block;
@@ -583,9 +569,7 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   gap: 6px;
   padding: 3px 10px;
   border-radius: var(--radius-chip);
-  background: var(--glass-bg-strong);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background: var(--paper-bg-nav);
   color: var(--text-main);
   font-size: 12px;
   font-weight: 700;
@@ -671,9 +655,9 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   gap: 12px;
   padding: 12px 12px 16px;
   border-radius: var(--radius-card);
-  background: var(--glass-bg-weak);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  background: var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
 }
 
 .life-bank-card__face {
@@ -718,9 +702,9 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   gap: 16px;
   padding: 14px;
   border-radius: var(--radius-card);
-  background: var(--glass-bg-weak);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  background: var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
 }
 
 .life-device__img {
@@ -793,9 +777,9 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   gap: 8px;
   padding: 16px 20px;
   border-radius: var(--radius-card);
-  background: var(--glass-bg-weak);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  background: var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
 
   h3 { margin: 0; color: var(--text-main); font-size: 17px; }
   p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.75; }
@@ -850,16 +834,16 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   border-radius: var(--radius-card);
   color: inherit;
   text-decoration: none;
-  background: var(--glass-bg-weak);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  background: var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
   transition:
     transform var(--dur-glass) var(--ease-glass),
     box-shadow var(--dur-glass) var(--ease-glass);
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: var(--glass-shadow-hover), var(--glow-card), var(--glass-highlight);
+    box-shadow: var(--paper-shadow-hover);
   }
 
   &:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
@@ -869,7 +853,7 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   display: block;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: var(--glass-bg);
+  background: var(--paper-bg);
 
   img { display: block; width: 100%; height: 100%; object-fit: cover; }
 }
@@ -902,9 +886,9 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   margin: 0 auto;
   padding: 24px 32px 32px;
   border-radius: var(--radius-card-lg);
-  background: var(--glass-bg-weak);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  background: var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
 
   &[hidden] { display: none; }
 }
@@ -917,7 +901,7 @@ a.life-work:focus-visible { outline: 2px solid var(--primary); outline-offset: 3
   padding: 6px 14px 6px 10px;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-chip);
-  background: var(--glass-bg);
+  background: var(--paper-bg);
   color: var(--text-main);
   font: inherit;
   font-size: 14px;

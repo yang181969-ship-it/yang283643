@@ -1,6 +1,6 @@
 # 网站标签参考
 
-整理日期：2026-10-14
+整理日期：2026-10-15
 
 > 这个文件由 `npm run tags:sync` 自动生成，请不要手动编辑。
 
@@ -60,19 +60,19 @@
 
 | 分类 | 使用次数 |
 | --- | ---: |
-| 建站日志 | 17 |
+| 建站日志 | 18 |
 
 ### 当前已使用标签
 
 | 标签值 | 显示文案 | 使用次数 |
 | --- | --- | ---: |
-| `feature` | 功能更新 | 14 |
-| `mobile` | 移动端适配 | 5 |
-| `visual` | 视觉优化 | 5 |
+| `feature` | 功能更新 | 15 |
+| `mobile` | 移动端适配 | 6 |
+| `visual` | 视觉优化 | 6 |
 | `fix` | 修复问题 | 3 |
-| `interaction` | interaction | 2 |
+| `interaction` | interaction | 3 |
+| `responsive` | responsive | 3 |
 | `perf` | 性能优化 | 2 |
-| `responsive` | responsive | 2 |
 | `about` | about | 1 |
 | `cloudflare` | cloudflare | 1 |
 | `deployment` | deployment | 1 |
@@ -87,7 +87,7 @@
 | primary | 使用次数 |
 | --- | ---: |
 | `feature` | 11 |
-| `optimization` | 5 |
+| `optimization` | 6 |
 | `fix` | 1 |
 
 ### 页面已配置但暂无内容的筛选项

@@ -81,8 +81,7 @@ try:
     check('automatic theme follows system light', page.locator('html').get_attribute('data-theme')=='light')
     page.locator('#theme-toggle').click(); page.locator('[data-hue="145"]').click()
     check('preset persisted', page.evaluate('localStorage.getItem("primary-hue")')=='145')
-    page.locator('#glow-toggle').click()
-    check('glow persisted', page.evaluate('localStorage.getItem("ambient-glow")')==page.locator('html').get_attribute('data-glow'))
+    check('ambient glow retired', page.locator('#glow-toggle').count()==0 and page.locator('html').get_attribute('data-glow') is None)
     page.keyboard.press('Escape')
     page.goto(BASE+'/?page=gallery',wait_until='domcontentloaded'); page.wait_for_timeout(900)
     # Phase 6: the gallery may legitimately be empty; then it shows the empty state and never opens the lightbox.

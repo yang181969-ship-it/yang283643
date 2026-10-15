@@ -55,12 +55,12 @@
       "total": 35
     },
     {
-      "date": "2026-10-14",
+      "date": "2026-10-15",
       "month": "2026-10",
       "notes": 8,
       "anime": 0,
       "gallery": 0,
-      "updates": 17,
+      "updates": 18,
       "total": 8
     }
   ],
@@ -101,7 +101,7 @@
       },
       {
         "label": "2026-10",
-        "value": 3
+        "value": 4
       }
     ],
     "musicTopArtists": []
@@ -127,7 +127,7 @@
           {
             "id": "overview-updates",
             "name": "更新概况",
-            "total": 17,
+            "total": 18,
             "unit": "条",
             "items": [
               {
@@ -136,7 +136,7 @@
               },
               {
                 "name": "optimization",
-                "value": 5
+                "value": 6
               },
               {
                 "name": "fix",
@@ -203,12 +203,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 28097,
+            "total": 31375,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 23665
+                "value": 26943
               },
               {
                 "name": "笔记字数",
@@ -239,12 +239,12 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 23665,
+            "total": 26943,
             "unit": "字",
             "items": [
               {
                 "name": "optimization",
-                "value": 15153
+                "value": 18431
               },
               {
                 "name": "feature",
@@ -261,6 +261,13 @@
     ]
   },
   "recentChanges": [
+    {
+      "date": "2026-10-15",
+      "title": "全站纸张材质与调色盘 2.0：半透明雾面纸张、坐标纸背景与全新外观设置",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
     {
       "date": "2026-10-14",
       "title": "主页全面重构：轻量欢迎区 + 五张功能卡片，移动端布局重新设计",
@@ -437,5 +444,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-14T09:40:40.677Z"
+  "generatedAt": "2026-10-15T10:58:31.737Z"
 }

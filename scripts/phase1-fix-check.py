@@ -144,21 +144,16 @@ with sync_playwright() as pw:
     page.locator('#hue-picker-track').focus(); page.keyboard.press('ArrowRight'); page.wait_for_timeout(100)
     hue = page.evaluate("localStorage.getItem('primary-hue')")
     check('custom hue slider', hue not in (None, '145'), hue)
-    glow_before = page.locator('html').get_attribute('data-glow')
-    page.locator('#glow-toggle').click()
-    check('glow toggle', page.locator('html').get_attribute('data-glow') != glow_before)
+    check('ambient glow retired', page.locator('#glow-toggle').count() == 0 and page.locator('html').get_attribute('data-glow') is None)
     page.screenshot(path=str(OUT / 'fix-theme-desktop.png'))
     page.keyboard.press('Escape')
     page.reload(wait_until='load'); page.wait_for_timeout(600)
     check('theme persists after reload', page.locator('html').get_attribute('data-theme') == 'dark'
-          and page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--primary-hue').trim()") == hue
-          and page.locator('html').get_attribute('data-glow') != glow_before)
+          and page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--primary-hue').trim()") == hue)
     page.locator('#theme-toggle').click(); page.wait_for_timeout(300)
     check('reopened panel reflects state', page.locator('.theme-mode-btn.active').get_attribute('data-mode') == 'dark'
-          and page.locator('#hue-picker-value').text_content().strip() == hue
-          and page.locator('#glow-toggle').get_attribute('aria-pressed') == ('true' if glow_before == 'off' else 'false'))
+          and page.locator('#hue-picker-value').text_content().strip() == hue)
     page.locator('[data-mode="light"]').click(); page.locator('.theme-preset[data-hue="210"]').click()
-    if page.locator('html').get_attribute('data-glow') != glow_before: page.locator('#glow-toggle').click()
     page.keyboard.press('Escape')
 
     # ---------- 3. Calendar month widget ----------

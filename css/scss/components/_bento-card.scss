@@ -21,39 +21,14 @@
   padding: 20px;
   overflow: hidden;
 
-  background: var(--glass-bg-weak);
-  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  border: var(--glass-border-subtle);
+  background: var(--paper-bg);
+  border: var(--paper-border);
   border-radius: var(--radius-card);
-  box-shadow:
-    var(--glass-shadow-rest),
-    var(--glass-highlight);
+  box-shadow: var(--paper-shadow);
 
-  transition:
-    transform var(--dur-glass) var(--ease-glass),
-    box-shadow var(--dur-glass) var(--ease-glass),
-    background var(--dur-glass) var(--ease-glass);
-
-  &:hover {
-    transform: translateY(-2px);
-    background: var(--glass-bg);
-    box-shadow:
-      var(--glass-shadow-hover),
-      var(--glow-card),
-      var(--glass-highlight);
-
-    // hover 整卡时装饰图微微浮起旋转
-    .bento-card-deco {
-      transform: rotate(3deg) translateY(-3px);
-    }
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow:
-      var(--glass-shadow-active),
-      var(--glass-highlight);
+  // 卡片本身是静态容器(可点击的是卡内链接),整卡不上浮;只保留装饰图的小动作
+  &:hover .bento-card-deco {
+    transform: rotate(3deg) translateY(-3px);
   }
 }
 
@@ -149,7 +124,7 @@
   }
 
   &:hover {
-    background: var(--glass-bg-weak);
+    background: var(--paper-bg);
     color: var(--primary);
     transform: translateX(2px);
   }

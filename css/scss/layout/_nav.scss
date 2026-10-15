@@ -19,12 +19,10 @@
   flex-direction: column;
   gap: 0;
 
-  background: var(--glass-bg-weak);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  border: var(--glass-border-subtle);
+  background: var(--paper-bg-nav);
+  border: var(--paper-border);
   border-radius: var(--radius-card);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  box-shadow: var(--paper-shadow-bar);
 
   overflow: hidden;
 
@@ -80,7 +78,7 @@
     background: var(--primary);
     color: #fff;
     font-weight: 700;
-    box-shadow: 0 2px 10px hsla(var(--primary-hue), 80%, 60%, calc(0.12 * var(--glow-intensity)));
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
   }
 
   &.active svg { color: #fff; }
@@ -122,11 +120,9 @@
     padding: 6px 8px;
     padding-bottom: max(6px, env(safe-area-inset-bottom));
 
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(140%);
-    backdrop-filter: blur(var(--glass-blur-strong)) saturate(140%);
+    background: var(--paper-bg-nav);
     border: none;
-    border-top: var(--glass-border-subtle);
+    border-top: var(--paper-border);
     border-radius: 18px 18px 0 0;
     box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
 

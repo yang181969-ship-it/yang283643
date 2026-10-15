@@ -73,24 +73,9 @@
   border-radius: var(--radius-card-lg);
   background:
     linear-gradient(115deg, var(--primary-soft) 0%, transparent 62%),
-    var(--glass-bg-weak);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
-
-  // 右侧一团柔和的主题色光晕，跟随辉光开关
-  &::before {
-    content: "";
-    position: absolute;
-    right: -60px;
-    bottom: -120px;
-    width: 360px;
-    height: 360px;
-    border-radius: 50%;
-    background: radial-gradient(circle, hsla(var(--primary-hue), 80%, 68%, calc(0.28 * var(--glow-intensity))), transparent 68%);
-    pointer-events: none;
-  }
+    var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
 }
 
 .about-hero__text {
@@ -640,14 +625,11 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border: var(--glass-border-subtle);
+  border: var(--paper-border);
   border-radius: var(--radius-card-lg);
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(145%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(145%);
+  background: var(--paper-bg-nav);
   box-shadow:
-    0 24px 80px rgba(72, 82, 130, 0.28),
-    var(--glass-highlight);
+    0 24px 80px rgba(72, 82, 130, 0.28);
 }
 
 .about-declaration-modal__header {

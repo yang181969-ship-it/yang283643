@@ -67,16 +67,16 @@
 .rail {
   position: relative; z-index: 100; width: 68px; height: 100%; max-height: 100dvh;
   padding: 12px 8px; gap: 8px; overflow-x: hidden; overflow-y: auto;
-  background: var(--glass-bg-strong); backdrop-filter: blur(var(--glass-blur-strong));
-  border-right: var(--glass-border); box-shadow: var(--glass-shadow-rest);
+  background: var(--paper-bg-nav);
+  border-right: var(--paper-border); box-shadow: var(--paper-shadow-bar);
   transition: width 220ms var(--ease-glass);
   // Rounded-square logo: 40px, centered on the 68px rail so it does not move when the rail expands.
   .logo { min-height: 44px; gap: 12px; padding: 2px 5px; border-radius: 14px; white-space: nowrap; }
   .logo img {
     width: 40px; height: 40px; border: 0; border-radius: 11px; object-fit: cover;
-    box-shadow: 0 0 0 1px hsla(var(--primary-hue), 70%, 60%, .45), 0 2px 10px hsla(var(--primary-hue), 80%, 60%, calc(.28 * var(--glow-intensity)));
+    box-shadow: 0 0 0 1px hsla(var(--primary-hue), 70%, 60%, .45), 0 1px 4px rgba(15, 23, 42, .12);
   }
-  .logo:hover img { box-shadow: 0 0 0 1.5px var(--primary), 0 4px 14px hsla(var(--primary-hue), 80%, 60%, calc(.4 * var(--glow-intensity))); }
+  .logo:hover img { box-shadow: 0 0 0 1.5px var(--primary), 0 2px 6px rgba(15, 23, 42, .14); }
   // Identity block: name + tagline, two tight lines vertically centered on the logo.
   .rail-brand__text { display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.2; }
   .rail-brand__name { font-size: 15px; font-weight: 700; letter-spacing: .01em; color: var(--text-main); }
@@ -116,9 +116,8 @@
   max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow: auto; overscroll-behavior: contain; color: var(--text-main);
   scrollbar-width: none; &::-webkit-scrollbar { display: none; }
-  background: var(--glass-bg-strong); backdrop-filter: blur(var(--glass-blur-strong));
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
-  border: var(--glass-border); border-radius: var(--tool-radius); box-shadow: var(--glass-shadow-hover);
+  background: var(--paper-bg-panel);
+  border: var(--paper-border); border-radius: var(--tool-radius); box-shadow: var(--paper-shadow-panel);
   &::backdrop { background: rgba(15, 23, 42, .4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
   &:not([open]) { display: none; }
   &[open] { animation: tool-in var(--tool-dur) var(--tool-ease); }
@@ -161,7 +160,7 @@
 .tool-dialog--popover {
   position: fixed; inset: auto; margin: 0; z-index: 1000;
   width: min(304px, calc(100vw - 16px)); padding: 14px 16px 16px; overflow: auto;
-  border-radius: 20px; box-shadow: var(--glass-shadow-hover), 0 0 0 1px var(--border-soft);
+  border-radius: 20px; box-shadow: var(--paper-shadow-panel);
   &[open] { animation: popover-in-right 180ms var(--tool-ease); }
   &[data-side="bottom"][open] { animation-name: popover-in-bottom; }
   --tool-close: 32px; --tool-close-inset: 12px; --tool-pad: 16px;
@@ -214,13 +213,13 @@
   .layout > .site-toolbar {
     display: flex; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
-    background: var(--glass-bg-strong); backdrop-filter: blur(var(--glass-blur));
-    border-bottom: var(--glass-border); transition: transform 220ms ease, opacity 220ms ease;
+    background: var(--paper-bg-nav);
+    border-bottom: var(--paper-border); transition: transform 220ms ease, opacity 220ms ease;
     .logo { flex-shrink: 0; min-width: 44px; min-height: 44px; }
     // Same rounded-square logo as the desktop rail, scaled to 32px.
     .logo img {
       width: 32px; height: 32px; border: 0; border-radius: 9px; object-fit: cover;
-      box-shadow: 0 0 0 1px hsla(var(--primary-hue), 70%, 60%, .45), 0 2px 10px hsla(var(--primary-hue), 80%, 60%, calc(.28 * var(--glow-intensity)));
+      box-shadow: 0 0 0 1px hsla(var(--primary-hue), 70%, 60%, .45), 0 1px 4px rgba(15, 23, 42, .12);
     }
   }
   .toolbar-hidden .layout > .site-toolbar { transform: translateY(-100%); opacity: 0; pointer-events: none; }
@@ -231,7 +230,7 @@
     position: static; width: 0; height: 0; padding: 0; border: 0; overflow: visible;
     backdrop-filter: none; background: transparent; box-shadow: none;
     .rail-brand, .rail-pin, .rail-tools, .rail-actions { display: none; }
-    .site-nav { position: fixed; width: 100%; padding: 6px 8px max(6px, env(safe-area-inset-bottom)); background: var(--glass-bg-strong); backdrop-filter: blur(var(--glass-blur)); border-top: var(--glass-border); border-radius: 18px 18px 0 0; }
+    .site-nav { position: fixed; width: 100%; padding: 6px 8px max(6px, env(safe-area-inset-bottom)); background: var(--paper-bg-nav); border-top: var(--paper-border); border-radius: 18px 18px 0 0; }
     .site-nav a { min-height: 44px; margin: 0; padding: 4px 2px; gap: 2px; }
     .nav-label { opacity: 1; }
   }

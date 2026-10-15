@@ -1,20 +1,13 @@
 // ============================================================
-// 主题切换面板
-// 触发按钮 + 面板 + 模式切换 + 预设色 + 色相滑块
+// 外观设置面板(调色盘 2.0):主题 | 纸张 两个分页
+// 弹窗外框与定位:_shell.scss 的 .tool-dialog--popover(桌面)/ 本文件的 [data-mode="sheet"](移动端底部抽屉)
 // 触发按钮 #theme-toggle 的视觉由 _shell.scss 的 .shell-button 接管
 // ============================================================
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
-// ----- 按钮容器 -----
-.theme-control {
-  position: relative;
-}
-
-// ----- 调色盘触发按钮 -----
-// 视觉(尺寸/边框/hover)由 _shell.scss 的 .shell-button 控制
-// 这里只兜底图标尺寸
+// 调色盘触发按钮:视觉(尺寸/边框/hover)由 .shell-button 控制,这里只兜底图标尺寸
 #theme-toggle {
   svg {
     width: 22px;
@@ -22,48 +15,182 @@
   }
 }
 
-// ----- 主题面板 -----
-.theme-panel {
-  position: absolute;
-  top: 58px;
-  right: 0;
-  width: 260px;
-  padding: 14px;
-  border-radius: 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
-  display: none;
-  z-index: $z-theme-panel;
+// ============================================================
+// 面板骨架:顶部(把手 + 标题 + 分页)、可滚动内容、底部操作区
+// 两个分页叠放在同一个网格单元,面板高度取较高者,切换分页时外框不跳动
+// ============================================================
+.tool-dialog.tool-dialog--appearance {
+  --thumb: 20px;   // 原生 range 的 thumb 直径;刻度与填充都按它定位(theme.js 同值)
+  --fade: 150ms;
 
-  &.show {
-    display: block;
+  width: min(352px, calc(100vw - 16px));
+  padding: 0;
+  overflow: hidden;
+  background: var(--paper-bg-panel);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow-panel);
+  transition:
+    background-color var(--fade) ease,
+    border-color var(--fade) ease,
+    box-shadow var(--fade) ease,
+    transform 220ms var(--tool-ease);
+
+  &[open] {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.appearance-top {
+  flex: none;
+  padding: 12px 16px 0;
+
+  .tool-heading {
+    margin-right: calc(var(--tool-close-inset) - 16px);
+    margin-bottom: 10px;
+  }
+}
+
+// 移动端底部抽屉的把手(桌面不显示)
+.appearance-grip {
+  display: none;
+  width: 38px;
+  height: 4px;
+  margin: -2px auto 8px;
+  border-radius: 4px;
+  background: var(--border-soft);
+}
+
+.appearance-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--bg-panel);
+}
+
+.appearance-tab {
+  min-height: 34px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    color: var(--text-main);
   }
 
-  label {
-    display: block;
-    margin: 0 0 8px;
-    font-size: 13px;
+  &[aria-selected="true"] {
+    background: var(--paper-bg-solid);
+    color: var(--primary-dark);
     font-weight: 700;
-    color: var(--text-main);
+    box-shadow: 0 1px 3px rgb(var(--paper-shadow-rgb) / calc(0.12 * var(--paper-shadow-k)));
+  }
 
-    & + label {
-      margin-top: 14px;
-    }
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+}
+
+.appearance-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 14px 16px 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.appearance-panes {
+  display: grid;
+
+  > * {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+
+  // 非当前分页:保留尺寸参与等高,但不可见、不可聚焦
+  > [inert] {
+    visibility: hidden;
+  }
+}
+
+.appearance-group {
+  position: relative;
+  isolation: isolate;
+
+  & + & {
+    margin-top: 16px;
+  }
+}
+
+.appearance-label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.appearance-footer {
+  flex: none;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.appearance-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--border-soft);
+  border-radius: 11px;
+  background: transparent;
+  color: var(--primary-dark);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  &:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 }
 
 // ============================================================
-// 模式按钮组(明亮 / 黑暗 / 跟随)
+// 主题分页:模式按钮组(明亮 / 黑暗 / 跟随)
 // ============================================================
-.theme-mode-group {
+.theme-mode-group,
+.paper-style-group {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  margin-bottom: 4px;
 }
 
-.theme-mode-btn {
+.theme-mode-btn,
+.paper-style-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -73,9 +200,10 @@
   border-radius: 10px;
   background: var(--bg-main);
   color: var(--text-muted);
+  font: inherit;
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 
   svg {
     width: 18px;
@@ -93,21 +221,26 @@
     color: var(--primary-dark);
     font-weight: 700;
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
 }
 
 // ============================================================
-// 预设颜色圆点
+// 主题分页:预设颜色圆点
 // ============================================================
 .theme-presets {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   gap: 6px;
-  margin-bottom: 4px;
+  justify-items: center;
 }
 
 .theme-preset {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   padding: 0;
   border: 2px solid transparent;
   border-radius: 50%;
@@ -116,23 +249,27 @@
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:hover {
-    transform: scale(1.15);
+    transform: scale(1.12);
   }
 
   &.active {
     border-color: var(--text-main);
     box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 3px var(--text-main);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+  }
 }
 
 // ============================================================
-// 色相选择器(可拖动色条)
+// 主题分页:色相选择器(可拖动色条,逻辑在 main.js)
 // ============================================================
 .hue-picker {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 6px;
 }
 
 .hue-picker-track {
@@ -155,6 +292,11 @@
   -webkit-user-select: none;
   user-select: none;
   touch-action: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+  }
 }
 
 // 细长竖条滑块(白色,亮色模式)
@@ -178,15 +320,16 @@
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.5);
 }
 
-// 右侧数值气泡
-.hue-picker-value {
-  min-width: 48px;
-  padding: 4px 10px;
+// 右侧数值气泡(纸张分页的数值共用这一款)
+.hue-picker-value,
+.appearance-range__value {
+  min-width: 52px;
+  padding: 3px 10px;
   border-radius: 10px;
-  background: var(--bg-panel, rgba(0, 0, 0, 0.08));
-  color: var(--primary);
+  background: var(--bg-panel);
+  color: var(--primary-dark);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
   font-variant-numeric: tabular-nums;
   -webkit-user-select: none;
@@ -199,81 +342,339 @@
 }
 
 // ============================================================
-// 辉光开关
+// 纸张分页:卡片样式(轻薄 / 描边 / 层叠)—— 每个按钮带一张迷你纸样
 // ============================================================
-.theme-glow-toggle {
-  width: 100%;
-  min-height: 42px;
-  margin-top: 14px;
-  padding: 0 10px 0 12px;
+.paper-style-btn {
+  gap: 7px;
+  padding: 11px 4px 8px;
+}
+
+.paper-style-swatch {
+  width: 30px;
+  height: 21px;
+  border-radius: 5px;
+  background: var(--paper-bg-solid);
+  border: 1px solid rgb(var(--paper-line) / 0.4);
+
+  [data-paper-style="thin"] & {
+    border-color: rgb(var(--paper-line) / 0.16);
+    box-shadow: 0 1px 3px rgb(var(--paper-shadow-rgb) / calc(0.08 * var(--paper-shadow-k)));
+  }
+
+  [data-paper-style="outline"] & {
+    border-color: rgb(var(--paper-line) / 0.55);
+  }
+
+  [data-paper-style="layered"] & {
+    border-color: rgb(var(--paper-line) / 0.3);
+    box-shadow:
+      3px 3px 0 -1px var(--paper-bg-solid),
+      3px 3px 0 0 rgb(var(--paper-line) / 0.35),
+      0 3px 6px rgb(var(--paper-shadow-rgb) / calc(0.1 * var(--paper-shadow-k)));
+  }
+}
+
+// ============================================================
+// 纸张分页:带预设刻度的滑块
+// 刻度、数字标签按数值在实际范围内的比例定位(不是等距),与原生 thumb 中心对齐:
+//   x = thumb/2 + (100% - thumb) × (v - min) / (max - min)
+// ============================================================
+.appearance-range__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  border: 1px solid var(--border-soft);
-  border-radius: 12px;
-  background: var(--bg-main);
-  color: var(--text-main);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    box-shadow 0.18s ease;
+  gap: 10px;
+  margin-bottom: 4px;
 
-  &:hover {
-    border-color: var(--primary);
-    color: var(--primary-dark);
+  .appearance-label {
+    margin: 0;
+  }
+}
+
+.range-field {
+  position: relative;
+  height: 32px;
+  touch-action: none;
+}
+
+.range-ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  i {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * (var(--v) - var(--min)) / (var(--max) - var(--min)));
+    width: 2px;
+    height: 14px;
+    border-radius: 1px;
+    background: rgb(var(--paper-line) / 0.45);
+    transform: translate(-50%, -50%);
+  }
+
+  i.active {
+    background: var(--primary);
+  }
+}
+
+.appearance-slider {
+  --ratio: 0;
+  --fill: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--ratio));
+
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--primary) var(--fill), var(--border-soft) var(--fill));
+  }
+
+  &::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border-soft);
+  }
+
+  &::-moz-range-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--primary);
+  }
+
+  &::-webkit-slider-thumb {
+    width: var(--thumb);
+    height: var(--thumb);
+    margin-top: calc((6px - var(--thumb)) / 2);
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    background: var(--paper-bg-solid);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  &::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--thumb);
+    height: var(--thumb);
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    background: var(--paper-bg-solid);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:focus-visible::-webkit-slider-thumb {
+    box-shadow: var(--tool-ring), 0 1px 4px rgba(15, 23, 42, 0.25);
+  }
+
+  &:focus-visible::-moz-range-thumb {
+    box-shadow: var(--tool-ring), 0 1px 4px rgba(15, 23, 42, 0.25);
+  }
+}
+
+// 刻度下方的数字标签:同样是可点击的预设节点(30px 高的触摸热区)
+.range-presets {
+  position: relative;
+  height: 30px;
+}
+
+.range-preset {
+  position: absolute;
+  top: 0;
+  left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * (var(--v) - var(--min)) / (var(--max) - var(--min)));
+  min-width: 42px;
+  height: 30px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transform: translateX(-50%);
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  // 两端的标签贴齐滑轨两端,不越出面板
+  &:first-child {
+    text-align: left;
+    transform: translateX(calc(var(--thumb) / -2));
+  }
+
+  &:last-child {
+    text-align: right;
+    transform: translateX(calc(-100% + var(--thumb) / 2));
+  }
+
+  // 触屏上 :hover 会在点按后残留,只给能悬停的设备
+  @media (hover: hover) {
+    &:hover {
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
   }
 
   &.active {
-    background: var(--primary-soft);
-    border-color: var(--primary);
     color: var(--primary-dark);
+    font-weight: 700;
   }
 
-  &.active .theme-glow-switch {
-    background: var(--primary);
-    box-shadow: 0 0 12px var(--glow);
-  }
-
-  &.active .theme-glow-switch-thumb {
-    transform: translateX(18px);
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
   }
 }
 
-.theme-glow-label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+// ============================================================
+// 沉浸式实时预览
+// 拖动滑块时只留下当前滑块与数值:其余内容、面板底色 / 描边 / 阴影、移动端遮罩全部淡出。
+// 只改 opacity / 颜色,不改任何尺寸与位置,正在拖动的滑块坐标不变。
+// ============================================================
+.tool-dialog.tool-dialog--appearance {
+  .appearance-top,
+  .appearance-footer,
+  .appearance-group,
+  .appearance-group > *,
+  .appearance-label {
+    transition: opacity var(--fade) ease;
+  }
+
+  // 当前滑块的衬底:平时不可见,预览时托住滑块和数值,保证在任意背景上可读
+  .appearance-group[data-preview-group]::before {
+    content: "";
+    position: absolute;
+    inset: -8px -10px;
+    z-index: -1;
+    border-radius: 16px;
+    background: var(--paper-bg-panel);
+    box-shadow: var(--paper-shadow-float);
+    opacity: 0;
+    transition: opacity var(--fade) ease;
+    pointer-events: none;
+  }
+
+  &.is-previewing {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+
+    &::backdrop {
+      background: transparent;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+
+    .appearance-top,
+    .appearance-footer,
+    .appearance-group:not([data-preview-source]),
+    [data-preview-source] > :not([data-preview-keep]),
+    [data-preview-source] .appearance-label {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    [data-preview-source]::before {
+      opacity: 1;
+    }
+
+    .appearance-body[data-fade-bottom] {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
 }
 
-.theme-glow-switch {
-  position: relative;
-  flex: 0 0 auto;
-  width: 42px;
-  height: 24px;
-  border-radius: 999px;
-  background: var(--border-soft);
-  transition:
-    background 0.18s ease,
-    box-shadow 0.18s ease;
+// ============================================================
+// 移动端:底部抽屉(site-shell.js 以 showModal() 打开并写 data-mode="sheet")
+// ============================================================
+.tool-dialog.tool-dialog--appearance[data-mode="sheet"] {
+  position: fixed;
+  inset: auto 0 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: min(85dvh, calc(100dvh - env(safe-area-inset-top) - 16px));
+  margin: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-bottom: 0;
+  border-radius: 22px 22px 0 0;
+
+  &[open] {
+    animation: sheet-in 260ms var(--tool-ease);
+  }
+
+  &::backdrop {
+    background: rgba(15, 23, 42, 0.36);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transition: background-color var(--fade) ease;
+  }
+
+  // 沉浸式预览:遮罩暂时透明(模态约束仍在,点击不会穿透到页面)
+  &.is-previewing::backdrop {
+    background: transparent;
+  }
+
+  .appearance-top {
+    padding-top: 10px;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .appearance-grip {
+    display: block;
+  }
+
+  .appearance-body {
+    padding-bottom: 12px;
+  }
+
+  .appearance-footer {
+    padding-bottom: 12px;
+  }
+
+  // 下滑关闭手势进行中:跟手,不做过渡
+  &.is-dragging {
+    transition: none;
+    cursor: grabbing;
+  }
 }
 
-.theme-glow-switch-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
-  transition: transform 0.18s ease;
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
 }
+
+@media (max-height: 560px) {
+  .tool-dialog.tool-dialog--appearance[data-mode="sheet"] {
+    max-height: calc(100dvh - env(safe-area-inset-top) - 8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tool-dialog.tool-dialog--appearance,
+  .tool-dialog.tool-dialog--appearance * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
 // Preset colors are shared with the startup styles in index.html.
 .theme-preset[data-hue="0"] { --preset: hsl(0, 80%, 62%); }
 .theme-preset[data-hue="20"] { --preset: hsl(20, 85%, 60%); }

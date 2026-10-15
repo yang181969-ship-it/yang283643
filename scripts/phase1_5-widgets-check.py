@@ -56,7 +56,7 @@ with sync_playwright() as pw:
               and not page.evaluate("document.getElementById('tool-theme').matches(':modal')")
               and not page.evaluate("document.documentElement.classList.contains('has-tool-panel')"))
         check(f'theme ({"expanded" if pinned == "true" else "collapsed"}) beside button, 8-12px gap, on screen',
-              8 <= p['x'] - t['r'] <= 12 and p['y'] >= 0 and p['b'] <= 900 and p['r'] <= 1440 and 280 <= p['w'] <= 320, [t, p])
+              8 <= p['x'] - t['r'] <= 12 and p['y'] >= 0 and p['b'] <= 900 and p['r'] <= 1440 and 336 <= p['w'] <= 360, [t, p])
         check(f'theme ({"expanded" if pinned == "true" else "collapsed"}) page stays visible and reachable', page.evaluate(CARD_REACHABLE))
         page.screenshot(path=str(OUT / f'theme-desktop-{"expanded" if pinned == "true" else "collapsed"}.png'))
         page.locator('#theme-toggle').click(); page.wait_for_timeout(200)
@@ -66,7 +66,6 @@ with sync_playwright() as pw:
     page.locator('#theme-toggle').click(); page.wait_for_timeout(250)
     page.locator('[data-mode="dark"]').click()
     page.locator('.theme-preset[data-hue="145"]').click()
-    page.locator('#glow-toggle').click()
     page.locator('#hue-picker-track').focus(); page.keyboard.press('ArrowRight')
     check('theme: live updates while panel stays open', page.evaluate(OPEN) == ['tool-theme'] and page.locator('html').get_attribute('data-theme') == 'dark'
           and page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--primary-hue').trim()") == '146')
@@ -74,13 +73,13 @@ with sync_playwright() as pw:
     page.keyboard.press('Escape'); page.wait_for_timeout(200)
     check('theme: Esc closes and restores focus', page.evaluate(OPEN) == [] and page.evaluate("document.activeElement.id") == 'theme-toggle')
     page.locator('#theme-toggle').click(); page.wait_for_timeout(200)
-    page.locator('main .bento-card').first.click(position={'x': 30, 'y': 30}); page.wait_for_timeout(250)
+    page.locator('main .bento-card[data-card="update"]').click(position={'x': 30, 'y': 30}); page.wait_for_timeout(250)
     check('theme: outside click closes, page receives the click', page.evaluate(OPEN) == [])
     page.reload(wait_until='load'); page.wait_for_timeout(700)
     check('theme: settings persist', page.locator('html').get_attribute('data-theme') == 'dark'
           and page.evaluate("localStorage.getItem('primary-hue')") == '146')
     page.locator('#theme-toggle').click(); page.locator('[data-mode="light"]').click(); page.locator('.theme-preset[data-hue="210"]').click()
-    page.locator('#glow-toggle').click(); page.keyboard.press('Escape')
+    page.keyboard.press('Escape')
 
     # ---------- Search command palette ----------
     page.keyboard.press('Control+k'); page.wait_for_timeout(300)
@@ -226,14 +225,15 @@ with sync_playwright() as pw:
 
         page.locator('.mobile-tools [data-tool="theme"]').tap(); page.wait_for_timeout(300)
         p = page.evaluate(RECT, '#tool-theme'); t = page.evaluate(RECT, '.mobile-tools [data-tool="theme"]')
-        check(f'{w}px theme below toolbar button, within screen, no dimming', p['y'] >= tb and p['x'] >= 8 and p['r'] <= w - 8 and p['b'] <= h
-              and not page.evaluate("document.getElementById('tool-theme').matches(':modal')"), [p, t, tb])
+        # Phase 2.0: the appearance panel is a modal bottom sheet on mobile (full width, docked to the bottom, <= 85% tall)
+        check(f'{w}px theme opens as bottom sheet', p['x'] == 0 and p['r'] == w and abs(p['b'] - h) <= 1 and p['h'] <= h * 0.85 + 1
+              and page.evaluate("document.getElementById('tool-theme').matches(':modal')"), [p, t, tb])
         if w == 390: page.screenshot(path=str(OUT / 'theme-mobile-390.png'))
         page.locator('[data-mode="dark"]').tap()
         check(f'{w}px theme changes live', page.locator('html').get_attribute('data-theme') == 'dark' and page.evaluate(OPEN) == ['tool-theme'])
         page.locator('[data-mode="light"]').tap()
-        page.mouse.click(w // 2, h - 200); page.wait_for_timeout(250)
-        check(f'{w}px theme closes on outside tap', page.evaluate(OPEN) == [])
+        page.mouse.click(w // 2, 40); page.wait_for_timeout(250)
+        check(f'{w}px theme closes on backdrop tap', page.evaluate(OPEN) == [])
 
         page.locator('.mobile-tools [data-tool="search"]').tap(); page.wait_for_timeout(300)
         page.locator('#search-input').fill('笔记'); page.locator('.search-result-card').first.wait_for()

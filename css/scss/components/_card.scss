@@ -1,5 +1,5 @@
 // ============================================================
-// 通用卡片（Phase 2 毛玻璃化）
+// 通用卡片（半透明雾面纸张）
 // ============================================================
 
 @use '../abstracts/mixins' as *;
@@ -7,42 +7,45 @@
 .card {
   @include card-surface;
   padding: 24px;
-  @include card-hover;
 }
 
 // 默认 section 卡片规则：section 如果没有任何 "no-card/hero" 类,就自动套卡片
-// Phase 2: 复用 card-surface + card-hover,DRY 掉原来手写的三行
+// 静态信息卡片:只有纸张材质,不整体上浮
 //
 // 额外排除画廊/番剧的自定义工具区,避免通用 section 卡片覆盖页面级样式。
 // 工具弹窗(.tool-dialog)内的 section 自带面板样式,不套通用卡片。
 section:not(.no-card):not(.tool-dialog section):not(.search-popover):not(.notes-hero):not(.about-hero):not(.update-hero):not(.gallery-hero):not(.gallery-panel):not(.anime-hero):not(.home-hero):not(:has(> .gallery-controls)):not(:has(> .anime-tabs)) {
   @include card-surface;
-  @include card-hover;
   padding: 24px;
 }
 
 // ============================================================
-// Phase 2 补丁:升级历史遗留的显式 --bg-card 卡片
-// 这些卡片在 Phase 1 之前写的,硬编码了 --bg-card 背景,
-// Phase 2 下需要显式覆盖成毛玻璃。
+// 历史遗留的显式 --bg-card 卡片统一改用纸张材质
 //
 // 维护约定:页面级 scss 只负责形状/间距(padding/border/radius/shadow),
 // 所有 background 统一交给这里的 card-surface 管,不要在页面级再写
-// `background: var(--bg-card)`,否则会覆盖毛玻璃。
+// `background: var(--bg-card)`,否则会覆盖纸张材质。
 // ============================================================
 
-// 笔记页:侧边栏分类卡 + 笔记条目卡
+// 笔记页:侧边栏分类卡(静态) + 笔记条目卡(整卡可点击)
 .notes-sidebar-card,
 .note-card {
   @include card-surface;
+}
+.note-card {
   @include card-hover;
 }
 
-// 更新页:列表卡 + 详情卡
+// 更新页:列表卡(整卡可点击) + 详情卡(长文阅读面)
 .update-card,
 .update-detail-card {
   @include card-surface;
+}
+.update-card {
   @include card-hover;
+}
+.update-detail-card {
+  @include reading-surface;
 }
 
 // ----- 响应式 -----

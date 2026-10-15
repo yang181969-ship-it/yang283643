@@ -15,11 +15,9 @@
   z-index: $z-nav;
   padding: 5px;
   border-radius: var(--radius-chip);
-  background: var(--glass-bg-strong);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
-  border: var(--glass-border-subtle);
-  box-shadow: var(--glass-shadow-rest), var(--glass-highlight);
+  background: var(--paper-bg-nav);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow-bar);
   transition: top 220ms ease;
 }
 
@@ -73,7 +71,7 @@
     color var(--dur-glass-quick) var(--ease-glass-quick),
     box-shadow var(--dur-glass-quick) var(--ease-glass-quick);
 
-  &:hover { color: var(--text-main); background: var(--glass-bg-weak); }
+  &:hover { color: var(--text-main); background: var(--paper-bg); }
 
   &[aria-selected="true"] {
     background: var(--primary-soft);

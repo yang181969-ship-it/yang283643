@@ -12,7 +12,7 @@
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--primary);
-    box-shadow: 0 0 14px hsla(var(--primary-hue), 80%, 68%, calc(0.6 * var(--glow-intensity)));
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
     flex-shrink: 0;
     transition: box-shadow var(--dur-glass) var(--ease-glass);
   }

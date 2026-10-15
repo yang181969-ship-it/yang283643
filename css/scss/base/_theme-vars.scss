@@ -18,65 +18,79 @@
   --page-gap: 20px;
 
   // ----- 主题色相（由 theme.js 控制）-----
-  --primary-hue: 330;
+  // 与 theme.js 的默认值一致,首屏在脚本读到存储值之前也不会先闪出别的颜色
+  --primary-hue: 210;
 
   --primary: hsl(var(--primary-hue), 80%, 68%);
   --primary-dark: hsl(var(--primary-hue), 55%, 40%);
   --primary-soft: hsl(var(--primary-hue), 85%, 92%);
 
   // ----- 明亮模式默认值（被 [data-theme="dark"] 覆盖）-----
-  --bg-main: #f6f8fc;
-  --bg-panel: #eef2f8;
+  // --bg-main 同时是坐标纸画布的底色:偏冷的浅蓝白
+  --bg-main: #eff5fc;
+  --bg-panel: #eaf1f9;
   --bg-card: #ffffff;
 
   --text-main: #1f2937;
-  --text-muted: #6b7280;
+  --text-muted: #5f6b7c;
 
-  --border-soft: #d9e2ef;
+  --border-soft: #d6e1ee;
   --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.08);
 
   // ============================================================
-  // 毛玻璃悬浮卡片系统（Phase 1 新增）
+  // 半透明雾面纸张（Matte Translucent Paper）
+  // - 只调背景色的 Alpha:卡片内的文字、公式、图片、边框和按钮始终不透明
+  // - 不使用 backdrop-filter / 玻璃高光
+  // - --paper-alpha 与 --paper-grid-alpha 由 theme.js 写到 <html> 上,滑块拖动时只改这两个变量
+  // - 描边 / 阴影 / 圆角随 html[data-paper="thin|outline|layered"] 切换(默认 outline)
   // ============================================================
+  --paper-rgb: 255 255 255;
+  --paper-alpha: 0.82;
 
-  // ----- 毛玻璃 blur 半径（移动端会降档）-----
-  --glass-blur: 18px;
-  --glass-blur-strong: 28px;   // 用于 header、modal 等需要更重虚化的场景
-  --glass-blur-weak: 10px;     // 用于 dropdown、小面板
+  // 导航、工具弹窗、长文阅读区有可读性保护下限,不随普通卡片降到 45%
+  --paper-alpha-nav: max(0.94, var(--paper-alpha));
+  --paper-alpha-panel: max(0.97, var(--paper-alpha));
+  --paper-alpha-reading: max(0.93, var(--paper-alpha));
 
-  // ----- 毛玻璃背景色（亮色模式）-----
-  // 用 rgba 而非 hsla，保证 @supports 降级时也能读懂
-  --glass-bg: rgba(255, 255, 255, 0.55);
-  --glass-bg-strong: rgba(255, 255, 255, 0.72);   // header 用
-  --glass-bg-weak: rgba(255, 255, 255, 0.38);     // hover / 次级面板
+  --paper-bg: rgb(var(--paper-rgb) / var(--paper-alpha));
+  --paper-bg-nav: rgb(var(--paper-rgb) / var(--paper-alpha-nav));
+  --paper-bg-panel: rgb(var(--paper-rgb) / var(--paper-alpha-panel));
+  --paper-bg-reading: rgb(var(--paper-rgb) / var(--paper-alpha-reading));
+  --paper-bg-solid: rgb(var(--paper-rgb));
 
-  // 降级兜底（不支持 backdrop-filter 时使用，透明度更低避免看穿）
-  --glass-bg-fallback: rgba(255, 255, 255, 0.92);
+  // 描边:默认「描边卡纸」的清晰细线
+  --paper-line: 76 128 188;
+  --paper-border-color: rgb(var(--paper-line) / 0.34);
+  --paper-border: 1px solid var(--paper-border-color);
 
-  // ----- 毛玻璃边框与高光 -----
-  --glass-border: 1px solid rgba(255, 255, 255, 0.6);
-  --glass-border-subtle: 1px solid rgba(255, 255, 255, 0.6);
+  // 阴影:低扩散、偏冷的中性阴影,没有彩色辉光
+  --paper-shadow-rgb: 35 70 107;
+  --paper-shadow-k: 1;          // 深色模式加深阴影,只改这个系数
+  --paper-shadow:
+    0 5px 12px rgb(var(--paper-shadow-rgb) / calc(0.07 * var(--paper-shadow-k))),
+    0 1px 2px rgb(var(--paper-shadow-rgb) / calc(0.05 * var(--paper-shadow-k)));
+  --paper-shadow-hover:
+    0 9px 20px rgb(var(--paper-shadow-rgb) / calc(0.11 * var(--paper-shadow-k))),
+    0 2px 4px rgb(var(--paper-shadow-rgb) / calc(0.06 * var(--paper-shadow-k)));
+  // 导航与粘性栏(侧栏、工具栏、分区标签栏):不参与层叠纸张的第二张纸
+  --paper-shadow-bar:
+    0 4px 14px rgb(var(--paper-shadow-rgb) / calc(0.06 * var(--paper-shadow-k))),
+    0 1px 2px rgb(var(--paper-shadow-rgb) / calc(0.04 * var(--paper-shadow-k)));
+  // 浮在页面之上的阴影(不随纸张样式变化,例如沉浸预览时滑块的衬底)
+  --paper-shadow-float:
+    0 14px 34px rgb(var(--paper-shadow-rgb) / calc(0.16 * var(--paper-shadow-k))),
+    0 3px 8px rgb(var(--paper-shadow-rgb) / calc(0.07 * var(--paper-shadow-k)));
+  // 工具弹窗(外观设置、音乐、日历、计时):浮起高度不变,随纸张样式切换
+  --paper-shadow-panel: var(--paper-shadow-float);
 
-  // 顶部高光（内发光，模拟玻璃边缘反射）
-  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  // ----- 坐标纸背景(8px 细网格 + 32px 主网格)-----
+  --paper-grid-alpha: 0.23;
+  --grid-line-minor: rgb(75 136 197 / 0.3);
+  --grid-line-major: rgb(75 136 197 / 0.5);
 
-  // ----- 毛玻璃阴影分层（悬浮感的核心）-----
-  // rest: 卡片静止状态；hover: 悬停上浮；active: 按下回弹
-  --glass-shadow-rest:
-    0 4px 16px rgba(15, 23, 42, 0.06),
-    0 12px 32px rgba(15, 23, 42, 0.08);
-
-  --glass-shadow-hover:
-    0 8px 24px rgba(15, 23, 42, 0.10),
-    0 20px 48px rgba(15, 23, 42, 0.12);
-
-  --glass-shadow-active:
-    0 2px 8px rgba(15, 23, 42, 0.08),
-    0 6px 16px rgba(15, 23, 42, 0.10);
-
-  // ----- 圆角体系 -----
-  --radius-card: 20px;
-  --radius-card-lg: 28px;   // 大卡片 / hero
+  // ----- 圆角体系(随纸张样式切换,不影响布局尺寸)-----
+  --radius-card: 16px;
+  --radius-card-lg: 22px;   // 大卡片 / hero
   --radius-chip: 999px;     // tag、pill
 
   // ----- 悬浮动效曲线 -----
@@ -85,31 +99,42 @@
 
   --dur-glass: 320ms;
   --dur-glass-quick: 180ms;
-
-  // ============================================================
-  // Ambient Glow（环境辉光）系统
-  // 由 [data-glow] 属性开关，默认开启
-  // JS 写 document.documentElement.dataset.glow = 'on' | 'off'
-  // ============================================================
-
-  // 主辉光色（跟随 primary-hue 联动）
-  --glow: hsla(var(--primary-hue), 80%, 68%, 0.35);
-
-  // 辉光强度开关（默认开启 = 1，关闭时 JS 改 :root 的 --glow-intensity 为 0）
-  --glow-intensity: 1;
-
-  // 辉光半径分层
-  --glow-radius-sm: 60px;
-  --glow-radius-md: 160px;
-  --glow-radius-lg: 320px;
-
-  // 卡片上的微辉光（hover 时叠加在 --glass-shadow-hover 上）
-  --glow-card: 0 0 40px hsla(var(--primary-hue), 85%, 70%, calc(0.25 * var(--glow-intensity)));
 }
 
-// ----- 全局开关：关闭 ambient glow -----
-:root[data-glow="off"] {
-  --glow-intensity: 0;
+// ----- 纸张样式 A:轻薄纸片 —— 最弱的描边与极轻阴影 -----
+:root[data-paper="thin"] {
+  --paper-border-color: rgb(var(--paper-line) / 0.14);
+  --paper-shadow:
+    0 3px 9px rgb(var(--paper-shadow-rgb) / calc(0.05 * var(--paper-shadow-k))),
+    0 1px 1px rgb(var(--paper-shadow-rgb) / calc(0.03 * var(--paper-shadow-k)));
+  --paper-shadow-hover:
+    0 6px 14px rgb(var(--paper-shadow-rgb) / calc(0.08 * var(--paper-shadow-k))),
+    0 1px 2px rgb(var(--paper-shadow-rgb) / calc(0.04 * var(--paper-shadow-k)));
+  --paper-shadow-panel:
+    0 10px 26px rgb(var(--paper-shadow-rgb) / calc(0.11 * var(--paper-shadow-k))),
+    0 2px 5px rgb(var(--paper-shadow-rgb) / calc(0.05 * var(--paper-shadow-k)));
+  --radius-card: 18px;
+  --radius-card-lg: 24px;
+}
+
+// ----- 纸张样式 C:层叠纸张 —— 用多层 box-shadow 画出右下方的第二张纸 -----
+// 不用伪元素:不会被 overflow:hidden 裁切,不压文字、不挡点击,也不产生横向溢出
+:root[data-paper="layered"] {
+  --paper-border-color: rgb(var(--paper-line) / 0.24);
+  --paper-sheet:
+    5px 6px 0 -1px rgb(var(--paper-rgb) / max(0.6, calc(var(--paper-alpha) * 0.85))),
+    5px 6px 0 0 rgb(var(--paper-line) / 0.2);
+  --paper-shadow:
+    var(--paper-sheet),
+    0 12px 24px rgb(var(--paper-shadow-rgb) / calc(0.12 * var(--paper-shadow-k))),
+    0 3px 6px rgb(var(--paper-shadow-rgb) / calc(0.06 * var(--paper-shadow-k)));
+  --paper-shadow-hover:
+    var(--paper-sheet),
+    0 16px 30px rgb(var(--paper-shadow-rgb) / calc(0.15 * var(--paper-shadow-k))),
+    0 4px 8px rgb(var(--paper-shadow-rgb) / calc(0.07 * var(--paper-shadow-k)));
+  --paper-shadow-panel: var(--paper-sheet), var(--paper-shadow-float);
+  --radius-card: 20px;
+  --radius-card-lg: 26px;
 }
 
 // ----- 响应式下的页面边距调整 -----
@@ -119,11 +144,6 @@
     --page-pad-x: 18px;
     --page-pad-bottom: 32px;
     --page-gap: 18px;
-
-    // 移动端降低 blur 强度，避免卡顿
-    --glass-blur: 12px;
-    --glass-blur-strong: 18px;
-    --glass-blur-weak: 8px;
   }
 }
 
@@ -133,21 +153,5 @@
     --page-pad-x: 14px;
     --page-pad-bottom: 28px;
     --page-gap: 16px;
-
-    // 极小屏再降一档
-    --glass-blur: 10px;
-    --glass-blur-strong: 14px;
-  }
-}
-
-// ============================================================
-// @supports 降级：不支持 backdrop-filter 的浏览器
-// 用更不透明的背景色兜底，视觉上降级但不破碎
-// ============================================================
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root {
-    --glass-bg: var(--glass-bg-fallback);
-    --glass-bg-strong: rgba(255, 255, 255, 0.96);
-    --glass-bg-weak: rgba(255, 255, 255, 0.88);
   }
 }

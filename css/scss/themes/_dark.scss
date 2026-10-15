@@ -11,49 +11,41 @@
   --primary-dark: hsl(var(--primary-hue), 85%, 78%);   // 深色背景上调亮，保证可读性
   --primary-soft: hsla(var(--primary-hue), 70%, 55%, 0.22);
 
-  --bg-main: #0f1419;
-  --bg-panel: #161b22;
-  --bg-card: #1c2230;
+  // 深蓝灰纸面:画布、面板、卡片三档由深到浅
+  --bg-main: #121c2b;
+  --bg-panel: #172234;
+  --bg-card: #1b283b;
 
-  --text-main: #e6e8ee;
-  --text-muted: #9ba3af;
+  --text-main: #e6ebf3;
+  --text-muted: #a2aec0;
 
-  --border-soft: #2a3140;
+  --border-soft: #2b3a50;
   --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.45);
 
-  // ----- 毛玻璃（暗色模式）-----
-  // 暗色下用深色半透明，不能用白色 rgba（会糊成灰雾）
-  --glass-bg: rgba(28, 34, 48, 0.55);            // 基于 --bg-card 的 rgb
-  --glass-bg-strong: rgba(22, 27, 34, 0.72);     // header 用，更接近 --bg-panel
-  --glass-bg-weak: rgba(28, 34, 48, 0.38);
+  // ----- 半透明雾面纸张（暗色）-----
+  // 真正的深色纸张,不是白色 RGB 降 Alpha;只改"原料"变量,三种纸张样式的组合自动跟随
+  --paper-rgb: 27 40 59;
+  --paper-line: 168 200 240;
+  --paper-shadow-rgb: 0 0 0;
+  --paper-shadow-k: 3.2;
 
-  // 降级兜底（不支持 backdrop-filter）
-  --glass-bg-fallback: rgba(28, 34, 48, 0.94);
+  // 网格线在深底上用更亮的冷蓝,浓度仍由 --paper-grid-alpha 控制
+  --grid-line-minor: rgb(130 175 230 / 0.22);
+  --grid-line-major: rgb(130 175 230 / 0.38);
+}
 
-  // 边框高光：暗色下改用白色低透明度模拟玻璃边缘反光
-  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-  --glass-border-subtle: 1px solid rgba(255, 255, 255, 0.12);
-
-  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
-
-  // 阴影：暗色下要更深才看得出悬浮感
-  --glass-shadow-rest:
-    0 4px 16px rgba(0, 0, 0, 0.3),
-    0 12px 32px rgba(0, 0, 0, 0.4);
-
-  --glass-shadow-hover:
-    0 8px 24px rgba(0, 0, 0, 0.4),
-    0 20px 48px rgba(0, 0, 0, 0.5);
-
-  --glass-shadow-active:
-    0 2px 8px rgba(0, 0, 0, 0.35),
-    0 6px 16px rgba(0, 0, 0, 0.45);
-
-  // ----- Ambient Glow（暗色）-----
-  // 暗色下辉光要更亮才明显，半径也可以稍大
-  --glow: hsla(var(--primary-hue), 80%, 68%, 0.5);
-
-  --glow-card: 0 0 48px hsla(var(--primary-hue), 90%, 72%, calc(0.35 * var(--glow-intensity)));
+// 深色下描边需要更低的线色透明度才不发亮
+[data-theme="dark"]:not([data-paper="thin"]):not([data-paper="layered"]) {
+  --paper-border-color: rgb(var(--paper-line) / 0.2);
+}
+[data-theme="dark"][data-paper="thin"] {
+  --paper-border-color: rgb(var(--paper-line) / 0.1);
+}
+[data-theme="dark"][data-paper="layered"] {
+  --paper-border-color: rgb(var(--paper-line) / 0.15);
+  --paper-sheet:
+    5px 6px 0 -1px rgb(36 52 75 / max(0.6, calc(var(--paper-alpha) * 0.85))),
+    5px 6px 0 0 rgb(var(--paper-line) / 0.14);
 }
 
 // ============================================================
@@ -153,9 +145,8 @@
 }
 
 // ============================================================
-// 九、笔记卡片与搜索结果卡片悬浮阴影
+// 九、搜索结果卡片悬浮阴影(笔记卡片的深色阴影由纸张 token 提供)
 // ============================================================
-[data-theme="dark"] .note-card:hover,
 [data-theme="dark"] .search-result-card:hover {
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
 }

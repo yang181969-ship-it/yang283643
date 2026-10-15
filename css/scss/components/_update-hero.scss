@@ -18,18 +18,13 @@
   gap: 40px;
   margin: 0 0 24px;
   padding: 36px 40px;
-  border-radius: 24px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--bg-card) 92%, var(--primary-soft) 8%),
-    color-mix(in srgb, var(--bg-panel) 86%, var(--primary-soft) 14%)
-  );
-  border: var(--glass-border-subtle);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  box-shadow:
-    0 12px 32px rgba(15, 23, 42, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-card-lg);
+  // 与其他页面 hero 同一套纸张材质:主题色淡渐变 + 纸张底
+  background:
+    linear-gradient(115deg, var(--primary-soft) 0%, transparent 62%),
+    var(--paper-bg);
+  border: var(--paper-border);
+  box-shadow: var(--paper-shadow);
   overflow: hidden;
 }
 
@@ -74,8 +69,6 @@
   border: 1px solid color-mix(in srgb, var(--border-soft) 72%, transparent);
   border-radius: 16px;
   background: color-mix(in srgb, var(--bg-card) 78%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   text-decoration: none;
   text-align: left;
   font-family: inherit;

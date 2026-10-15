@@ -188,16 +188,53 @@ with sync_playwright() as pw:
           page.locator('a.life-work[href="index.html?page=notes"]').count() == 1 and page.locator('article.life-work').count() == 3
           and page.locator('a.life-work:not([href]), a.life-work[href=""]').count() == 0)
     check('mock works: missing cover uses placeholder', page.locator('.life-work__placeholder').count() == 1)
-    # hover lift applies to every card, including non-navigating <article> cards
-    lifted = {}
-    for kind in ['article', 'a']:
-        sel = f'{kind}.life-work >> nth=0'
-        rest = page.eval_on_selector(sel, 'e => getComputedStyle(e).transform')
-        page.hover(sel); page.wait_for_timeout(450)
-        lifted[kind] = (rest, page.eval_on_selector(sel, 'e => [getComputedStyle(e).transform, getComputedStyle(e).boxShadow]'))
+    # Paper interaction rule (Phase 2.0): a linked card lifts slightly and its paper shadow deepens on hover;
+    # a static <article> card keeps its position and its resting paper shadow. Checked on computed styles before
+    # and after a real hover, for the default "outline" paper and for "layered" (whose hover keeps the second sheet).
+    def shadow_layers(value):
+        if value in ('', 'none'): return []
+        layers, depth, cur = [], 0, ''
+        for ch in value:
+            depth += ch == '('; depth -= ch == ')'
+            if ch == ',' and depth == 0: layers.append(cur); cur = ''
+            else: cur += ch
+        layers.append(cur)
+        # [x, y, blur, spread] of each layer, colour ignored
+        return [[float(n) for n in re.findall(r'(-?[\d.]+)px', layer)] for layer in layers]
+    def lift(transform):
+        m = re.match(r'matrix\(([^)]+)\)', transform)
+        if not m: return None
+        a, b, c, d, tx, ty = [float(n) for n in m[1].split(',')]
+        return {'scale': (a, d), 'tx': tx, 'ty': ty}
+    def hover_styles(sel):
+        get = 'e => [getComputedStyle(e).transform, getComputedStyle(e).boxShadow]'
         page.mouse.move(5, 5); page.wait_for_timeout(450)
-    check('mock works: hover lifts linked and non-linked cards alike',
-          all(r == 'none' and h[0] != 'none' and h[0] == lifted['a'][1][0] and h[1] == lifted['a'][1][1] for r, h in lifted.values()), lifted)
+        rest = page.eval_on_selector(sel, get)
+        page.hover(sel); page.wait_for_timeout(450)
+        hover = page.eval_on_selector(sel, get)
+        page.mouse.move(5, 5); page.wait_for_timeout(450)
+        return {'rest': rest, 'hover': hover}
+    for paper in ['outline', 'layered']:
+        page.evaluate(f"document.documentElement.dataset.paper = '{paper}'"); page.wait_for_timeout(100)
+        linked, static = hover_styles('a.life-work >> nth=0'), hover_styles('article.life-work >> nth=0')
+        lr, lh = shadow_layers(linked['rest'][1]), shadow_layers(linked['hover'][1])
+        sr, sh = shadow_layers(static['rest'][1]), shadow_layers(static['hover'][1])
+        up = lift(linked['hover'][0])
+        check(f'mock works ({paper}): both cards rest flat on the same paper shadow',
+              linked['rest'][0] == 'none' and static['rest'][0] == 'none' and lr and linked['rest'][1] == static['rest'][1],
+              [linked['rest'], static['rest']])
+        check(f'mock works ({paper}): linked card lifts slightly on hover (no scaling)',
+              up is not None and -6 <= up['ty'] < 0 and up['tx'] == 0 and up['scale'] == (1.0, 1.0), linked['hover'][0])
+        check(f'mock works ({paper}): linked card shadow deepens on hover',
+              lh and linked['hover'][1] != linked['rest'][1] and max(l[2] for l in lh) > max(l[2] for l in lr),
+              [linked['rest'][1], linked['hover'][1]])
+        check(f'mock works ({paper}): static card does not move or change its shadow on hover',
+              static['hover'][0] == 'none' and static['hover'][1] == static['rest'][1] and sh == sr, static)
+        if paper == 'layered':
+            sheet = lambda layers: [l for l in layers if l[2] == 0 and (l[0], l[1]) != (0, 0)]
+            check('mock works (layered): hover keeps the second paper sheet',
+                  len(sheet(lr)) == 2 and sheet(lh) == sheet(lr) and sheet(sh) == sheet(sr), [linked['hover'][1]])
+    page.evaluate("document.documentElement.dataset.paper = 'outline'")
     for value, n in [('done', 2), ('doing', 1), ('want', 1), ('all', 4)]:
         page.click(f'[data-life-status-value="{value}"]'); page.wait_for_timeout(200)
         check(f'mock works: status {value} = {n}', page.locator('[data-life-works] .life-work').count() == n)

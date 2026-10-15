@@ -173,7 +173,7 @@
   gap: 10px 16px;
   padding: 20px;
   border-radius: var(--tool-radius-inner);
-  background: linear-gradient(135deg, var(--primary-soft), var(--glass-bg-weak));
+  background: linear-gradient(135deg, var(--primary-soft), var(--paper-bg));
   border: 1px solid var(--border-soft);
 }
 
@@ -253,7 +253,7 @@
   padding: 16px 20px;
   border: 1px solid var(--border-soft);
   border-radius: var(--tool-radius-inner);
-  background: var(--glass-bg-weak);
+  background: var(--paper-bg);
   scrollbar-width: thin;
 }
 

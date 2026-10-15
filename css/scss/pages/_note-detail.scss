@@ -13,12 +13,13 @@
   align-self: start;
 }
 
+// 目录:辅助阅读容器,与正文同用阅读面的可读性下限
 .note-toc-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: 18px;
+  background: var(--paper-bg-reading);
+  border: var(--paper-border);
+  border-radius: var(--radius-card);
   padding: 24px 20px;
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--paper-shadow);
 
   h2 {
     margin: 0 0 16px;
@@ -113,19 +114,20 @@
     background: var(--primary-soft);
     color: var(--primary-dark);
     border-color: var(--primary);
-    box-shadow: 0 4px 12px var(--glow);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
   }
 }
 
 // ============================================================
 // 详情卡片主体
 // ============================================================
+// 数学长文阅读面:纸张背景有不透明度保护下限(--paper-alpha-reading),不随普通卡片降到 45%
 .note-detail-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: 18px;
+  background: var(--paper-bg-reading);
+  border: var(--paper-border);
+  border-radius: var(--radius-card);
   padding: 36px 40px;
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--paper-shadow);
   min-height: 200px;
   min-width: 0;
   max-width: 100%;
