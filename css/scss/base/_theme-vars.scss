@@ -13,7 +13,8 @@
   // 长文正文的行宽(笔记详情、更新详情),只在文章卡片内部限制,不影响页面外层边缘
   --reading-measure: 860px;
   --page-pad-top: 16px;
-  --page-pad-x: 40px;
+  // 桌面正文列自身的左右内边距;移动端改为 --page-gutter(见文件末尾)
+  --page-pad-x: 24px;
   --page-pad-bottom: 40px;
   --page-gap: 20px;
 
@@ -138,19 +139,28 @@
 }
 
 // ----- 响应式下的页面边距调整 -----
+// --page-gutter:移动端页面左右外边距的唯一来源。正文、顶部工具栏共用它,
+// 卡片左右缘与工具栏纸片左右缘对齐(卡片自身 padding 另算)
 @media (max-width: 900px) {
   :root {
+    --page-gutter: 16px;
     --page-pad-top: 16px;
-    --page-pad-x: 18px;
+    --page-pad-x: var(--page-gutter);
     --page-pad-bottom: 32px;
     --page-gap: 18px;
   }
 }
 
+@media (max-width: 639px) {
+  :root {
+    --page-gutter: 12px;
+    --page-pad-top: 12px;
+  }
+}
+
 @media (max-width: 480px) {
   :root {
-    --page-pad-top: 14px;
-    --page-pad-x: 14px;
+    --page-gutter: 8px;
     --page-pad-bottom: 28px;
     --page-gap: 16px;
   }

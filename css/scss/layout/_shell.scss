@@ -1,12 +1,23 @@
 // Shared shell and native top-layer tool panels. Included in Critical CSS too.
-// Single source for the space the shell occupies; .layout and sticky content only read these.
-//   --sidebar-space      desktop rail column (68px collapsed / 192px expanded)
+// Single source for the space the shell occupies; .layout, sticky content, floating buttons and the
+// search panel only read these. Breakpoint: CSS viewport ≤900px mobile, ≥901px desktop.
+//   --safe-*             system safe areas, counted exactly once (here). The viewport meta has no
+//                        viewport-fit=cover, so browsers lay the page out inside the safe area and report 0;
+//                        the env() terms only take effect if that ever changes.
+//   --sidebar-space      desktop rail width (68px collapsed / 192px expanded)
+//   --rail-inset         desktop rail distance from the viewport's left/top/bottom edges and from the content column
 //   --shell-top-visible  height the mobile toolbar currently covers, excluding the safe area
 //   --shell-top-space    padding above the first card at scrollTop 0 (never changes with toolbar visibility)
 //   --shell-sticky-top   where sticky page elements stop, below whatever is currently covering the top
+//   --tabbar-w           mobile bottom navigation width, centered
+//   --tabbar-clear       distance from the bottom navigation's top edge to the viewport bottom (S + 8 + 62); 0 on desktop
 :root {
-  --sidebar-space: 68px; --shell-top-visible: 0px;
-  --shell-top-space: 0px; --shell-sticky-top: 0px;
+  --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px); --safe-right: env(safe-area-inset-right, 0px);
+  --sidebar-space: 68px; --rail-inset: 16px; --rail-radius: 22px;
+  --shell-top-visible: 0px; --shell-top-space: 0px; --shell-sticky-top: 0px;
+  --toolbar-h: 56px; --toolbar-radius: 18px;
+  --tabbar-h: 62px; --tabbar-gap: 8px; --tabbar-radius: 20px; --tabbar-clear: 0px;
 }
 :root[data-sidebar-pinned="true"] { --sidebar-space: 192px; }
 // Shared tool-panel tokens: one radius / spacing / close button / motion scale for every widget panel.
@@ -64,46 +75,61 @@
   .music-glyph__note { transform: scale(.82); }
 }
 .layout > .site-toolbar { display: none; align-items: center; justify-content: space-between; min-width: 0; flex-shrink: 0; }
-.rail {
-  position: relative; z-index: 100; width: 68px; height: 100%; max-height: 100dvh;
-  padding: 12px 8px; gap: 8px; overflow-x: hidden; overflow-y: auto;
-  background: var(--paper-bg-nav);
-  border-right: var(--paper-border); box-shadow: var(--paper-shadow-bar);
-  transition: width 220ms var(--ease-glass);
-  // Rounded-square logo: 40px, centered on the 68px rail so it does not move when the rail expands.
-  .logo { min-height: 44px; gap: 12px; padding: 2px 5px; border-radius: 14px; white-space: nowrap; }
-  .logo img {
-    width: 40px; height: 40px; border: 0; border-radius: 11px; object-fit: cover;
-    box-shadow: 0 0 0 1px hsla(var(--primary-hue), 70%, 60%, .45), 0 1px 4px rgba(15, 23, 42, .12);
+
+// ---------- Desktop rail (≥901px): one floating paper sheet ----------
+// The grid column (_layout.scss) sets its width and animates it, so the content column is pushed, never covered.
+// Inside, top to bottom: brand + toggle, a middle area (pages + widgets) that scrolls on very short windows,
+// flexible space, then search / theme pinned to the bottom. Icons stay on one vertical axis in both states.
+@media (min-width: 901px) {
+  .rail {
+    position: relative; z-index: 100; display: flex; flex-direction: column; gap: 8px;
+    margin: var(--rail-inset) 0; padding: 12px 8px;
+    // Last resort for windows too short even for the minimum middle area: the whole sheet scrolls.
+    overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+    background: var(--paper-bg-nav);
+    border: var(--paper-border); border-radius: var(--rail-radius); box-shadow: var(--paper-shadow-bar);
+    // Rounded-square logo: 40px, centered on the 68px rail so it does not move when the rail expands.
+    .logo { min-height: 44px; gap: 12px; padding: 2px 5px; border-radius: 14px; white-space: nowrap; }
+    .logo img {
+      width: 40px; height: 40px; border: 0; border-radius: 11px; object-fit: cover;
+      box-shadow: 0 0 0 1px hsla(var(--primary-hue), 70%, 60%, .45), 0 1px 4px rgba(15, 23, 42, .12);
+    }
+    .logo:hover img { box-shadow: 0 0 0 1.5px var(--primary), 0 2px 6px rgba(15, 23, 42, .14); }
+    // Identity block: name + tagline, two tight lines vertically centered on the logo.
+    .rail-brand__text { display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.2; }
+    .rail-brand__name { font-size: 15px; font-weight: 700; letter-spacing: .01em; color: var(--text-main); }
+    .rail-brand__tagline { font-size: 11.5px; font-weight: 500; letter-spacing: .04em; color: var(--text-muted); }
+    .nav-label, .shell-label, .logo > span { opacity: 0; transition: opacity 150ms ease; }
   }
-  .logo:hover img { box-shadow: 0 0 0 1.5px var(--primary), 0 2px 6px rgba(15, 23, 42, .14); }
-  // Identity block: name + tagline, two tight lines vertically centered on the logo.
-  .rail-brand__text { display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.2; }
-  .rail-brand__name { font-size: 15px; font-weight: 700; letter-spacing: .01em; color: var(--text-main); }
-  .rail-brand__tagline { font-size: 11.5px; font-weight: 500; letter-spacing: .04em; color: var(--text-muted); }
-  .site-nav { width: 100%; padding: 4px 0; background: transparent; border: 0; box-shadow: none; backdrop-filter: none; border-radius: 0; overflow: visible; }
-  .site-nav a { min-height: 44px; margin: 2px 0; padding: 10px 14px; gap: 12px; }
-  .site-nav a svg { width: 22px; height: 22px; }
-  .nav-label, .shell-label, .logo > span { opacity: 0; transition: opacity 150ms ease; }
-}
-.rail-tools, .rail-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
-.rail-tools { border-top: 1px solid var(--border-soft); padding-top: 10px; }
-.rail-actions { margin-top: auto; padding-top: 12px; }
-.rail-brand { flex-shrink: 0; }
-// Collapse/expand toggle: a quiet utility, not a navigation item — no fill until hovered.
-// Panel icons (Lucide panel-left-open / panel-left-close); icon centers line up with the nav icons below.
-.rail .rail-pin {
-  min-height: 40px; padding: 8px 15px; gap: 13px; color: var(--text-muted); font-size: 13px;
-  svg { width: 20px; height: 20px; flex-basis: 20px; }
-  .rail-pin__close { display: none; }
-  &[aria-expanded="true"] { background: transparent; color: var(--text-muted); }
-  &[aria-expanded="true"] .rail-pin__open { display: none; }
-  &[aria-expanded="true"] .rail-pin__close { display: block; }
-  &:hover { background: var(--primary-soft); color: var(--primary-dark); }
-}
-:root[data-sidebar-pinned="true"] .rail {
-  width: 192px;
-  .nav-label, .shell-label, .logo > span { opacity: 1; }
+  .rail-brand { flex-shrink: 0; }
+  .rail-scroll {
+    display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; min-height: 96px;
+    overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+    // Same hint as the tool panels: a faint bottom fade only while more items are below (site-shell.js).
+    &[data-fade-bottom] {
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+    }
+  }
+  .rail-tools, .rail-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .rail-tools { border-top: 1px solid var(--border-soft); padding-top: 10px; }
+  .rail-actions { padding-top: 4px; }
+  // Collapse/expand toggle: a quiet utility, not a navigation item — no fill until hovered.
+  // Panel icons (Lucide panel-left-open / panel-left-close); icon centers line up with the nav icons below.
+  .rail .rail-pin {
+    min-height: 40px; padding: 8px 15px; gap: 13px; color: var(--text-muted); font-size: 13px;
+    svg { width: 20px; height: 20px; flex-basis: 20px; }
+    .rail-pin__close { display: none; }
+    &[aria-expanded="true"] { background: transparent; color: var(--text-muted); }
+    &[aria-expanded="true"] .rail-pin__open { display: none; }
+    &[aria-expanded="true"] .rail-pin__close { display: block; }
+    &:hover { background: var(--primary-soft); color: var(--primary-dark); }
+  }
+  :root[data-sidebar-pinned="true"] .rail {
+    .nav-label, .shell-label, .logo > span { opacity: 1; }
+  }
 }
 
 // ---------- Tool panels ----------
@@ -205,35 +231,43 @@
 }
 @media (max-width: 900px) {
   :root {
-    --sidebar-space: 0px; --shell-top-visible: 56px;
-    --shell-top-space: calc(56px + env(safe-area-inset-top));
-    --shell-sticky-top: calc(var(--shell-top-visible) + env(safe-area-inset-top));
+    --sidebar-space: 0px; --shell-top-visible: var(--toolbar-h);
+    --shell-top-space: calc(var(--toolbar-h) + var(--safe-top));
+    --shell-sticky-top: calc(var(--shell-top-visible) + var(--safe-top));
+    // Bottom navigation: ≥12px from each side (clear of side safe areas), capped at 480px and centered.
+    --tabbar-w: min(calc(100vw - 24px - 2 * max(var(--safe-left), var(--safe-right))), 480px);
+    --tabbar-clear: calc(var(--safe-bottom) + var(--tabbar-gap) + var(--tabbar-h));
   }
   :root.toolbar-hidden { --shell-top-visible: 0px; }
+  // Semi-floating toolbar: inset from the sides by the page gutter (cards line up with its edges), its top
+  // joined to the real safe-area edge, rounded bottom corners. Fixed, so hiding it only moves the sheet;
+  // the space reserved above the content (--shell-top-space) never changes.
   .layout > .site-toolbar {
-    display: flex; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+    display: flex; position: fixed; z-index: 100; gap: 8px;
+    top: 0; left: calc(var(--page-gutter) + var(--safe-left)); right: calc(var(--page-gutter) + var(--safe-right));
+    height: calc(var(--toolbar-h) + var(--safe-top)); padding: var(--safe-top) 6px 0;
     background: var(--paper-bg-nav);
-    border-bottom: var(--paper-border); transition: transform 220ms ease, opacity 220ms ease;
-    .logo { flex-shrink: 0; min-width: 44px; min-height: 44px; }
+    border: var(--paper-border); border-top: 0; border-radius: 0 0 var(--toolbar-radius) var(--toolbar-radius);
+    box-shadow: var(--paper-shadow-bar);
+    transition: transform 220ms ease, opacity 220ms ease;
+    .logo { flex: 0 1 auto; min-width: 44px; min-height: 44px; padding-left: 6px; }
     // Same rounded-square logo as the desktop rail, scaled to 32px.
     .logo img {
       width: 32px; height: 32px; border: 0; border-radius: 9px; object-fit: cover;
       box-shadow: 0 0 0 1px hsla(var(--primary-hue), 70%, 60%, .45), 0 1px 4px rgba(15, 23, 42, .12);
     }
+    // The name gives way first (large system fonts); the tool buttons never shrink.
+    .logo span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   }
   .toolbar-hidden .layout > .site-toolbar { transform: translateY(-100%); opacity: 0; pointer-events: none; }
   .mobile-tools { display: flex; align-items: center; flex-shrink: 0; }
   .mobile-tools .shell-button { width: 44px; height: 44px; padding: 10px; justify-content: center; }
   .mobile-tools .shell-label { display: none; }
-  .rail, :root[data-sidebar-pinned="true"] .rail {
-    position: static; width: 0; height: 0; padding: 0; border: 0; overflow: visible;
-    backdrop-filter: none; background: transparent; box-shadow: none;
-    .rail-brand, .rail-pin, .rail-tools, .rail-actions { display: none; }
-    .site-nav { position: fixed; width: 100%; padding: 6px 8px max(6px, env(safe-area-inset-bottom)); background: var(--paper-bg-nav); border-top: var(--paper-border); border-radius: 18px 18px 0 0; }
-    .site-nav a { min-height: 44px; margin: 0; padding: 4px 2px; gap: 2px; }
-    .nav-label { opacity: 1; }
-  }
+  // The rail itself takes no space: its tools move into the toolbar (site-shell.js) and
+  // .site-nav becomes the floating bottom navigation (_nav.scss).
+  .rail { flex: none; width: 0; height: 0; overflow: visible; }
+  .rail-brand, .rail-pin, .rail-tools, .rail-actions { display: none; }
+  .rail-scroll { display: contents; }
   // Mobile panels: centered floating cards, never full screen; per-panel sizes live in each widget file.
   :root { --tool-pad: 16px; --tool-close-inset: 12px; }
   .tool-dialog:where(:not(.tool-dialog--popover)) {
@@ -255,6 +289,7 @@
   // Landscape phones: little height to spare, let panels use most of it.
   @media (max-height: 560px) { .tool-dialog:where(:not(.tool-dialog--popover)) { max-height: var(--tool-safe-h); } }
 }
+// ≤480px: logo only; 481–900px: logo + "Yang181969".
 @media (max-width: 480px) { .site-toolbar .logo span { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .layout, .rail, .rail *, .site-toolbar, .site-toolbar *, .tool-dialog, .tool-dialog *, .tool-dialog::backdrop { transition: none !important; animation: none !important; }

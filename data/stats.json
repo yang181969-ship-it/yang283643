@@ -60,7 +60,7 @@
       "notes": 8,
       "anime": 0,
       "gallery": 0,
-      "updates": 18,
+      "updates": 19,
       "total": 8
     }
   ],
@@ -101,7 +101,7 @@
       },
       {
         "label": "2026-10",
-        "value": 4
+        "value": 5
       }
     ],
     "musicTopArtists": []
@@ -127,7 +127,7 @@
           {
             "id": "overview-updates",
             "name": "更新概况",
-            "total": 18,
+            "total": 19,
             "unit": "条",
             "items": [
               {
@@ -136,7 +136,7 @@
               },
               {
                 "name": "optimization",
-                "value": 6
+                "value": 7
               },
               {
                 "name": "fix",
@@ -203,12 +203,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 31375,
+            "total": 34611,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 26943
+                "value": 30179
               },
               {
                 "name": "笔记字数",
@@ -239,12 +239,12 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 26943,
+            "total": 30179,
             "unit": "字",
             "items": [
               {
                 "name": "optimization",
-                "value": 18431
+                "value": 21667
               },
               {
                 "name": "feature",
@@ -261,6 +261,13 @@
     ]
   },
   "recentChanges": [
+    {
+      "date": "2026-10-16",
+      "title": "全站悬浮导航：桌面侧栏与移动端顶栏、底栏改为独立悬浮的纸片",
+      "type": "更新",
+      "page": "update",
+      "href": ""
+    },
     {
       "date": "2026-10-15",
       "title": "全站纸张材质与调色盘 2.0：半透明雾面纸张、坐标纸背景与全新外观设置",
@@ -444,5 +451,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-15T10:58:31.737Z"
+  "generatedAt": "2026-10-15T16:55:55.530Z"
 }

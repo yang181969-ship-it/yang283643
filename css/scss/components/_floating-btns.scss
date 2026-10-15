@@ -90,12 +90,30 @@
   padding: 0;
 }
 
-@media (max-width: $bp-laptop) {
-  #floating-btns {
-    bottom: calc(10px + var(--tab-bar-h, 0px));
-  }
+// ----- 移动端(≤900px):以视口右下角为基准(本文件是按钮定位的唯一来源)-----
+// 位置随「导航右侧的实际空白」连续变化,没有断点跳位,任何中间状态都不与导航相交:
+//   --fab-side    导航右缘到视口右缘的距离 = (100vw - --tabbar-w) / 2(--tabbar-w 已扣除左右安全区)
+//   --fab-excess  空白里放下「右侧安全区 + 最大右边距 + 按钮 + 最小间隔」后还剩多少,不足时为 0
+//   垂直:空白不足(excess = 0)时整体底边在导航顶边上方 12px(S + 82px);excess > 0 时按钮已在
+//         导航右侧且至少隔开 $fab-nav-gap,于是随 excess 逐渐下降,最低到最下面的按钮与导航竖向居中
+//   水平:右边距随 excess 从 16px 连续增加到 24px,再加右侧安全区
+// 独立的 #back-to-top(没有按钮组容器时)用同一位置兜底。
+$fab-size: 44px;          // 按钮直径
+$fab-edge: 16px;          // 窄屏:到视口右缘
+$fab-edge-wide: 24px;     // 宽屏(按钮在导航旁边时):到视口右缘;判断空间时按这个最大值计算
+$fab-nav-gap: 12px;       // 按钮与导航纸片之间的最小水平间隔
+$fab-drop-rate: 1;        // 视口每变宽 1px,excess +0.5px,按钮下降 0.5px;无安全区时在 640→770px 之间降到位
+$fab-edge-rate: 0.125;    // excess 每 +1px,右边距 +0.125px(同一区间内 16px → 24px)
 
+@media (max-width: $bp-laptop) {
+  #floating-btns,
   #back-to-top {
-    bottom: calc(66px + var(--tab-bar-h, 0px));
+    --fab-side: calc((100vw - var(--tabbar-w)) / 2);
+    --fab-excess: max(0px, var(--fab-side) - var(--safe-right) - #{$fab-edge-wide + $fab-size + $fab-nav-gap});
+    right: calc(var(--safe-right) + min(#{$fab-edge-wide}, #{$fab-edge} + var(--fab-excess) * #{$fab-edge-rate}));
+    bottom: max(
+      calc(var(--safe-bottom) + var(--tabbar-gap) + (var(--tabbar-h) - #{$fab-size}) / 2),
+      calc(var(--tabbar-clear) + 12px - var(--fab-excess) * #{$fab-drop-rate})
+    );
   }
 }

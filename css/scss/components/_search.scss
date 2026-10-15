@@ -450,12 +450,13 @@
 
 @media (max-width: 900px) {
   #tool-search {
-    // 56px 为移动顶栏高度;--vv-* 由 search.js 根据 visualViewport 更新
-    --palette-top: calc(env(safe-area-inset-top) + 56px + 8px);
-    --nav-space: calc(72px + env(safe-area-inset-bottom));
+    // 顶栏高度、底栏避让、安全区都来自 layout/_shell.scss;--vv-* 由 search.js 根据 visualViewport 更新
+    // 面板自身限高,停在顶栏下方 8px、底栏上方 8px,不往页面里再叠底栏占位
+    --palette-top: calc(var(--safe-top) + var(--toolbar-h) + 8px);
+    --nav-space: calc(var(--tabbar-clear) + 8px);
     // 约 92vw 居中;高度随内容,最多 70dvh,软键盘弹出时再按可见视口收紧
     position: fixed;
-    inset: auto max(4vw, env(safe-area-inset-right)) auto max(4vw, env(safe-area-inset-left));
+    inset: auto max(4vw, var(--safe-right)) auto max(4vw, var(--safe-left));
     top: calc(var(--vv-top, 0px) + var(--palette-top));
     width: auto;
     margin: 0;

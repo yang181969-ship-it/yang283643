@@ -136,7 +136,7 @@
     if (mobile.matches) {
       left = r.right - w;
     } else {
-      left = r.right + gap;
+      left = rail.getBoundingClientRect().right + gap; // Beside the floating rail sheet, not inside its edge.
       top = r.bottom - h; // The theme button sits near the rail bottom, so the panel grows upward.
     }
     left = Math.min(Math.max(left, edge), vw - w - edge);
@@ -224,6 +224,13 @@
     if (event.key === 'y181_sidebar_pinned') { root.dataset.sidebarPinned = String(event.newValue === 'true'); syncPin(); }
   });
   syncPin();
+  // Very short desktop windows: the rail's middle area scrolls; mark it while more items are below.
+  const railScroll = rail.querySelector('.rail-scroll');
+  if (railScroll) {
+    const syncRailFade = () => railScroll.toggleAttribute('data-fade-bottom', railScroll.scrollHeight - railScroll.clientHeight - railScroll.scrollTop > 2);
+    railScroll.addEventListener('scroll', syncRailFade, { passive: true });
+    new ResizeObserver(syncRailFade).observe(railScroll);
+  }
 
   // Date button: owned here so it never stays blank, even if the month widget fails.
   let today = '', midnightTimer;
@@ -287,6 +294,31 @@
   const showToolbar = () => { root.classList.remove('toolbar-hidden'); previous = Math.max(0, layout.scrollTop); travel = 0; };
   window.addEventListener('locationchange', showToolbar);
   window.addEventListener('popstate', showToolbar);
+  // Any tool panel (button, Ctrl/Cmd+K, a control inside another panel) shows the toolbar first; auto-hide
+  // stays paused while one is open (the scroll handler checks the stack) and restarts from here on close,
+  // so focus returns to a visible toolbar button.
+  window.addEventListener('site-panel:open', showToolbar);
+  window.addEventListener('site-panel:close', () => { if (!stack.length) showToolbar(); });
+
+  // Soft keyboard: the bottom navigation steps aside only while a text field has focus AND the visual
+  // viewport has lost a keyboard-sized part of its height compared with the same width without a focused
+  // field. Pinch zoom is ignored. Without visualViewport the navigation simply stays (limited fallback).
+  const view = window.visualViewport;
+  if (view) {
+    const textField = 'input:not([type="button"], [type="checkbox"], [type="radio"], [type="range"], [type="submit"], [type="reset"], [type="color"], [type="file"]), textarea, [contenteditable]:not([contenteditable="false"])';
+    let baseWidth = 0, baseHeight = 0;
+    const syncKeyboard = () => {
+      if (Math.abs(view.scale - 1) > 0.01) return;
+      if (innerWidth !== baseWidth) { baseWidth = innerWidth; baseHeight = 0; }
+      const typing = Boolean(document.activeElement?.matches(textField));
+      if (!typing) baseHeight = Math.max(baseHeight, view.height);
+      root.classList.toggle('keyboard-open', mobile.matches && typing && baseHeight - view.height > 150);
+    };
+    view.addEventListener('resize', syncKeyboard);
+    document.addEventListener('focusin', syncKeyboard);
+    document.addEventListener('focusout', () => requestAnimationFrame(syncKeyboard));
+    syncKeyboard();
+  }
   // Only a back/forward-cache restore; the initial load's pageshow can land after the user scrolled.
   window.addEventListener('pageshow', event => { if (event.persisted) showToolbar(); });
   if (document.body.dataset.standalone === 'true') {

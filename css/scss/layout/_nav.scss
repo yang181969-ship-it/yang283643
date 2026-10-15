@@ -1,54 +1,40 @@
 // ============================================================
-// 侧边导航 —— Phase A 简化版 (v4.1)
-// 桌面:固定 220px 卡片列(沿用 v4.0)
-// D3 移动端:底部固定 tab bar(覆盖 laptop 段横滑形态)
+// 页面导航 .site-nav —— 本文件是它的唯一样式来源
+// 桌面(≥901px):侧栏纸片里的一列导航项(侧栏容器与标签显隐见 _shell.scss)
+// 移动(≤900px):底部完整悬浮的单张纸片,4 个入口,图标在上、文字在下
+// 尺寸与安全区变量(--tabbar-*、--safe-*)统一在 _shell.scss 定义,这里只负责应用
 // ============================================================
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
 // ============================================================
-// .site-nav 卡片本体 —— 桌面端参与 rail 列流式布局,固定 220px 展开
+// 共用:导航项本体(桌面态)
 // ============================================================
 .site-nav {
   position: relative;
-  width: 100%;
-  flex-shrink: 0;
-  padding: 8px 0;
+  z-index: $z-nav;
   display: flex;
   flex-direction: column;
-  gap: 0;
-
-  background: var(--paper-bg-nav);
-  border: var(--paper-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--paper-shadow-bar);
-
-  overflow: hidden;
-
-  transition:
-    background var(--dur-glass) var(--ease-glass),
-    box-shadow var(--dur-glass) var(--ease-glass);
-
-  z-index: $z-nav;
+  flex-shrink: 0;
+  width: 100%;
+  padding: 4px 0;
 }
 
-// ============================================================
-// .site-nav 链接 —— 桌面态
-// ============================================================
 .site-nav a {
   position: relative;
-  text-decoration: none;
-  color: var(--text-main);
-  margin: 2px 8px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 0;
+  min-height: 44px;
+  margin: 2px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-main);
+  font-size: 15px;
+  font-weight: 500;
 
   transition:
     background 0.2s ease,
@@ -56,8 +42,8 @@
     transform 0.2s ease;
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     flex-shrink: 0;
     transition: color 0.2s ease;
   }
@@ -84,88 +70,57 @@
   &.active svg { color: #fff; }
 }
 
-.site-nav a:first-of-type { margin-top: 4px; }
-.site-nav a:last-of-type { margin-bottom: 8px; }
-
 // ============================================================
-// D3 移动端 .site-nav → 底部固定 tab bar
-// 关键:
-//   ① position: fixed 钉在视口底部,JS 路由逻辑零改动
-//   ② flex column 单元(图标+文字),6 tab 等分
-//   ③ env(safe-area-inset-bottom) 兜刘海机
-//   ④ 暴露 --tab-bar-h,layout/floating btns 引用做底部留白
+// 移动端:底部完整悬浮导航纸片
+//   ① 四角完整可见:宽 --tabbar-w(手机左右各 ≥12px,平板 480px 封顶居中),高 62px,圆角 20px
+//   ② 底边 = 安全区 S + 8px;纸片顶边到视口底 = S + 70px(--tabbar-clear,.layout 只在这里让位一次)
+//   ③ 不随滚动隐藏;只在软键盘真实占据可见视口时暂时让开(html.keyboard-open,见 site-shell.js)
 // ============================================================
 @include laptop {
-
-  // 暴露给 .layout / #floating-btns 用作底部留白
-  // 桌面端 fallback = 0px(在 _layout.scss 用 var(--tab-bar-h, 0px))
-  :root {
-    --tab-bar-h: calc(56px + env(safe-area-inset-bottom, 0px));
-  }
-
   .site-nav {
     position: fixed;
-    bottom: 0;
+    z-index: $z-header; // 50:工具弹窗(top layer)、浮动按钮之下
     left: 0;
     right: 0;
-    width: 100%;
-    height: auto;
+    bottom: calc(var(--safe-bottom) + var(--tabbar-gap));
+    width: var(--tabbar-w);
+    height: var(--tabbar-h);
+    margin: 0 auto;
 
     flex-direction: row;
-    flex-wrap: nowrap;
     align-items: stretch;
-    justify-content: space-around;
     gap: 4px;
-
-    padding: 6px 8px;
-    padding-bottom: max(6px, env(safe-area-inset-bottom));
+    padding: 6px;
 
     background: var(--paper-bg-nav);
-    border: none;
-    border-top: var(--paper-border);
-    border-radius: 18px 18px 0 0;
-    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+    border: var(--paper-border);
+    border-radius: var(--tabbar-radius);
+    box-shadow: var(--paper-shadow-bar);
 
-    // 取消横滑形态遗留
-    overflow: visible;
-    white-space: normal;
-    @supports (-webkit-overflow-scrolling: auto) {
-      -webkit-overflow-scrolling: auto;
-    }
-
-    z-index: $z-header; // 50,搜索/lightbox 之下
-
-    &::-webkit-scrollbar { display: none; }
+    transition:
+      transform 220ms ease,
+      opacity 220ms ease,
+      visibility 0s linear 0s;
   }
 
   .site-nav a {
     flex: 1 1 0;
-    min-width: 0;
-    margin: 0;
-    padding: 6px 4px;
-
     flex-direction: column;
     justify-content: center;
-    align-items: center;
     gap: 2px;
+    min-height: 44px;
+    margin: 0;
+    padding: 4px 2px;
+    border-radius: 14px;
 
     color: var(--text-muted);
     font-size: 11px;
-    font-weight: 500;
     line-height: 1.2;
-    border-radius: 12px;
 
     .nav-label {
+      flex: none;
       max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    svg {
-      width: 22px;
-      height: 22px;
-      stroke-width: 2;
     }
 
     &:hover {
@@ -180,41 +135,21 @@
       color: var(--primary-dark);
       font-weight: 700;
       box-shadow: none;
-      transform: none;
     }
 
     &.active svg { color: var(--primary-dark); }
   }
 
-  .site-nav a:first-of-type,
-  .site-nav a:last-of-type {
-    margin: 0;
-  }
-
-  [data-theme="light"] .site-nav {
-    border-top-color: var(--border-soft);
-  }
-}
-
-// ============================================================
-// 极小屏:6 tab 在 360px 屏宽下文字进一步收紧
-// ============================================================
-@include small {
-  .site-nav {
-    padding: 5px 4px;
-    padding-bottom: max(5px, env(safe-area-inset-bottom));
-    gap: 2px;
-  }
-
-  .site-nav a {
-    font-size: 10px;
-    padding: 5px 2px;
-    border-radius: 10px;
-
-    svg {
-      width: 20px;
-      height: 20px;
-    }
+  // 软键盘打开:滑出视口,关闭后原样回来;正文占位不变,不会跳动
+  :root.keyboard-open .site-nav {
+    transform: translateY(calc(100% + var(--tabbar-gap) + var(--safe-bottom)));
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      transform 220ms ease,
+      opacity 220ms ease,
+      visibility 0s linear 220ms;
   }
 }
 

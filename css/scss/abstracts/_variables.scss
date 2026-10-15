@@ -12,8 +12,8 @@ $bp-desktop: 1000px;  // 标准桌面
 $bp-wide: 1100px;     // 宽屏
 $bp-xwide: 1200px;    // 超宽屏
 
-// ----- 侧栏宽度(Phase A:固定 220px,无折叠态) -----
-$rail-width: 220px;
+// ----- 侧栏 / 顶栏 / 底栏尺寸 -----
+// 运行时 CSS 变量,统一在 layout/_shell.scss 定义(--sidebar-space 68px / 192px、--toolbar-h、--tabbar-*)
 
 // ----- z-index 层级 -----
 $z-nav: 5;

@@ -1,16 +1,15 @@
 // ============================================================
-// 网站总体布局 —— Phase A 简化版
-// 左列固定 220px,无折叠态;主内容卡通栏。
-// Commit 2:右侧主区域引入 .bento-grid 12 列 bento 容器。
-// Commit 2.5:全局移除 .page-card 玻璃外壳。
-// D3:移动端 nav → 底部 tab bar,layout/floating btns 让位。
+// 网站总体布局
+// 桌面(≥901px):悬浮侧栏纸片 + 正文列两列 grid;正文列自己滚动。
+// 移动(≤900px):.layout 是唯一滚动容器,顶部给工具栏、底部给悬浮底栏让位。
+// shell 占用的空间(侧栏宽度、顶栏/底栏避让)统一在 _shell.scss 定义,这里只负责应用。
 // ============================================================
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
 // ============================================================
-// .layout —— 两列 grid,左列宽度跟随侧栏状态(68px / 220px,见 _shell.scss)
+// .layout —— 两列 grid:左列 = 侧栏纸片(68px / 192px),与视口左缘、正文列各隔 --rail-inset
 // ============================================================
 .layout {
   display: grid;
@@ -22,22 +21,15 @@
     "rail page";
   height: 100dvh;
   overflow: hidden;
-  gap: 12px;
-  padding: 0 12px 0 0;
+  gap: var(--rail-inset, 16px);
+  padding: 0 0 0 var(--rail-inset, 16px);
 }
 
-// ---------- 左侧卡片列 ----------
+// ---------- 左侧侧栏:外观与内部结构见 _shell.scss ----------
 .rail {
   grid-area: rail;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   min-width: 0;
   min-height: 0;
-  overflow: visible;
-  max-height: 100%;
-  padding-top: var(--page-pad-top);
 }
 
 // ============================================================
@@ -128,9 +120,9 @@ footer {
     }
     gap: 0;
 
-    // 顶部给工具栏(+活动胶囊)让位,底部给 tab bar 让位;
-    // 数值统一在 _shell.scss / _nav.scss 计算,这里只负责应用
-    padding: var(--shell-top-space, 0px) 0 var(--tab-bar-h, 0px);
+    // 顶部给工具栏让位(初始占位,不随工具栏显隐变化),底部给悬浮底栏让位并多留 8px 间隙,
+    // 页脚滚到底时完整停在底栏上方;底栏避让只在这里加一次(main 不再叠加),数值统一在 _shell.scss 计算
+    padding: var(--shell-top-space, 0px) 0 calc(var(--tabbar-clear, 0px) + var(--tabbar-gap, 0px));
     scroll-padding-top: calc(var(--shell-top-space, 0px) + 6px);
 
     @supports (scrollbar-width: none) {
@@ -141,16 +133,6 @@ footer {
 
   .layout > header {
     flex-shrink: 0;
-  }
-
-  .rail {
-    flex-shrink: 0;
-    position: static;
-    flex-direction: column;
-    overflow: visible;
-    max-height: none;
-    gap: 0;
-    padding-top: 0;
   }
 
   .page-card,
@@ -171,18 +153,7 @@ footer {
     gap: 12px;
   }
 
-  // ============================================================
-  // D3:floating btns 上移,避免被 tab bar 遮挡
-  // 注:#back-to-top / #back-to-prev 原样式在各自组件文件,
-  //    这里通过 mobile 段全局抬高 bottom 偏移
-  // ============================================================
-  #floating-btns {
-    bottom: calc(10px + var(--tab-bar-h, 0px));
-  }
-
-  #back-to-top {
-    bottom: calc(66px + var(--tab-bar-h, 0px));
-  }
+  // 浮动按钮避让底栏的定位统一在 components/_floating-btns.scss
 }
 
 // ============================================================
@@ -204,15 +175,9 @@ main {
 }
 
 // ============================================================
-// Phase D2:移动端 main 左右 padding 收紧
+// 窄屏:main 的上/左右边距统一由 --page-pad-* 控制(base/_theme-vars.scss),这里只收紧 bento 间距
 // ============================================================
 @media (max-width: 639px) {
-  main {
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-top: 12px;
-  }
-
   .bento-grid {
     gap: 10px;
   }
