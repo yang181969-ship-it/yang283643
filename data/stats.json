@@ -62,6 +62,15 @@
       "gallery": 0,
       "updates": 19,
       "total": 8
+    },
+    {
+      "date": "2026-11-01",
+      "month": "2026-11",
+      "notes": 8,
+      "anime": 0,
+      "gallery": 0,
+      "updates": 19,
+      "total": 8
     }
   ],
   "breakdowns": {
@@ -203,12 +212,12 @@
           {
             "id": "writing-total",
             "name": "总字数构成",
-            "total": 34611,
+            "total": 34759,
             "unit": "字",
             "items": [
               {
                 "name": "更新日志字数",
-                "value": 30179
+                "value": 30327
               },
               {
                 "name": "笔记字数",
@@ -239,12 +248,12 @@
           {
             "id": "writing-updates",
             "name": "更新日志字数",
-            "total": 30179,
+            "total": 30327,
             "unit": "字",
             "items": [
               {
                 "name": "optimization",
-                "value": 21667
+                "value": 21815
               },
               {
                 "name": "feature",
@@ -451,5 +460,5 @@
       "href": ""
     }
   ],
-  "generatedAt": "2026-10-15T16:55:55.530Z"
+  "generatedAt": "2026-11-01T06:31:48.883Z"
 }
